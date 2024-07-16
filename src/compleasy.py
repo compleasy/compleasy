@@ -340,6 +340,7 @@ def index():
         new_fields = {}
         new_fields['warnings'] = warnings
         new_fields['suggestions'] = suggestions
+        logging.info('Warnings: %s, Suggestions: %s', warnings, suggestions)
 
     devices = [dict(d, **new_fields) for d in devices]
 
