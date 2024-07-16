@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Database
+# Database location
 DATABASE = APPDIR + '/compleasy.db'
 
 # Class to parse Lynis reports
@@ -38,10 +38,19 @@ class LynisReport:
             # If there are multiple '=' in the line, split only the first one
             key, value = line.split('=', 1)
             self.keys[key] = value
+        # Add warnings and suggestions keys
+        self.keys['count_warnings'] = self.count_warnings() or 0
+        self.keys['count_suggestions'] = self.count_suggestions() or 0
         return dict(self.keys)
     
     def get(self, key):
         return self.keys.get(key)
+    
+    def count_warnings(self):
+        return len([k for k in self.keys.keys() if k.startswith('warning[]')])
+    
+    def count_suggestions(self):
+        return len([k for k in self.keys.keys() if k.startswith('suggestion[]')])
 
 ########################################################################################
 # Database functions
@@ -98,11 +107,12 @@ def db_new_device(cursor, hostid, hostid2):
     return cursor.lastrowid
 
 def db_update_device(cursor, device):
+    logging.info('Warnings: %s', device['count_warnings'])
     cursor.execute('''
             UPDATE Devices
-                SET hostname = ?, os = ?, distro = ?, distro_version = ?, lynis_version = ?, last_update = ?
+                SET hostname = ?, os = ?, distro = ?, distro_version = ?, lynis_version = ?, last_update = ?, warnings = ?
                 WHERE hostid = ? AND hostid2 = ?''',
-            (device['hostname'], device['os'], device['os_name'], device['os_version'], device['lynis_version'], device['report_datetime_end'], device['hostid'], device['hostid2']))
+            (device['hostname'], device['os'], device['os_name'], device['os_version'], device['lynis_version'], device['report_datetime_end'], device['count_warnings'], device['hostid'], device['hostid2']))
     cursor.connection.commit()
     return cursor.lastrowid
 
@@ -316,33 +326,8 @@ def index():
     cursor = db.cursor()
     devices = db_get_devices(cursor)
 
-    new_fields = {}
     for d in devices:
         logging.info('Device hostname: %s', d['hostname'])
-        # Get last full report
-        cursor.execute('SELECT full_report FROM FullReports WHERE device_id = ? ORDER BY id DESC LIMIT 1', (d['id'],))
-        full_report = cursor.fetchone()
-        if full_report:
-            lynis_report = LynisReport(full_report['full_report'])
-            r = lynis_report.parse_report()
-        else:
-            logging.error('No full report found for device: %s', d['hostname'])
-        # Count warnings and suggestions
-        warnings = 0
-        suggestions = 0
-        for key in r.keys():
-            if key.startswith('suggestion[]'):
-                warnings += 1
-            if key.startswith('warning[]'):
-                suggestions += 1
-        
-        # New fields
-        new_fields = {}
-        new_fields['warnings'] = warnings
-        new_fields['suggestions'] = suggestions
-        logging.info('Warnings: %s, Suggestions: %s', warnings, suggestions)
-
-    devices = [dict(d, **new_fields) for d in devices]
 
     return render_template('index.html', devices=devices)
 
