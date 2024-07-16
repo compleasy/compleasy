@@ -66,6 +66,18 @@ lynis audit system --upload --quick
 > [!NOTE]
 > You can use `lynis only-upload` to upload the last audit results.
 
+4. Schedule the audit with a cron job (available in recent Debian/Ubuntu versions):
+
+```bash
+systemctl start lynis.timer
+```
+
+5. (Recommended) Install the following packages to get the most out of Lynis:
+
+```bash
+sudo apt install rkhunter auditd aide
+```
+
 
 ## Using Compleasy
 
