@@ -1,2 +1,2 @@
-src/compleasy.db
-src/uploads/*
+src/compleasy.sqlite3
+nginx/certs/*

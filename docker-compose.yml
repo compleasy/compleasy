@@ -5,4 +5,16 @@ services:
     volumes:
       - ./src:/app
     ports:
-      - 3000:3000
+      - 8000:8000
+  
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 3000:443
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/generate-certs.sh:/docker-entrypoint.d/40-generate-cert.sh
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - compleasy

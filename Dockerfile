@@ -1,5 +1,8 @@
 FROM python:3.8-slim
 
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -13,7 +16,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Specify the command to run on container start
-CMD [ "python", "./compleasy.py" ]
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
 
 # Export the port
-EXPOSE 3000
+EXPOSE 8000
