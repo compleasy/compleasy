@@ -1,0 +1,8 @@
+services:
+  compleasy:
+    build: .
+    container_name: compleasy
+    volumes:
+      - ./src:/app
+    ports:
+      - 3000:3000
