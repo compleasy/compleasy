@@ -66,5 +66,5 @@ lynis audit system --profile custom.prf --upload --quick
 
 ### Advanced configuration
 
-- **Add a license key**: curl -k https://yourserver:3000/admin/license -X POST -d "licensekey=YOUR_LICENSE
-- **Empty the database**: curl https://yourserver:3000/admin/db/init?delete=true -k
+- **Add a license key**: `curl -k https://yourserver:3000/admin/license -X POST -d "licensekey=YOUR_LICENSE`
+- **Empty the database**: `curl https://yourserver:3000/admin/db/init?delete=true -k`
