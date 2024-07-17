@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 COMPLEASY_URL={{ compleasy_url }}
-COMPLEASY_SERVER_CERT=/tmp/compleasy.crt
+COMPLEASY_CERT_URL=${COMPLEASY_URL}/download/server.crt
+COMPLEASY_CERT_TMP=/tmp/compleasy.crt
+COMPLEASY_PRF_URL=${COMPLEASY_URL}/download/lynis_custom_profile
 
 if [ ! -f /etc/debian_version ]; then
     echo "This script is only compatible with Debian-based systems."
@@ -9,19 +11,19 @@ if [ ! -f /etc/debian_version ]; then
 fi
 
 # Check if the server is reachable and has a valid certificate
-curl -s ${COMPLEASY_URL}/download/server.crt -o /dev/null
+curl -s ${COMPLEASY_CERT_URL} -o /dev/null
 
 if [ $? -ne 0 ]; then
-    curl -k -s ${COMPLEASY_URL}/server.crt -o ${COMPLEASY_SERVER_CERT}
+    curl -k -s ${COMPLEASY_CERT_URL} -o ${COMPLEASY_CERT_TMP}
     if [ $? -eq 0 ]; then
         echo "Server certificate is self-signed. Adding it to the trusted certificates."
-        sudo cp ${COMPLEASY_SERVER_CERT} /usr/local/share/ca-certificates/compleasy.crt
+        sudo cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
         sudo update-ca-certificates
     else
-        echo "ERROR: ${COMPLEASY_URL}/server.crt could not be downloaded."
+        echo "ERROR: ${COMPLEASY_CERT_URL} could not be downloaded."
         echo "Add the server certificate manually to trust the server or use a valid certificate."
     fi
-    rm -f ${COMPLEASY_SERVER_CERT}
+    rm -f ${COMPLEASY_CERT_TMP}
 else
     echo "Server certificate is valid."
 fi
@@ -31,7 +33,7 @@ sudo apt-get update
 sudo apt-get install -y curl lynis rkhunter auditd
 
 # Configure Lynis agent
-sudo curl -s ${COMPLEASY_URL}/download/lynis_custom_profile -o /etc/lynis/custom.prf
+sudo curl -s ${COMPLEASY_PRF_URL} -o /etc/lynis/custom.prf
 
 # Run Lynis
 sudo lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
