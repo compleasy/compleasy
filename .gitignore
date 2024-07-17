@@ -1,2 +1,3 @@
+*.pyc
 src/compleasy.sqlite3
 nginx/certs/*
