@@ -1,11 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from api.models import Device, FullReport
 from utils.lynis_report import LynisReport
 
 def index(request):
     devices = Device.objects.all()
+    if not devices:
+        return redirect('onboarding')
     return render(request, 'index.html', {'devices': devices})
+
+def onboarding(request):
+    return render(request, 'onboarding.html')
 
 def device_list(request):
     return render(request, 'device_list.html')
