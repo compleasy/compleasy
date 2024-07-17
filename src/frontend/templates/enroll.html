@@ -9,7 +9,7 @@ if [ ! -f /etc/debian_version ]; then
 fi
 
 # Check if the server is reachable and has a valid certificate
-curl -s ${COMPLEASY_URL}/server.crt -o /dev/null
+curl -s ${COMPLEASY_URL}/download/server.crt -o /dev/null
 
 if [ $? -ne 0 ]; then
     curl -k -s ${COMPLEASY_URL}/server.crt -o ${COMPLEASY_SERVER_CERT}
@@ -31,7 +31,7 @@ sudo apt-get update
 sudo apt-get install -y curl lynis rkhunter auditd
 
 # Configure Lynis agent
-sudo curl -s ${COMPLEASY_URL}/lynis_custom.prf -o /etc/lynis/custom.prf
+sudo curl -s ${COMPLEASY_URL}/download/lynis_custom_profile -o /etc/lynis/custom.prf
 
 # Run Lynis
 sudo lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
