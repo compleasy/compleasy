@@ -6,85 +6,158 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compleasy</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        .info-grid {
+            display: grid;
+            grid-template-columns: max-content auto max-content auto;
+            gap: 0.5rem 1rem;
+        }
+        .info-grid > div:nth-child(4n+1),
+        .info-grid > div:nth-child(4n+3) {
+            font-weight: bold;
+            justify-self: end;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6"><a href="{% url 'index' %}">Compleasy</a></h1>
         
-        <!-- Server List Table (previous content) -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
-            <table class="min-w-full">
-                <!-- ... (previous table content) ... -->
-            </table>
-        </div>
-
-        <!-- Server Details Screen -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-            <h2 class="text-2xl font-bold mb-6">Overview</h2>
+        <!-- Device details Screen -->
+        <div id="serverDetails">
+            <h2 class="text-2xl font-bold mb-6">Server Details: Server01</h2>
 
             <!-- Overview Section -->
-            <div class="mb-8">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-4">
                 <h3 class="text-xl font-semibold mb-4">Overview</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><strong>Device name:</strong> {{ device.hostname }}</div>
-                    <div><strong>Hostid:</strong> {{ device.hostid }}</div>
-                    <div><strong>Hostid2:</strong> {{ device.hostid2 }}</div>
-                    <div><strong>Enrolled by:</strong> ?</div>
-                    <div><strong>Operating System:</strong> Linux</div>
-                    <div><strong>Distribution:</strong> {{ device.distro }} {{ device.distro_version }}</div>
-                    <div><strong>Compliance:</strong> <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span></div>
-                    <div><strong>Last check-in time:</strong> {{ device.last_update }}</div>
+                <div class="info-grid">
+                    <div>Device name:</div><div>{{ report.hostname }}</div>
+                    <div>IP Address:</div><div>{{ report.network_ipv4_address|filter_ipv4_address:report.default_gateway }}</div>
+                    <div>Hostid:</div><div>{{ report.hostid }}</div>
+                    <div>MAC Address:</div><div>{{ report.network_mac_address.0 }}</div>
+                    <div>Hostid2:</div><div>{{ report.hostid2 }}</div>
+                    <div>Server Role:</div><div>Web Server</div>
+                    <div>Enrolled by:</div><div>admin@example.com</div>
+                    <div>Enrollment Date:</div><div>2023-01-15</div>
+                    <div>Operating System:</div><div>{{ report.os }}</div>
+                    <div>Kernel Version:</div><div>{{ report.os_kernel_version_full }}</div>
+                    <div>Distribution:</div><div>{{ report.os_fullname }}</div>
+                    <div>Architecture:</div><div>x86_64</div>
+                    <div>Compliance:</div><div><span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span></div>
+                    <div>Uptime:</div><div>{{ report.uptime_in_days }}</div>
+                    <div>Last check-in time:</div><div>{{ device.last_update }}</div>
+                    <div>Next scheduled check:</div><div>2023-07-16 14:30</div>
                 </div>
             </div>
 
             <!-- Audit Section -->
-            <div class="mb-8">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-4">
                 <h3 class="text-xl font-semibold mb-4">Audit</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><strong>Lynis version:</strong> {{ device.lynis_version }}</div>
-                    <div><strong>Last report:</strong> {{ device.last_update }}</div>
-                    <div><strong>Hardening index:</strong> {{ report.hardening_index }}</div>
-                    <div><strong>Tests performed:</strong> {{ report.lynis_tests_done }}</div>
-                    <div><strong>Firewall:</strong> {{ report.firewall_active|boolean_status }}</div>
+                <div class="info-grid">
+                    <div>Lynis version:</div><div>{{ device.lynis_version }}</div>
+                    <div>Audit frequency:</div><div>Daily</div>
+                    <div>Last report:</div><div>2023-07-15</div>
+                    <div>Next scheduled audit:</div><div>2023-07-16</div>
+                    <div>Hardening index:</div><div>{{ report.hardening_index }}</div>
+                    <div>Previous index:</div><div>72/100</div>
+                    <div>Tests performed:</div><div>{{ report.lynis_tests_done }}</div>
+                    <div>Failed logins:</div><div>{{ report.auth_failed_logins_logged }}</div>
+                    <div>Firewall:</div><div>{{ report.firewall_active|boolean_status }}</div>
+                    <div>Last firewall update:</div><div>2023-07-14</div>
+                    <div>Antivirus:</div><div>ClamAV 0.103.2</div>
+                    <div>Last AV update:</div><div>2023-07-15 10:00</div>
                 </div>
             </div>
 
             <!-- Security Section -->
-            <div>
+            <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
                 <h3 class="text-xl font-semibold mb-4">Security</h3>
                 
                 <!-- Warnings Subsection -->
                 <div class="mb-6">
                     <h4 class="text-lg font-medium mb-2">Warnings</h4>
-                    <ul class="list-disc pl-5">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Test-ID</th>
+                                <th class="py-3 px-6 text-left">Description</th>
+                                <th class="py-3 px-6 text-center">Policy Status</th>
+                                <th class="py-3 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
 
-                        {% for warning in report.warning %}
-                        <li class="mb-2">
-                            {% with warning|split_messages:"|" as parts %}
-                            <span class="font-medium">{{ parts.0 }}</span>
-                            <br><span class="text-sm text-gray-600">{{ parts.1 }}</span>
-                            {% endwith %}
-                        </li>
-                        {% endfor %}
+                            {% for warning in report.warning %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                {% with warning|split_messages:"|" as parts %}
+                                <td class="py-3 px-6 text-left">{{ parts.0 }}</td>
+                                <td class="py-3 px-6 text-left">{{ parts.1 }}</td>
+                                {% endwith %}
+                                <td class="py-3 px-6 text-center">
+                                    <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Policy Violation</span>
+                                </td>
+                                <td class="py-3 px-6 text-center">
+                                    <div class="flex item-center justify-center">
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-plus-circle" title="Add rule to policy"></i>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-volume-mute" title="Mute warning"></i>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-tasks" title="Add to To-do list"></i>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
 
-                    </ul>
+                        </tbody>
+                    </table>
                 </div>
                 
                 <!-- Suggestions Subsection -->
                 <div>
                     <h4 class="text-lg font-medium mb-2">Suggestions</h4>
-                    <ul class="list-disc pl-5">
-                        
-                        {% for suggestion in report.suggestion %}
-                        <li class="mb-2">
-                            {% with suggestion|split_messages:"|" as parts %}
-                            <span class="font-medium">{{ parts.0 }}</span>
-                            <br><span class="text-sm text-gray-600">{{ parts.1 }}</span>
-                            {% endwith %}
-                        </li>
-                        {% endfor %}
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Test-ID</th>
+                                <th class="py-3 px-6 text-left">Description</th>
+                                <th class="py-3 px-6 text-center">Policy Status</th>
+                                <th class="py-3 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
 
-                    </ul>
+                            {% for suggestion in report.suggestion %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                {% with suggestion|split_messages:"|" as parts %}
+                                <td class="py-3 px-6 text-left">{{ parts.0 }}</td>
+                                <td class="py-3 px-6 text-left">{{ parts.1 }}</td>
+                                {% endwith %}
+                                <td class="py-3 px-6 text-center">
+                                    <span class="bg-gray-200 text-gray-600 py-1 px-3 rounded-full text-xs">Not in Policy</span>
+                                </td>
+                                <td class="py-3 px-6 text-center">
+                                    <div class="flex item-center justify-center">
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-plus-circle" title="Add rule to policy"></i>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-volume-mute" title="Mute suggestion"></i>
+                                        </div>
+                                        <div class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
+                                            <i class="fas fa-tasks" title="Add to To-do list"></i>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

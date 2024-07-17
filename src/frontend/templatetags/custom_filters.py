@@ -12,3 +12,21 @@ def split_messages(value, arg):
         return value.split(arg)
     except (ValueError, AttributeError):
         return [value, '']
+
+@register.filter(name='filter_ipv4_address')
+def filter_ipv4_address(value, arg):
+    filtered_addresses = []
+    network_ipv4_addresses = value
+    default_gateways = arg
+
+    for default_gateway in default_gateways:
+        # We assume network prefix is /24
+        # Example: default gateway 192.168.180.1
+        # network prefix: 192.168.180
+        gateway_network_prefix = '.'.join(default_gateway.split('.')[:3])
+        for network_ipv4_address in network_ipv4_addresses:
+            if gateway_network_prefix in network_ipv4_address:
+                filtered_addresses.append(network_ipv4_address)
+    # Convert list to string
+    filtered_addresses = ' '.join(filtered_addresses)
+    return filtered_addresses

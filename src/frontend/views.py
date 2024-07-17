@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from api.models import Device, FullReport
 from utils.lynis_report import LynisReport
+import os
 
 def index(request):
     devices = Device.objects.all()
@@ -10,7 +11,8 @@ def index(request):
     return render(request, 'index.html', {'devices': devices})
 
 def onboarding(request):
-    return render(request, 'onboarding.html')
+    compleasy_url = os.getenv('COMPLEASY_URL')
+    return render(request, 'onboarding.html', {'compleasy_url': compleasy_url})
 
 def device_list(request):
     return render(request, 'device_list.html')
@@ -45,3 +47,8 @@ def device_detail(request, device_id):
 
 def report_detail(request, report_id):
     return render(request, 'report_detail.html')
+
+def enroll_sh(request):
+    # Get the server url from environment variable
+    compleasy_url = os.getenv('COMPLEASY_URL')
+    return render(request, 'enroll.html', {'compleasy_url': compleasy_url})

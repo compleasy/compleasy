@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+COMPLEASY_URL={{ compleasy_url }}
+COMPLEASY_SERVER_CERT=/tmp/compleasy.crt
+
+if [ ! -f /etc/debian_version ]; then
+    echo "This script is only compatible with Debian-based systems."
+    exit 1
+fi
+
+# Check if the server is reachable and has a valid certificate
+curl -s ${COMPLEASY_URL}/server.crt -o /dev/null
+
+if [ $? -ne 0 ]; then
+    curl -k -s ${COMPLEASY_URL}/server.crt -o ${COMPLEASY_SERVER_CERT}
+    if [ $? -eq 0 ]; then
+        echo "Server certificate is self-signed. Adding it to the trusted certificates."
+        sudo cp ${COMPLEASY_SERVER_CERT} /usr/local/share/ca-certificates/compleasy.crt
+        sudo update-ca-certificates
+    else
+        echo "ERROR: ${COMPLEASY_URL}/server.crt could not be downloaded."
+        echo "Add the server certificate manually to trust the server or use a valid certificate."
+    fi
+    rm -f ${COMPLEASY_SERVER_CERT}
+else
+    echo "Server certificate is valid."
+fi
+
+# Update and install necessary packages
+apt-get update
+apt-get install -y curl lynis rkhunter auditd
+
+# Configure Lynis agent
+curl -s ${COMPLEASY_URL}/lynis_custom.prf -o /etc/lynis/custom.prf
+
+# Run Lynis
+lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
+
+# Enable systemd timer for daily audit
+systemctl enable lynis.timer
