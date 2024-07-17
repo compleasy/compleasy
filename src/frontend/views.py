@@ -10,7 +10,8 @@ def index(request):
     return render(request, 'index.html', {'devices': devices})
 
 def onboarding(request):
-    return render(request, 'onboarding.html')
+    host = request.get_host()
+    return render(request, 'onboarding.html', {'host': host})
 
 def device_list(request):
     return render(request, 'device_list.html')
@@ -45,3 +46,10 @@ def device_detail(request, device_id):
 
 def report_detail(request, report_id):
     return render(request, 'report_detail.html')
+
+def enroll_sh(request):
+    # Get the host and port used to connect the webserver (behin a reverse proxy)
+    host = request.META.get('HTTP_X_FORWARDED_HOST', request.get_host())
+    port = request.META.get('HTTP_X_FORWARDED_PORT', request.get_port())
+    host = f'{host}:{port}'
+    return render(request, 'enroll.html', {'host': host})
