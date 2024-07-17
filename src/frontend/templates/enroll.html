@@ -27,14 +27,14 @@ else
 fi
 
 # Update and install necessary packages
-apt-get update
-apt-get install -y curl lynis rkhunter auditd
+sudo apt-get update
+sudo apt-get install -y curl lynis rkhunter auditd
 
 # Configure Lynis agent
-curl -s ${COMPLEASY_URL}/lynis_custom.prf -o /etc/lynis/custom.prf
+sudo curl -s ${COMPLEASY_URL}/lynis_custom.prf -o /etc/lynis/custom.prf
 
 # Run Lynis
-lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
+sudo lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
 
 # Enable systemd timer for daily audit
-systemctl enable lynis.timer
+sudo systemctl enable lynis.timer
