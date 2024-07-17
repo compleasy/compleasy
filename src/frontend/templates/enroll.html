@@ -11,18 +11,14 @@ if [ ! -f /etc/debian_version ]; then
 fi
 
 # Check if the server is reachable and has a valid certificate
-curl -s ${COMPLEASY_CERT_URL} -o /dev/null
+curl -s ${COMPLEASY_URL} -o /dev/null
 
 if [ $? -ne 0 ]; then
-    curl -k -s ${COMPLEASY_CERT_URL} -o ${COMPLEASY_CERT_TMP}
-    if [ $? -eq 0 ]; then
-        echo "Server certificate is self-signed. Adding it to the trusted certificates."
-        sudo cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
-        sudo update-ca-certificates
-    else
-        echo "ERROR: ${COMPLEASY_CERT_URL} could not be downloaded."
-        echo "Add the server certificate manually to trust the server or use a valid certificate."
-    fi
+    echo "Server certificate is self-signed. Adding it to the trusted certificates."
+    # Use curl instead of openssl to do not require additional packages
+    curl -v --output /dev/null ${COMPLEASY_URL} 2>&1 | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' > ${COMPLEASY_CERT_TMP}
+    sudo cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
+    sudo update-ca-certificates
     rm -f ${COMPLEASY_CERT_TMP}
 else
     echo "Server certificate is valid."
