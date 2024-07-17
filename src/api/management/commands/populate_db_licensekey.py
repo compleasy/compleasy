@@ -7,6 +7,10 @@ class Command(BaseCommand):
     help = 'Generate a random license key and add it to the database'
 
     def handle(self, *args, **kwargs):
+        if LicenseKey.objects.exists():
+            self.stdout.write(self.style.SUCCESS('License key already exists in the database'))
+            return
+        
         # Generate a random license key
         license_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 

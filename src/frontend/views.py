@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from api.models import Device, FullReport
+from api.models import Device, FullReport, LicenseKey
 from utils.lynis_report import LynisReport
 import os
 import ssl
@@ -54,14 +54,15 @@ def enroll_sh(request):
     compleasy_url = os.getenv('COMPLEASY_URL')
     return render(request, 'enroll.html', {'compleasy_url': compleasy_url})
 
-def download_server_crt(request):
-    # Get this server certificate using ssl library
-    server_url = os.getenv('COMPLEASY_URL') # https://localhost:3000
-    host, port = server_url.split('://')[1].split(':')
-    cert = ssl.get_server_certificate((host, port))
-    response = HttpResponse(cert, content_type='application/x-x509-ca-cert')
-    response['Content-Disposition'] = 'attachment; filename="server.crt"'
-    return response
-
 def download_lynis_custom_profile(request):
-    return render(request, 'lynis_custom_profile.html', content_type='text/plain')
+    server_address_without_proto = os.getenv('COMPLEASY_URL').split('://')[1]
+    compleasy_upload_server = f'{server_address_without_proto}/api/lynis'
+    license_key = LicenseKey.objects.last().licensekey
+    upload_options = "--insecure"
+    return render(request, 'lynis_custom_profile.html',
+                    {
+                      'compleasy_upload_server': compleasy_upload_server,
+                      'license_key': license_key,
+                      'upload_options': upload_options
+                    },
+                    content_type='text/plain')
