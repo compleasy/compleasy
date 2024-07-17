@@ -3,51 +3,11 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import LicenseKey, Device, FullReport
 from .forms import ReportUploadForm
+from utils.lynis_report import LynisReport
 import os
 import logging
 
 logger = logging.getLogger('Compleasy')
-
-# Class to parse Lynis reports (same as in Flask code)
-class LynisReport:
-    def __init__(self, report_file_or_content):
-        self.keys = {}
-        self.report = self.read_report(report_file_or_content)
-        self.keys = self.parse_report()
-
-    def read_report(self, report_file_or_content):
-        if os.path.exists(report_file_or_content):
-            with open(report_file_or_content, 'r') as file:
-                return file.read()
-        return report_file_or_content
-
-    def get_full_report(self):
-        return self.report
-
-    def parse_report(self):
-        warning_count = 0
-        suggestion_count = 0
-        parsed_keys = {}
-        
-        for line in self.report.split('\n'):
-            if not line or line.startswith('#') or '=' not in line:
-                continue
-            
-            key, value = line.split('=', 1)
-            if key == 'warning[]':
-                warning_count += 1
-            elif key == 'suggestion[]':
-                suggestion_count += 1
-            
-            parsed_keys[key] = value
-
-        parsed_keys['count_warnings'] = warning_count
-        parsed_keys['count_suggestions'] = suggestion_count
-        
-        return parsed_keys
-    
-    def get(self, key):
-        return self.keys.get(key)
 
 def read_config_file():
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yml')
@@ -120,10 +80,16 @@ def upload_report(request):
             logging.info(f'Full report stored for device: {lynis_report.get("hostname")}')
 
             parsed_report = lynis_report.parse_report()
-            device.hostname = parsed_report.get('hostname')
+            # Check if parsed keys are empty: {}
+            if not parsed_report:
+                logging.error('Error parsing report')
+                return HttpResponse('Error parsing report', status=500)
+
+            # Update device information (get most important keys)
+            device.hostname = parsed_report.get('hostname')    
             device.os = parsed_report.get('os')
-            device.distro = parsed_report.get('distro')
-            device.distro_version = parsed_report.get('distro_version')
+            device.distro = parsed_report.get('os_fullname')
+            device.distro_version = parsed_report.get('os_version')
             device.lynis_version = parsed_report.get('lynis_version')
             device.last_update = parsed_report.get('report_datetime_end')
             device.warnings = parsed_report.get('count_warnings')

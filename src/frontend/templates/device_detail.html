@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compleasy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Compleasy</h1>
+        
+        <!-- Server List Table (previous content) -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+            <table class="min-w-full">
+                <!-- ... (previous table content) ... -->
+            </table>
+        </div>
+
+        <!-- Server Details Screen -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+            <h2 class="text-2xl font-bold mb-6">Overview</h2>
+
+            <!-- Overview Section -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Overview</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><strong>Device name:</strong> {{ device.hostname }}</div>
+                    <div><strong>Hostid:</strong> {{ device.hostid }}</div>
+                    <div><strong>Hostid2:</strong> {{ device.hostid2 }}</div>
+                    <div><strong>Enrolled by:</strong> ?</div>
+                    <div><strong>Operating System:</strong> Linux</div>
+                    <div><strong>Distribution:</strong> {{ device.distro }} {{ device.distro_version }}</div>
+                    <div><strong>Compliance:</strong> <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span></div>
+                    <div><strong>Last check-in time:</strong> {{ device.last_update }}</div>
+                </div>
+            </div>
+
+            <!-- Audit Section -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Audit</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><strong>Lynis version:</strong> {{ device.lynis_version }}</div>
+                    <div><strong>Last report:</strong> {{ device.last_update }}</div>
+                    <div><strong>Hardening index:</strong> {{ report.hardening_index }}</div>
+                    <div><strong>Tests performed:</strong> {{ report.lynis_tests_done }}</div>
+                    <div><strong>Firewall:</strong> {{ report.firewall_active }} ({{ report.firewall_software }})</div>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Security</h3>
+                
+                <!-- Warnings Subsection -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium mb-2">Warnings</h4>
+                    <ul class="list-disc pl-5">
+                        {% for warning in report.warnings %}
+                        <li class="mb-2">
+                            <span class="font-medium">Vulnerable PHP version detected</span>
+                            <br><span class="text-sm text-gray-600">Test ID: PHP-2018</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                {{ report}}
+                
+                <!-- Suggestions Subsection -->
+                <div>
+                    <h4 class="text-lg font-medium mb-2">Suggestions</h4>
+                    <ul class="list-disc pl-5">
+                        <li class="mb-2">
+                            <span class="font-medium">Enable process accounting</span>
+                            <br><span class="text-sm text-gray-600">Test ID: ACCT-9622</span>
+                        </li>
+                        <li class="mb-2">
+                            <span class="font-medium">Install AIDE (Advanced Intrusion Detection Environment)</span>
+                            <br><span class="text-sm text-gray-600">Test ID: FINT-4350</span>
+                        </li>
+                        <li class="mb-2">
+                            <span class="font-medium">Enable auditd service</span>
+                            <br><span class="text-sm text-gray-600">Test ID: ACCT-9628</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

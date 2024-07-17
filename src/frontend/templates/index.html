@@ -27,7 +27,7 @@
                     <tr class="border-b border-gray-200 hover:bg-gray-100">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
                             <div class="flex items-center">
-                                <span class="font-medium">{{ device.hostname }}</span>
+                                <span class="font-medium"><a href="{% url 'device_detail' device_id=device.id %}">{{ device.hostname }}</a></span>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left">

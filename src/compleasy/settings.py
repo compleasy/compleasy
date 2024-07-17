@@ -57,8 +57,10 @@ ROOT_URLCONF = 'compleasy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates',
-                 BASE_DIR / 'frontend/templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'frontend/templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
