@@ -4,6 +4,9 @@ services:
     container_name: compleasy
     volumes:
       - ./src:/app
+    environment:
+      - COMPLEASY_ADMIN_USER=admin
+      - COMPLEASY_ADMIN_PASSWORD=compleasy
     ports:
       - 8000:8000
   
