@@ -1,26 +1,31 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from api.models import Device, FullReport, LicenseKey
 from utils.lynis_report import LynisReport
 import os
-import ssl
 
+@login_required
 def index(request):
     devices = Device.objects.all()
     if not devices:
         return redirect('onboarding')
     return render(request, 'index.html', {'devices': devices})
 
+@login_required
 def onboarding(request):
     compleasy_url = os.getenv('COMPLEASY_URL')
     return render(request, 'onboarding.html', {'compleasy_url': compleasy_url})
 
+@login_required
 def device_list(request):
     return render(request, 'device_list.html')
 
+@login_required
 def report_list(request):
     return render(request, 'report_list.html')
 
+@login_required
 def device_detail(request, device_id):
     warnings = {}
     suggestions = {}
@@ -46,14 +51,17 @@ def device_detail(request, device_id):
 
     return render(request, 'device_detail.html', {'device': device, 'report': report})
 
+@login_required
 def report_detail(request, report_id):
     return render(request, 'report_detail.html')
 
+#TODO: require login, add csrf token or license key
 def enroll_sh(request):
     # Get the server url from environment variable
     compleasy_url = os.getenv('COMPLEASY_URL')
     return render(request, 'enroll.html', {'compleasy_url': compleasy_url})
 
+#TODO: require login, add csrf token or license key
 def download_lynis_custom_profile(request):
     server_address_without_proto = os.getenv('COMPLEASY_URL').split('://')[1]
     compleasy_upload_server = f'{server_address_without_proto}/api/lynis'

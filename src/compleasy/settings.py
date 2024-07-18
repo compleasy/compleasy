@@ -139,3 +139,8 @@ CSRF_TRUSTED_ORIGINS = [
 
 if os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS'):
     CSRF_TRUSTED_ORIGINS += os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS').split(',')
+
+
+# Login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
