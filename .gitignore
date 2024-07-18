@@ -1,3 +1,4 @@
 *.pyc
-src/compleasy.sqlite3
+__pycache__
+compleasy.sqlite3
 nginx/certs/*
