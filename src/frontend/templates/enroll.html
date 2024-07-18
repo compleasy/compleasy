@@ -10,28 +10,37 @@ if [ ! -f /etc/debian_version ]; then
     exit 1
 fi
 
+# If user is not root, use sudo if available
+if [ $(id -u) -ne 0 ]; then
+    if [ -x "$(command -v sudo)" ]; then
+        SUDO=sudo
+    else
+        echo "Please run this script as root or install sudo."
+        exit 1
+    fi
+fi
+
 # Check if the server is reachable and has a valid certificate
 curl -s ${COMPLEASY_URL} -o /dev/null
-
 if [ $? -ne 0 ]; then
     echo "Server certificate is self-signed. Adding it to the trusted certificates."
     openssl s_client -showcerts -connect ${COMPLEASY_URL#https://} </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p' > ${COMPLEASY_CERT_TMP}
-    sudo cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
-    sudo update-ca-certificates
+    ${SUDO} cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
+    ${SUDO} update-ca-certificates
     rm -f ${COMPLEASY_CERT_TMP}
 else
     echo "Server certificate is valid."
 fi
 
 # Update and install necessary packages
-sudo apt-get update
-sudo apt-get install -y curl lynis rkhunter auditd
+${SUDO} apt-get update
+${SUDO} apt-get install -y curl lynis rkhunter auditd
 
 # Configure Lynis agent
-sudo curl -s ${COMPLEASY_PRF_URL} -o /etc/lynis/custom.prf
+${SUDO} curl -s ${COMPLEASY_PRF_URL} -o /etc/lynis/custom.prf
 
 # Run Lynis
-sudo lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
+${SUDO} lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
 
 # Enable systemd timer for daily audit
-sudo systemctl enable lynis.timer
+${SUDO} systemctl enable lynis.timer
