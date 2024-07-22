@@ -34,3 +34,8 @@ def filter_ipv4_address(value, arg):
     # Convert list to string
     filtered_addresses = ' '.join(filtered_addresses)
     return filtered_addresses
+
+@register.filter(name='shorten_string')
+def shorten_string(value, arg):
+    # Return the last arg characters of the value
+    return "..." + value[-arg:]
