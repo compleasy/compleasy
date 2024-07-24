@@ -37,3 +37,8 @@ class FullReport(models.Model):
             # Delete older reports except the latest 2
             for report in reports[2:]:
                 report.delete()
+
+class DiffReport(models.Model):
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    diff_report = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
