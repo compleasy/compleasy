@@ -1,17 +1,31 @@
 import os
+import logging
 
 class LynisReport:
-    def __init__(self, report_file_or_content):
+    def __init__(self, full_report):
         self.keys = {}
-        self.report = self.read_report(report_file_or_content)
+        self.report = full_report
+        self.report = self.clean_full_report()
         self.keys = self.parse_report()
 
-    def read_report(self, report_file_or_content):
-        """Read the report from a file or direct content."""
-        if os.path.exists(report_file_or_content):
-            with open(report_file_or_content, 'r') as file:
-                return file.read()
-        return report_file_or_content
+    def clean_full_report(self):
+        """Clean some keys from the report"""
+        invalid_tests = [
+            'DEB-0280',
+            'DEB-0285',
+            'DEB-0520',
+            'DEB-0870',
+            'DEB-0880'
+        ]
+
+        # Remove lines with invalid tests
+        report_lines = self.report.split('\n')
+        for line in report_lines:
+            for test in invalid_tests:
+                if test in line:
+                    report_lines.remove(line)
+                    break
+        return '\n'.join(report_lines)
 
     def get_full_report(self):
         """Return the full report content."""

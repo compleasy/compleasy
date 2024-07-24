@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from api.models import Device, FullReport, LicenseKey
+from api.models import Device, FullReport, DiffReport, LicenseKey
 from utils.lynis_report import LynisReport
+from utils.diff_utils import apply_diff
 import os
 
 @login_required
@@ -31,6 +32,7 @@ def device_detail(request, device_id):
     suggestions = {}
     device = Device.objects.get(id=device_id)
     # Get last report for the device
+    #report = FullReport.objects.filter(device=device).order_by('-created_at').first()
     report = FullReport.objects.filter(device=device).order_by('-created_at').first()
 
     # If no report found, error message
@@ -42,14 +44,26 @@ def device_detail(request, device_id):
 
     if not report:
         return HttpResponse('Failed to parse the report', status=500)
-    
-    # Print suggestions
-    suggestions = report.get('suggestion', [])
-    print('Suggestions:')
-    for suggestion in suggestions:
-        print(f'  - {suggestion}')
 
     return render(request, 'device_detail.html', {'device': device, 'report': report})
+
+@login_required
+def get_full_report(request, device_id):
+    device = get_object_or_404(Device, pk=device_id)
+    
+    # Get the latest full report
+    full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+    if not full_report:
+        return None
+    
+    full_report_data = full_report.full_report
+    
+    # Apply diffs to reconstruct the latest report
+    diffs = DiffReport.objects.filter(device=device).order_by('created_at')
+    for diff in diffs:
+        full_report_data = apply_diff(full_report_data, diff.diff_report)
+    
+    return full_report_data
 
 @login_required
 def report_detail(request, report_id):

@@ -11,6 +11,4 @@ urlpatterns = [
     path('download/lynis_custom_profile', views.download_lynis_custom_profile, name='download_lynis_custom_profile'),
     path('devices/', views.device_list, name='device_list'),
     path('device/<int:device_id>/', views.device_detail, name='device_detail'),
-    path('reports/', views.report_list, name='report_list'),
-    path('report/<int:report_id>/', views.report_detail, name='report_detail'),
 ]
