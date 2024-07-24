@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from api.models import LicenseKey  # Import your models here
+from api.models import LicenseKey, User
 import random
 import string
 
@@ -20,8 +20,13 @@ class Command(BaseCommand):
         # with the following criteria: [a-f0-9-]
         license_key = self.generate_random_string(8) + '-' + self.generate_random_string(8) + '-' + self.generate_random_string(8)
         
+        # Get first user in the database
+        user = User.objects.first()
+        if not user:
+            self.stdout.write(self.style.ERROR('No users found in the database. License should be associated with a user'))
+            return
 
         # Add the license key to the database
-        LicenseKey.objects.create(licensekey=license_key)
+        LicenseKey.objects.create(licensekey=license_key, created_by=user)
 
         self.stdout.write(self.style.SUCCESS('Successfully generated and added a license key to the database'))
