@@ -38,16 +38,16 @@
                     <div>MAC Address:</div><div>{{ report.network_mac_address.0 }}</div>
                     <div>Hostid2:</div><div>{{ report.hostid2|shorten_string:30 }}</div>
                     <div>Server Role:</div><div class="text-blue-600">Web Server</div>
-                    <div>Enrolled by:</div><div class="text-blue-600">admin@example.com</div>
-                    <div>Enrollment Date:</div><div class="text-blue-600">2023-01-15</div>
+                    <div>Enrolled by:</div><div>{{ device.licensekey.created_by.email }}</div>
+                    <div>Enrollment Date:</div><div>{{ device.created_at|date:'Y-m-d H:s' }}</div>
                     <div>Operating System:</div><div>{{ report.os }}</div>
                     <div>Kernel Version:</div><div>{{ report.os_kernel_version_full }}</div>
                     <div>Distribution:</div><div>{{ report.os_fullname }}</div>
                     <div>Architecture:</div><div class="text-blue-600">x86_64</div>
                     <div>Compliance:</div><div><span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span></div>
                     <div>Uptime:</div><div>{{ report.uptime_in_days }}</div>
-                    <div>Last check-in time:</div><div>{{ device.last_update }}</div>
-                    <div>Next scheduled check:</div><div class="text-blue-600">2023-07-16 14:30</div>
+                    <div>Last check-in time:</div><div>{{ device.last_update|date:'Y-m-d H:s' }}</div>
+                    <div>Next scheduled check:</div><div>-</div>
                 </div>
             </div>
 
@@ -57,9 +57,9 @@
                 <div class="info-grid">
                     <div>Lynis version:</div><div>{{ device.lynis_version }}</div>
                     <div>Audit frequency:</div><div class="text-blue-600">Daily</div>
-                    <div>Last report:</div><div class="text-blue-600">2023-07-15</div>
+                    <div>Last report:</div><div>{{ report.report_datetime_end }}</div>
                     <div>Next scheduled audit:</div><div class="text-blue-600">2023-07-16</div>
-                    <div>Hardening index:</div><div>{{ report.hardening_index }}</div>
+                    <div>Hardening index:</div><div>{{ report.hardening_index }}/100</div>
                     <div>Previous index:</div><div class="text-blue-600">72/100</div>
                     <div>Tests performed:</div><div>{{ report.lynis_tests_done }}</div>
                     <div>Failed logins:</div><div>{{ report.auth_failed_logins_logged }}</div>
