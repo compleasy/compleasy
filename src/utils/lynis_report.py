@@ -9,7 +9,7 @@ class LynisReport:
         self.keys = self.parse_report()
 
     def clean_full_report(self):
-        """Clean some keys from the report"""
+        """Clean invalid keys from the report"""
         invalid_tests = [
             'DEB-0280',
             'DEB-0285',
@@ -30,6 +30,28 @@ class LynisReport:
     def get_full_report(self):
         """Return the full report content."""
         return self.report
+    
+    def get_server_role(self):
+        """Try to determine the server role based on the listening ports."""
+
+        port_role = {
+            '25': 'Mail server',
+            '80': 'Web server',
+            '443': 'Web server',
+            '110': 'Mail server',
+            '143': 'Mail server',
+            '587': 'Mail server',
+            '3306': 'Database server',
+            '8006': 'ProxmoxVE',
+            '8007': 'ProxmoxBS'
+        }
+
+        # If the server is listening on ports 80 or 443, it's probably a web server
+        network_listen_ports = self.keys.get('network_listen_ports', [])
+        for port in network_listen_ports:
+            if port in port_role:
+                return port_role[port]
+        return 'unknown'
 
     def parse_report(self):
         """Parse the report and count warnings and suggestions."""
@@ -50,6 +72,9 @@ class LynisReport:
             else:
                 parsed_keys[key] = value
         
+        # Determine the server role
+        parsed_keys['server_role'] = self.get_server_role()
+
         # Optionally, you can count the warnings and suggestions if needed
         parsed_keys['count_warnings'] = len(parsed_keys.get('warning', []))
         parsed_keys['count_suggestions'] = len(parsed_keys.get('suggestion', []))

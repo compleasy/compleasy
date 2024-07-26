@@ -9,13 +9,12 @@ import logging
 
 @login_required
 def index(request):
-    devices = Device.objects.all()
-    if not devices:
-        return redirect('onboarding')
-    return render(request, 'index.html', {'devices': devices})
+    """Index view: redirect to the device list"""
+    return redirect('device_list')
 
 @login_required
 def onboarding(request):
+    """Onboarding view: show when no devices are found to help the user to enroll a new device"""
     compleasy_url = os.getenv('COMPLEASY_URL')
     #TODO: allow license management. By now, we just get the last license key from the user
     user_license = LicenseKey.objects.filter(created_by=request.user).last()
@@ -27,14 +26,15 @@ def onboarding(request):
 
 @login_required
 def device_list(request):
-    return render(request, 'device_list.html')
-
-@login_required
-def report_list(request):
-    return render(request, 'report_list.html')
+    """Device list view: show all devices"""
+    devices = Device.objects.all()
+    if not devices:
+        return redirect('onboarding')
+    return render(request, 'device_list.html', {'devices': devices})
 
 @login_required
 def device_detail(request, device_id):
+    """Device detail view: show the details of a device"""
     warnings = {}
     suggestions = {}
     device = Device.objects.get(id=device_id)
@@ -54,30 +54,9 @@ def device_detail(request, device_id):
 
     return render(request, 'device_detail.html', {'device': device, 'report': report})
 
-@login_required
-def get_full_report(request, device_id):
-    device = get_object_or_404(Device, pk=device_id)
-    
-    # Get the latest full report
-    full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
-    if not full_report:
-        return None
-    
-    full_report_data = full_report.full_report
-    
-    # Apply diffs to reconstruct the latest report
-    diffs = DiffReport.objects.filter(device=device).order_by('created_at')
-    for diff in diffs:
-        full_report_data = apply_diff(full_report_data, diff.diff_report)
-    
-    return full_report_data
-
-@login_required
-def report_detail(request, report_id):
-    return render(request, 'report_detail.html')
-
 #TODO: require login, add csrf token or license key
 def enroll_sh(request):
+    """Enroll view: generate enroll bash script to install the agent on a new device"""
     # Get license key from the URL
     licensekey = request.GET.get('licensekey')
     if not licensekey:
@@ -90,6 +69,7 @@ def enroll_sh(request):
     return render(request, 'enroll.html', {'compleasy_url': compleasy_url, 'licensekey': licensekey})
 
 def download_lynis_custom_profile(request):
+    """Generate a custom Lynis profile with the provided license key"""
     # TODO: get Lynis version from the URL, so we can generate the profile for the specific version
     lynis_version = request.GET.get('lynis_version')
     if not lynis_version:
