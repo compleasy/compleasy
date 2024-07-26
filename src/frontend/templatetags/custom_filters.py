@@ -4,10 +4,17 @@ register = template.Library()
 
 @register.filter(name='boolean_status')
 def boolean_status(value):
+    """ Return 'enabled' if value is True, 'disabled' otherwise """
     return 'enabled' if value else 'disabled'
+
+@register.filter(name='format_list')
+def format_list(value, separator=', '):
+    """ Convert a list to a string """
+    return separator.join(value)
 
 @register.filter(name='split_messages')
 def split_messages(value, arg):
+    """ Split a string into a list of messages using the given separator """
     try:
         parts = value.split(arg)
         # Remove empty parts (part is empty or contains just a -)
@@ -20,6 +27,8 @@ def split_messages(value, arg):
 
 @register.filter(name='filter_ipv4_address')
 def filter_ipv4_address(value, arg):
+    """ Filter IPv4 addresses based on the default gateways """
+
     filtered_addresses = []
     network_ipv4_addresses = value
     default_gateways = arg
@@ -42,6 +51,7 @@ def filter_ipv4_address(value, arg):
 
 @register.filter(name='shorten_string')
 def shorten_string(value, arg):
+    """ Shorten a string to the given length """
     # Return the last arg characters of the value
     return "..." + value[-arg:]
 

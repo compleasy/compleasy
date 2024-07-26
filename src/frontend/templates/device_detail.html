@@ -48,7 +48,7 @@
                     <div>Hostid:</div><div>{{ report.hostid|shorten_string:30 }}</div>
                     <div>MAC Address:</div><div>{{ report.network_mac_address.0 }}</div>
                     <div>Hostid2:</div><div>{{ report.hostid2|shorten_string:30 }}</div>
-                    <div>Server Role:</div><div>{{ report.server_role }}</div>
+                    <div>Server Role:</div><div>{{ report.server_role|format_list }}</div>
                     <div>Enrolled by:</div><div>{{ device.licensekey.created_by.email }}</div>
                     <div>Enrollment Date:</div><div>{{ device.created_at|date:'Y-m-d H:s' }}</div>
                     <div>Operating System:</div><div>{{ report.os }}</div>

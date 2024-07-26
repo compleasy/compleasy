@@ -47,18 +47,23 @@ class LynisReport:
         }
 
         # If the server is listening on ports 80 or 443, it's probably a web server
-        network_listen_ports = self.keys.get('network_listen', [])
-        for listen_port in network_listen_ports:
+        roles = []
+        network_listen_ports = self.get('network_listen')
+        logging.debug('Network listen ports: %s', network_listen_ports)
+        if not network_listen_ports:
+            return ['unknown']
+        
+        for listening_port in network_listen_ports:
+            address_port = listening_port[2]
+            application = listening_port[-1]
             for port, role in port_role.items():
-                if port in listen_port:
-                    # Determine the application based on the port (last part of the string)
-                    parts = listen_port.split('|')
-                    # Remove empty parts (part is empty or contains just a -)
-                    parts = [part for part in parts if part and part != '-']
-                    if parts:
-                        application = parts[-1]
-                    return f'{role} ({application})'
-        return 'unknown'
+                if address_port.endswith(port):
+                    roles.append(f'{role} ({application})')
+        
+        if not roles:
+            return ['unknown']
+        
+        return roles
 
     def parse_report(self):
         """Parse the report and count warnings and suggestions."""
@@ -88,6 +93,50 @@ class LynisReport:
         
         return parsed_keys
     
+    def is_list(self, key):
+        """Check if the exists and is a list."""
+        value = self.keys.get(key)
+        return isinstance(value, list)
+    
+    def parse_value(self, value):
+        """Parse the value of a key."""
+        if not value:
+            return ''
+        
+        if not '|' in value:
+            # key=value
+            logging.debug('Value is not a list: %s', value)
+            return value
+        
+        logging.debug('Value is a list: %s', value)
+        
+        # If the value contains multiple parts, split it by '|'
+        value_parts = value.split('|')
+        # Remove empty parts (part is empty or contains just a -)
+        value_parts = [part for part in value_parts if part and part != '-']
+
+        return value_parts
+
     def get(self, key):
         """Get the value of a specific key."""
-        return self.keys.get(key)
+
+        # Check if is a list
+        if not self.is_list(key):
+            # Is not a list
+            # key = value
+            return self.keys.get(key)
+        
+        logging.debug('Key is a list: %s', key)
+
+        # It is a list
+        values = self.keys.get(key, [])
+
+        parsed_values = []
+
+        for value in values:
+            parsed_values.append(self.parse_value(value))
+
+        # Parse the value
+        return parsed_values
+        
+        
