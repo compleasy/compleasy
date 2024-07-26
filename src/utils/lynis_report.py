@@ -47,10 +47,17 @@ class LynisReport:
         }
 
         # If the server is listening on ports 80 or 443, it's probably a web server
-        network_listen_ports = self.keys.get('network_listen_ports', [])
-        for port in network_listen_ports:
-            if port in port_role:
-                return port_role[port]
+        network_listen_ports = self.keys.get('network_listen', [])
+        for listen_port in network_listen_ports:
+            for port, role in port_role.items():
+                if port in listen_port:
+                    # Determine the application based on the port (last part of the string)
+                    parts = listen_port.split('|')
+                    # Remove empty parts (part is empty or contains just a -)
+                    parts = [part for part in parts if part and part != '-']
+                    if parts:
+                        application = parts[-1]
+                    return f'{role} ({application})'
         return 'unknown'
 
     def parse_report(self):
