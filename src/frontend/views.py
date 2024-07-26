@@ -54,28 +54,6 @@ def device_detail(request, device_id):
 
     return render(request, 'device_detail.html', {'device': device, 'report': report})
 
-@login_required
-def get_full_report(request, device_id):
-    device = get_object_or_404(Device, pk=device_id)
-    
-    # Get the latest full report
-    full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
-    if not full_report:
-        return None
-    
-    full_report_data = full_report.full_report
-    
-    # Apply diffs to reconstruct the latest report
-    diffs = DiffReport.objects.filter(device=device).order_by('created_at')
-    for diff in diffs:
-        full_report_data = apply_diff(full_report_data, diff.diff_report)
-    
-    return full_report_data
-
-@login_required
-def report_detail(request, report_id):
-    return render(request, 'report_detail.html')
-
 #TODO: require login, add csrf token or license key
 def enroll_sh(request):
     # Get license key from the URL
