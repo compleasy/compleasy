@@ -44,3 +44,19 @@ def filter_ipv4_address(value, arg):
 def shorten_string(value, arg):
     # Return the last arg characters of the value
     return "..." + value[-arg:]
+
+@register.filter(name='is_version_older')
+def is_version_older(version, compare_to):
+    """
+    Compare two versions and return True if the first version is older than the second
+
+    Using the direct string comparison in Django templates can work for certain version numbers,
+    but it may not be reliable for all cases due to how strings are compared lexicographically.
+    For example, "10.0.0" would be considered less than "2.0.0" because "1" is less than "2".
+
+    This filter converts the version strings to tuples of integers and compares them element-wise.
+    """
+    if not version or not compare_to:
+        return False
+    
+    return tuple(map(int, version.split('.'))) < tuple(map(int, compare_to.split('.')))

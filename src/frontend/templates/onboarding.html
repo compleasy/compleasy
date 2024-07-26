@@ -23,14 +23,15 @@
             <h3 class="text-xl font-semibold mb-2">Quick Install</h3>
             <p class="mb-2">Run this command on your server to enroll it:</p>
             <div class="bg-gray-100 p-4 rounded-md mb-4 relative">
-                <pre class="text-sm overflow-x-auto"><code>wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh | bash</code></pre>
+                <pre class="text-sm overflow-x-auto"><code>wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash</code></pre>
                 <button onclick="copyToClipboard(this)" class="copy-button absolute top-2 right-2 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">Copy</button>
             </div>
             
             <h3 class="text-xl font-semibold mb-2">Alternative Installation</h3>
-            <p class="mb-4">If you prefer a manual installation or need more control over the process, check out our <a href="#" class="text-blue-500 hover:underline">comprehensive documentation</a> for step-by-step instructions and advanced configuration options.</p>
+            <p class="mb-4">If you prefer a manual installation or need more control over the process, check out our <a href="https://github.com/compleasy/compleasy/blob/main/README.md" class="text-blue-500 hover:underline">comprehensive documentation</a> for step-by-step instructions and advanced configuration options.</p>
             
-            <p class="text-sm text-gray-600">Need help? Don't hesitate to reach out to our support team!</p>
+            <!-- "Done!" button -->
+            <button onclick="onDeviceEnrolled()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Done!</button>
         </div>
 
         <!-- Server List Table (hidden initially) -->
@@ -51,7 +52,7 @@
     <script>
         function copyToClipboard(button) {
             const el = document.createElement('textarea');
-            el.value = 'wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh | bash';
+            el.value = 'wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash';
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');
