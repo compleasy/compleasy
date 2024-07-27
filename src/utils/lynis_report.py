@@ -7,6 +7,9 @@ class LynisReport:
         self.report = full_report
         self.report = self.clean_full_report()
         self.keys = self.parse_report()
+        # Generate count variables for lists
+        # Example: warning_count, suggestion_count, vulnerable_package_count
+        self.generate_count_variables()
 
     def clean_full_report(self):
         """Clean invalid keys from the report"""
@@ -49,32 +52,25 @@ class LynisReport:
                 parsed_keys[base_key].append(value)
             else:
                 parsed_keys[key] = value
-
-        # Optionally, you can count the warnings and suggestions if needed
-        parsed_keys['count_warnings'] = len(parsed_keys.get('warning', []))
-        parsed_keys['count_suggestions'] = len(parsed_keys.get('suggestion', []))
         
         return parsed_keys
+    
+    def get_parsed_report(self):
+        """Return the parsed report."""
+        return self.keys
 
+    def generate_count_variables(self):
+        """Generate count variables for lists."""
+        
+        count_keys = {}
+        for key, value in self.keys.items():
+            if isinstance(value, list):
+                count_keys[f'{key}_count'] = len(value)
+                logging.debug(f'Generated count key: {key}_count with value: {len(value)}')
+        self.keys.update(count_keys)
+    
     def get(self, key):
         """Get the value of a specific key."""
-
-        # Check if key is a list
-        if not self.is_key_list(key):
-            # Is not a list
-            # key = value
-            return self.keys.get(key)
-        
-        logging.debug('Key is a list: %s', key)
-
-        # It is a list
-        values = self.keys.get(key, [])
-
-        parsed_values = []
-        for value in values:
-            parsed_values.append(self.parse_value_list(value))
-
-        # Parse the value
-        return parsed_values
+        return self.keys.get(key)
         
         
