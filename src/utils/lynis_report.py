@@ -7,6 +7,9 @@ class LynisReport:
         self.report = full_report
         self.report = self.clean_full_report()
         self.keys = self.parse_report()
+        # Generate count variables for lists
+        # Example: warning_count, suggestion_count, vulnerable_package_count
+        self.generate_count_variables()
 
     def clean_full_report(self):
         """Clean invalid keys from the report"""
@@ -30,35 +33,6 @@ class LynisReport:
     def get_full_report(self):
         """Return the full report content."""
         return self.report
-    
-    def get_server_role(self):
-        """Try to determine the server role based on the listening ports."""
-
-        port_role = {
-            '25': 'Mail server',
-            '80': 'Web server',
-            '443': 'Web server',
-            '110': 'Mail server',
-            '143': 'Mail server',
-            '587': 'Mail server',
-            '3306': 'Database server',
-            '8006': 'ProxmoxVE',
-            '8007': 'ProxmoxBS'
-        }
-
-        # If the server is listening on ports 80 or 443, it's probably a web server
-        network_listen_ports = self.keys.get('network_listen', [])
-        for listen_port in network_listen_ports:
-            for port, role in port_role.items():
-                if port in listen_port:
-                    # Determine the application based on the port (last part of the string)
-                    parts = listen_port.split('|')
-                    # Remove empty parts (part is empty or contains just a -)
-                    parts = [part for part in parts if part and part != '-']
-                    if parts:
-                        application = parts[-1]
-                    return f'{role} ({application})'
-        return 'unknown'
 
     def parse_report(self):
         """Parse the report and count warnings and suggestions."""
@@ -79,15 +53,24 @@ class LynisReport:
             else:
                 parsed_keys[key] = value
         
-        # Determine the server role
-        parsed_keys['server_role'] = self.get_server_role()
-
-        # Optionally, you can count the warnings and suggestions if needed
-        parsed_keys['count_warnings'] = len(parsed_keys.get('warning', []))
-        parsed_keys['count_suggestions'] = len(parsed_keys.get('suggestion', []))
-        
         return parsed_keys
+    
+    def get_parsed_report(self):
+        """Return the parsed report."""
+        return self.keys
+
+    def generate_count_variables(self):
+        """Generate count variables for lists."""
+        
+        count_keys = {}
+        for key, value in self.keys.items():
+            if isinstance(value, list):
+                count_keys[f'{key}_count'] = len(value)
+                logging.debug(f'Generated count key: {key}_count with value: {len(value)}')
+        self.keys.update(count_keys)
     
     def get(self, key):
         """Get the value of a specific key."""
         return self.keys.get(key)
+        
+        

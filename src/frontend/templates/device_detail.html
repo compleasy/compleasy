@@ -21,6 +21,9 @@
         .hidden-details {
             display: none;
         }
+        .hidden-rules {
+            display: none;
+        }
         .expand-description {
             cursor: pointer;
             display: inline;
@@ -48,14 +51,16 @@
                     <div>Hostid:</div><div>{{ report.hostid|shorten_string:30 }}</div>
                     <div>MAC Address:</div><div>{{ report.network_mac_address.0 }}</div>
                     <div>Hostid2:</div><div>{{ report.hostid2|shorten_string:30 }}</div>
-                    <div>Server Role:</div><div>{{ report.server_role }}</div>
                     <div>Enrolled by:</div><div>{{ device.licensekey.created_by.email }}</div>
                     <div>Enrollment Date:</div><div>{{ device.created_at|date:'Y-m-d H:s' }}</div>
                     <div>Operating System:</div><div>{{ report.os }}</div>
                     <div>Kernel Version:</div><div>{{ report.os_kernel_version_full }}</div>
                     <div>Distribution:</div><div>{{ report.os_fullname }}</div>
-                    <div>Architecture:</div><div class="text-blue-600">x86_64</div>
+                    {% if device.compliant %}
                     <div>Compliance:</div><div><span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span></div>
+                    {% else %}
+                    <div>Compliance:</div><div><span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Non-compliant</span></div>
+                    {% endif %}
                     <div>Uptime:</div><div>{{ report.uptime_in_days }} days</div>
                     <div>Last check-in time:</div><div>{{ device.last_update|date:'Y-m-d H:s' }}</div>
                     <div>Next scheduled check:</div><div>-</div>
@@ -80,6 +85,52 @@
                     <div>Last AV update:</div><div class="text-blue-600">2023-07-15 10:00</div>
                 </div>
             </div>
+
+            <!-- Compliance Section -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-4">
+                <h3 class="text-xl font-semibold mb-4">Compliance</h3>
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium mb-2">Policy Rulesets</h4>
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Rule</th>
+                                <th class="py-3 px-6 text-left">Description</th>
+                                <th class="py-3 px-6 text-left">Policy status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+
+                            {% for ruleset in evaluated_rulesets %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left">{{ ruleset.name }}</td>
+                                <td class="py-3 px-6 text-left">{{ ruleset.description }}</td>
+                                <td class="py-3 px-6 text-left">
+                                    {% if ruleset.compliant %}
+                                    <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span>
+                                    {% else %}
+                                    <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Non-compliant</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <!-- Rules hidden -->
+                            {% for rule in ruleset.rules %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left">- {{ rule.name }}</td>
+                                <td class="py-3 px-6 text-left">{{ rule.description }}</td>
+                                <td class="py-3 px-6 text-left">
+                                    {% if rule.compliant %}
+                                    <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span>
+                                    {% else %}
+                                    <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Non-compliant</span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+
+                            {% endfor %}
+                    </table>
+                </div>
 
             <!-- Security Section -->
             <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
