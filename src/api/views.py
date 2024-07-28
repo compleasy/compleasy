@@ -68,7 +68,7 @@ def upload_report(request):
             device.distro_version = report.get('os_version')
             device.lynis_version = report.get('lynis_version')
             device.last_update = report.get('report_datetime_end')
-            device.warnings = report.get('count_warnings')
+            device.warnings = report.get('warning_count')
             device.save()
 
             logging.info(f'Device updated: {report.get("hostname")}')
