@@ -7,12 +7,13 @@ class LynisReport:
         self.report = full_report
         self.report = self.clean_full_report()
         self.keys = self.parse_report()
-        # Generate count variables for lists
-        # Example: warning_count, suggestion_count, vulnerable_package_count
-        self.generate_count_variables()
+        self.generate_custom_variables()
 
     def clean_full_report(self):
-        """Clean invalid keys from the report"""
+        """
+        Clean invalid keys from the report
+        - Remove invalid tests from the report (deprecated or not relevant)
+        """
         invalid_tests = [
             'DEB-0280',
             'DEB-0285',
@@ -55,6 +56,18 @@ class LynisReport:
         
         return parsed_keys
     
+    def generate_custom_variables(self):
+        """Add custom variables to the report."""
+
+        # Generate count variables
+        count_keys = self.generate_count_variables()
+        for key, value in count_keys.items():
+            self.set(key, value)
+        
+        # Generate filtered IPv4 addresses
+        # The one(s) connected to the default gateway(s)
+        self.set('primary_ipv4_addresses', self.get_filtered_ipv4_addresses())
+
     def get_parsed_report(self):
         """Return the parsed report."""
         return self.keys
@@ -67,10 +80,39 @@ class LynisReport:
             if isinstance(value, list):
                 count_keys[f'{key}_count'] = len(value)
                 logging.debug(f'Generated count key: {key}_count with value: {len(value)}')
-        self.keys.update(count_keys)
+        #self.keys.update(count_keys)
+        return count_keys
     
     def get(self, key):
         """Get the value of a specific key."""
         return self.keys.get(key)
-        
+    
+    def set(self, key, value):
+        """Set the value of a specific key."""
+        self.keys[key] = value
+    
+    def get_filtered_ipv4_addresses(self):
+        """Filter IPv4 addresses connected to default gateway(s)"""
+        default_gateways = self.get('default_gateway')
+        ipv4_addresses = self.get('network_ipv4_address')
+        filtered_addresses = []
+
+        if not ipv4_addresses:
+            return ['-']
+
+        # If default_gateways is empty return all network_ipv4_addresses
+        if not default_gateways:
+            return ipv4_addresses
+
+        for default_gateway in default_gateways:
+            # We assume network prefix is /24
+            # Example: default gateway 192.168.1.1
+            # network prefix: 192.168.1
+            gateway_network_prefix = '.'.join(default_gateway.split('.')[:3])
+            for ipv4_address in ipv4_addresses:
+                if gateway_network_prefix in ipv4_address:
+                    filtered_addresses.append(ipv4_address)
+        # Convert list to string
+        logging.debug(f'Filtered IPv4 addresses: {filtered_addresses}')
+        return filtered_addresses
         

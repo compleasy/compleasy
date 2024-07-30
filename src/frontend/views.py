@@ -113,7 +113,12 @@ def device_report(request, device_id):
     report = FullReport.objects.filter(device=device).order_by('-created_at').first()
     if not report:
         return HttpResponse('No report found for the device', status=404)
-    return HttpResponse(report.full_report, content_type='text/plain')
+    report = LynisReport(report.full_report)
+
+    # Get the parsed report in key=value format, one key per line
+    parsed_report = report.get_parsed_report()
+    parsed_report = '\n'.join([f'{key}={value}' for key, value in parsed_report.items()])
+    return HttpResponse(parsed_report, content_type='text/plain')
 
 @login_required
 def device_report_changelog(request, device_id):

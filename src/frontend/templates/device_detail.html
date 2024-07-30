@@ -1,4 +1,5 @@
 {% load custom_filters %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,29 +8,6 @@
     <title>Compleasy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <style>
-        .info-grid {
-            display: grid;
-            grid-template-columns: max-content auto max-content auto;
-            gap: 0.5rem 1rem;
-        }
-        .info-grid > div:nth-child(4n+1),
-        .info-grid > div:nth-child(4n+3) {
-            font-weight: bold;
-            justify-self: end;
-        }
-        .hidden-details {
-            display: none;
-        }
-        .expand-description {
-            cursor: pointer;
-            display: inline;
-        }
-        .info-icon {
-            margin-left: 0.5rem;
-            color: #4A5568; /* Gray-700 */
-        }
-    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
@@ -44,6 +22,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
+            </a>
 
             <!-- Overview Section -->
             <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-4">
@@ -71,7 +50,7 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">IP Address</div>
                         <div class="text-left w-96 text-gray-900">:
-                            <span class="ml-2">{{ report.network_ipv4_address|filter_ipv4_address:report.default_gateway|default_if_none:"-" }}</span></div>
+                            <span class="ml-2">{{ report.primary_ipv4_addresses|default_if_none:"-"|format_list:" / " }}</span></div>
                     </div>
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
@@ -129,7 +108,8 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">Distribution</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">{{ report.os_fullname }}</span>
+                            <span class="ml-2 inline-flex">{{ report.os_fullname }} {{ report.os_fullname|distro_icon }}</span>
+                            </span>
                         </div>
                     </div>
 
@@ -148,9 +128,9 @@
                     </div>
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
-                        <div class="text-left text-gray-600 mt-2">Next scheduled check</div>
+                        <div class="text-left text-gray-600 mt-2">Compleasy Lynis plugin</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">-</span>
+                            <span class="ml-2">{{ report.compleasy_custom_tests|boolean_status }}</span>
                         </div>
                     </div>
 
@@ -180,14 +160,14 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">Last report</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">{{ report.report_datetime_end }}</span>
+                            <span class="ml-2">{{ report.report_datetime_end|naturaltime }}</span>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">Next scheduled audit</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">{{ report.lynis_timer_next_trigger|default_if_none:"-" }}</span>
+                            <span class="ml-2">{{ report.lynis_timer_next_trigger|default_if_none:"-"|naturaltime }}</span>
                         </div>
                     </div>
 
@@ -244,6 +224,7 @@
                     <table class="min-w-full">
                         <thead>
                             <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="w-4 py-3 px-2 text-left"></th>
                                 <th class="w-64 py-3 px-6 text-left">Rule</th>
                                 <th class="py-3 px-6 text-left">Description</th>
                                 <th class="min-w-10 max-w-12 py-3 px-6 text-center">Policy status</th>
@@ -255,8 +236,15 @@
 
                             {% for ruleset in evaluated_rulesets %}
                             <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                <td class="py-3 px-6 text-left">{{ ruleset.name }}</td>
-                                <td class="py-3 px-6 text-left">{{ ruleset.description }}</td>
+                                <td class="py-3 px-6 justify-center">
+                                    <span class="cursor-pointer" onclick="toggleRules(this)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 hover:text-gray-900">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                    </span>
+                                </td>
+                                <td class="py-3 px-6 text-left"><span>{{ ruleset.name }}</span></td>
+                                <td class="w-1/2 py-3 px-6 text-left"><span">{{ ruleset.description }}</span></td>
                                 <td class="py-3 px-6 justify-center">
                                     {% if ruleset.compliant %}
                                     <!-- Green check -->
@@ -295,7 +283,8 @@
 
                             <!-- Rules hidden -->
                             {% for rule in ruleset.rules %}
-                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <tr class="hidden-rule hidden border-b border-gray-200 hover:bg-gray-100">
+                                <td class="w-4 py-3 px-6"></td>
                                 <td class="py-3 px-6 text-left">
                                     <div class="flex items-center space-x-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
@@ -372,7 +361,7 @@
                                     <i class="fas fa-info-circle info-icon"></i>
                                     {% endif %}
                                     </span>
-                                    <div class="hidden-details mt-2">
+                                    <div class="hidden-details hidden mt-2">
                                         {% for detail in parts|slice:'2:' %}
                                         <p class="italic">{{ detail }}</p>
                                         {% endfor %}
@@ -408,7 +397,7 @@
                                     <i class="fas fa-info-circle info-icon"></i>
                                     {% endif %}
                                     </span>
-                                    <div class="hidden-details mt-2">
+                                    <div class="hidden-details hidden mt-2">
                                         {% for detail in parts|slice:'2:' %}
                                         <p class="italic">{{ detail }}</p>
                                         {% endfor %}
@@ -433,7 +422,13 @@
             } else {
                 details.style.display = 'none';
             }
-        }   
+        }
+        function toggleRules(element) {
+            var rules = document.querySelectorAll('.hidden-rule');
+            rules.forEach(function(rule) {
+                rule.classList.toggle('hidden');
+            });
+        }
     </script>
 </body>
 </html>
