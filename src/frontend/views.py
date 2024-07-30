@@ -57,6 +57,9 @@ def device_list(request):
                 break
         device.save()
 
+        # Order devices by last updated (most recent first)
+        devices = Device.objects.all().order_by('-last_update')
+
     return render(request, 'device_list.html', {'devices': devices})
 
 @login_required
