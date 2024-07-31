@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,8 @@
                 <thead>
                     <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                         <th class="py-3 px-6 text-left">Name</th>
-                        <th class="py-3 px-6 text-left">OS/Distribution</th>
+                        <th class="py-3 px-6 text-left w-4">OS</th>
+                        <th class="py-3 px-6 text-left">OS Version</th>
                         <th class="py-3 px-6 text-left">Agent Version</th>
                         <th class="py-3 px-6 text-center">Compliant</th>
                         <th class="py-3 px-6 text-center">Warnings</th>
@@ -29,6 +31,11 @@
                             <div class="flex items-center">
                                 <span class="font-medium"><a href="{% url 'device_detail' device_id=device.id %}">{{ device.hostname }}</a></span>
                             </div>
+                        </td>
+                        <td class="py-3 px-4 text-center w-4">
+                            <span>
+                                {{ device.distro|distro_icon }}
+                            </span>
                         </td>
                         <td class="py-3 px-6 text-left">
                             <div class="flex items-center">
