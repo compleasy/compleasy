@@ -1,6 +1,7 @@
+{% extends 'base.html' %}
 {% load custom_filters %}
 {% load humanize %}
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +10,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100"> -->
+{% block title %}Device {{ report.hostname }}{% endblock %}
+{% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6"><a href="{% url 'index' %}">Compleasy</a></h1>
         
@@ -437,5 +440,6 @@
             });
         }
     </script>
-</body>
-</html>
+<!-- </body>
+</html> -->
+{% endblock %}
