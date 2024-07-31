@@ -50,7 +50,7 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">IP Address</div>
                         <div class="text-left w-96 text-gray-900">:
-                            <span class="ml-2">{{ report.primary_ipv4_addresses|default_if_none:"-"|format_list:" / " }}</span></div>
+                            <span class="ml-2 font-mono">{{ report.primary_ipv4_addresses|default_if_none:"-"|format_list:" / " }}</span></div>
                     </div>
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
@@ -63,7 +63,7 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">MAC Address</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">
+                            <span class="ml-2 font-mono">
                                 {{ report.network_mac_address.0 }}
                             </span>
                         </div>
@@ -79,13 +79,13 @@
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">Hostid</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">{{ report.hostid|shorten_string:10 }}</span></div>
+                            <span class="ml-2 font-mono">{{ report.hostid|shorten_string:10 }}</span></div>
                     </div>
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
                         <div class="text-left text-gray-600 mt-2">Hostid2</div>
                         <div class="text-left w-80 text-gray-900">:
-                            <span class="ml-2">
+                            <span class="ml-2 font-mono">
                                 {{ report.hostid2|shorten_string:10 }}
                             </span>
                         </div>
