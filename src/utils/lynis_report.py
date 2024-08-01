@@ -8,7 +8,8 @@ class LynisReport:
 
     = About Lynis Reports =
 
-    Lynis report 1.0 is formatted as key-value pairs separated by '='
+    Lynis report 1.0 is formatted as key-value pairs separated by '=' and lines separated by '\n'.
+
     Example:
 
     # Lynis Report
@@ -16,11 +17,15 @@ class LynisReport:
     report_version_minor=0
     linux_version=Ubuntu
 
+    == Types of keys ==
+
     The report contains the following types of keys:
     - Single key-value pairs
     - List key-value pairs (indicated by '[]' in the key)
     - Comments (lines starting with '#')
 
+    == Types of values ==
+    
     The values can be strings or lists of strings:
     Example:
     
@@ -61,7 +66,7 @@ class LynisReport:
                     changes['removed'].append(line[1:])
             return changes
         
-        def compare_delimited_values(self, old_value, new_value, delimiter='|'):
+        def _compare_delimited_values(self, old_value: str, new_value: str, delimiter: str = '|') -> Tuple[List[str], List[str]]:
             '''
             Compare two delimited values and return the added and removed items
             :param old_value: str
@@ -75,7 +80,12 @@ class LynisReport:
             removed_items = old_items - new_items
             return list(added_items), list(removed_items)
         
-        def analyze(self, ignore_keys=[]):
+        def analyze(self, ignore_keys: List[str] = []) -> Dict[str, Any]:
+            '''
+            Analyze the parsed changes
+            :param ignore_keys: List of keys to ignore
+            :return: dict with changes categorized
+            '''
             changes = self.changes
             change_details = {
                 'added': [],
@@ -97,7 +107,7 @@ class LynisReport:
                     
                     if old_value != new_value:
                         if "|" in old_value or "|" in new_value:
-                            added_items, removed_items = self.compare_delimited_values(old_value, new_value)
+                            added_items, removed_items = self._compare_delimited_values(old_value, new_value)
                             change_details['changed'].append((key, 'added_items', added_items))
                             change_details['changed'].append((key, 'removed_items', removed_items))
                         else:
@@ -116,14 +126,13 @@ class LynisReport:
 
 
 
-    def __init__(self, full_report):
-        self.keys = {}
+    def __init__(self, full_report: str):
         self.report = full_report
-        self.report = self.clean_full_report()
-        self.keys = self.parse_report()
-        self.generate_custom_variables()
+        self.report = self._clean_full_report()
+        self.keys = self._parse_report()
+        self._generate_custom_variables()
     
-    def diff(self, new_full_report):
+    def diff(self, new_full_report: str) -> str:
         """
         Generate a diff between two Lynis reports
         :param new: LynisReport object
@@ -139,7 +148,7 @@ class LynisReport:
         )
         return ''.join(diff)
     
-    def apply_diff(self, diff):
+    def apply_diff(self, diff: str) -> str:
         """
         Apply a diff to a Lynis report
         :param diff: diff string
@@ -158,35 +167,25 @@ class LynisReport:
         patched_lines = list(difflib.restore(full_diff, 1))
         return ''.join(patched_lines)
 
-    def clean_full_report(self):
+    def _clean_full_report(self) -> str:
         """
         Clean invalid keys from the report
         - Remove invalid tests from the report (deprecated or not relevant)
         More info: https://cisofy.com/lynis/controls/
         """
-        invalid_tests = [
-            'DEB-0280',
-            'DEB-0285',
-            'DEB-0520',
-            'DEB-0870',
-            'DEB-0880'
-        ]
+        invalid_tests = ['DEB-0280', 'DEB-0285', 'DEB-0520', 'DEB-0870', 'DEB-0880']
 
         # Remove lines with invalid tests
         report_lines = self.report.split('\n')
-        for line in report_lines:
-            for test in invalid_tests:
-                if test in line:
-                    report_lines.remove(line)
-                    break
-        return '\n'.join(report_lines)
+        cleaned_lines = [line for line in report_lines if not any(test in line for test in invalid_tests)]
+        return '\n'.join(cleaned_lines)
 
-    def get_full_report(self):
+    def get_full_report(self) -> str:
         """Return the full report content."""
         return self.report
 
-    def parse_report(self):
-        """Parse the report and count warnings and suggestions."""
+    def _parse_report(self) -> Dict[str, Any]:
+        """Parse the report"""
         parsed_keys = {}
         
         for line in self.report.split('\n'):
@@ -206,42 +205,42 @@ class LynisReport:
         
         return parsed_keys
     
-    def generate_custom_variables(self):
+    def _generate_custom_variables(self) -> None:
         """Add custom variables to the report."""
 
         # Generate count variables
-        count_keys = self.generate_count_variables()
+        count_keys = self._generate_count_variables()
         for key, value in count_keys.items():
             self.set(key, value)
         
         # Generate filtered IPv4 addresses
         # The one(s) connected to the default gateway(s)
-        self.set('primary_ipv4_addresses', self.get_filtered_ipv4_addresses())
+        self.set('primary_ipv4_addresses', self._get_filtered_ipv4_addresses())
 
-    def get_parsed_report(self):
+    def get_parsed_report(self) -> Dict[str, Any]:
         """Return the parsed report."""
         return self.keys
 
-    def generate_count_variables(self):
+    def _generate_count_variables(self) -> Dict[str, int]:
         """Generate count variables for lists."""
         
         count_keys = {}
         for key, value in self.keys.items():
             if isinstance(value, list):
                 count_keys[f'{key}_count'] = len(value)
-                logging.debug(f'Generated count key: {key}_count with value: {len(value)}')
+                #logging.debug(f'Generated count key: {key}_count with value: {len(value)}')
         #self.keys.update(count_keys)
         return count_keys
     
-    def get(self, key):
+    def get(self, key: str) -> Any:
         """Get the value of a specific key."""
         return self.keys.get(key)
     
-    def set(self, key, value):
+    def set(self, key: str, value: Any) -> None:
         """Set the value of a specific key."""
         self.keys[key] = value
     
-    def get_filtered_ipv4_addresses(self):
+    def _get_filtered_ipv4_addresses(self) -> List[str]:
         """Filter IPv4 addresses connected to default gateway(s)"""
         default_gateways = self.get('default_gateway')
         ipv4_addresses = self.get('network_ipv4_address')
