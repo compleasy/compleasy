@@ -8,7 +8,7 @@
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
 
     <!-- Create activity cards summarizing the changes in the servers -->
-    {% for activity in activities %}
+    {% for activity in activities %}            
         <div class="p-6 border-b border-gray-200">
             <div class="flex items center">
                 <div class="flex-1">
@@ -26,7 +26,11 @@
                         <p class="text-sm text-gray-600">{{ activity.line.0 }}</p>
                     {% else %}
                         {% for key, value in activity.line.items %}
+                        {% if key == 'warning[]' or key == 'vulnerable_package[]' %}
+                        <p class="text-sm text-red-700">{{ key }}</p>
+                        {% else %}
                         <p class="text-sm text-gray-600">{{ key }}</p>
+                        {% endif %}
                         {% endfor %}
                     {% endif %}
                 </div>
