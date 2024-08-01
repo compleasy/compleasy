@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import LicenseKey, Device, FullReport, DiffReport
 from .forms import ReportUploadForm
 from utils.lynis_report import LynisReport
-from utils.diff_utils import generate_diff, analyze_diff
+#from utils.diff_utils import generate_diff, analyze_diff
 import os
 import logging
 
@@ -43,13 +43,15 @@ def upload_report(request):
             latest_full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
             
             if latest_full_report:
-                # Generate diff and save it
-                diff = generate_diff(latest_full_report.full_report, report_data)
+                # Generate the diff and save it
+                latest_full_report = LynisReport(latest_full_report.full_report)
+                diff = latest_full_report.diff(report_data)
                 DiffReport.objects.create(device=device, diff_report=diff)
                 logging.info(f'Diff created for device {post_hostid}')
 
                 # Analyze the diff (debugging purposes)
-                changed_items = analyze_diff(diff)
+                lynis_diff = LynisReport.Diff(diff)
+                changed_items = lynis_diff.analyze()
                 logging.debug('Changed items: %s', changed_items)
             else:
                 logging.info(f'No previous reports found for device {post_hostid}')

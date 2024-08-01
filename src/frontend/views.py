@@ -3,8 +3,6 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
-from utils.diff_utils import analyze_diff
-from api.utils.policy_query import evaluate_query
 import os
 import logging
 
@@ -68,8 +66,8 @@ def device_detail(request, device_id):
     warnings = {}
     suggestions = {}
     device = Device.objects.get(id=device_id)
+    
     # Get last report for the device
-    #report = FullReport.objects.filter(device=device).order_by('-created_at').first()
     report = FullReport.objects.filter(device=device).order_by('-created_at').first()
 
     # If no report found, error message
@@ -139,7 +137,8 @@ def enroll_sh(request):
     if not licensekey:
         return HttpResponse('No license key provided', status=400)
     # Should we check licensekey is valid?
-    # By now we just render the enroll page with the license key
+    # By now we just render the enroll page with the license key provided
+    # If the license is not valid, the agent will not be able to send the reports
 
     # Get the server url from environment variable
     compleasy_url = os.getenv('COMPLEASY_URL')
@@ -175,6 +174,8 @@ def download_lynis_custom_profile(request):
 def activity(request):
     """Activity view: show the activity of the devices (from DiffReport)"""
 
+    # TODO: adapt activities to the template's needs
+
     # My activity list with the devices and the changelog (added lines, removed lines and changed lines)
     activities = []
     max_activities = 30
@@ -192,13 +193,16 @@ def activity(request):
         
         diff = diff_report.diff_report
         ignore_keys = [
-            'report_datetime_start',
-            'report_datetime_end',
-            'slow_test[]',
-            'uptime_in_seconds',
-            'uptime_in_days'
+            'report_datetime_start',    # It's always different
+            'report_datetime_end',      # It's always different
+            'slow_test[]',              # It will repeat the same line every audit
+            'uptime_in_seconds',        # It's always different
+            'uptime_in_days',           # It's always different
+            'deleted_file[]',           # Very noisy, is not relevant for the user
         ]
-        diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
+        #diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
+        lynis_diff = LynisReport.Diff(diff)
+        diff_analysis = lynis_diff.analyze(ignore_keys)
 
         # Get the device
         device = diff_report.device
