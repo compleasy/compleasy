@@ -36,7 +36,6 @@ class LynisReport:
         The following types are supported:
         - Single value
         - Multiple values delimited by '|' or by ','
-        - Multiple values delimited by '|' inner and ',' outer
 
         This class will parse the raw string and return a list of lists containing the values.
         """
@@ -52,32 +51,22 @@ class LynisReport:
                 self.raw_value = raw_value
                 self.delimiter = delimiter
                 self.values = self._parse_values()
+                self.values = self._remove_empty_values()
 
             def _parse_values(self) -> List[str]:
                 return self.raw_value.split(self.delimiter)
             
-            def get(self) -> List[str]:
-                return self.values
-        
-        class NestedList:
-            def __init__(self, raw_value: str, outer_delimiter: str = ',', inner_delimiter: str = '|'):
-                self.raw_value = raw_value
-                self.outer_delimiter = outer_delimiter
-                self.inner_delimiter = inner_delimiter
-                self.values = self._parse_values()
-
-            def _parse_values(self) -> List[List[str]]:
-                return [line.split(self.inner_delimiter) for line in self.raw_value.split(self.outer_delimiter)]
+            def _remove_empty_values(self) -> List[str]:
+                # Remove empty values or values with only '-' character or whitespaces
+                return [value.strip() for value in self.values if value and value.strip() not in ['-', '']]
             
-            def get(self) -> List[List[str]]:
+            def get(self) -> List[str]:
                 return self.values
             
         def __init__(self, raw_value: str):
             self.raw_value = raw_value
             # Detect the type of value and assign the correct class
-            if '|' in raw_value and ',' in raw_value:
-                self.value = self.NestedList(raw_value, ',', '|')
-            elif '|' in raw_value:
+            if '|' in raw_value:
                 self.value = self.SimpleList(raw_value, '|')
             elif ',' in raw_value:
                 self.value = self.SimpleList(raw_value, ',')
