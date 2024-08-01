@@ -199,6 +199,8 @@ def activity(request):
             'uptime_in_seconds',        # It's always different
             'uptime_in_days',           # It's always different
             'deleted_file[]',           # Very noisy, is not relevant for the user
+            'lynis_timer_next_trigger', # It's always different
+            'clamav_last_update',       # It's always different (or should be)
         ]
         #diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
         lynis_diff = LynisReport.Diff(diff)

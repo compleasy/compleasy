@@ -8,7 +8,7 @@ class LynisReport:
 
     = About Lynis Reports =
 
-    Lynis report 1.0 is formatted as key-value pairs separated by '=' and lines separated by '\n'.
+    Lynis report 1.0 is formatted as key-value pairs separated by '=', each pair on a new line.
 
     Example:
 
@@ -17,26 +17,16 @@ class LynisReport:
     report_version_minor=0
     linux_version=Ubuntu
 
-    == Types of keys ==
+    == Keys ==
 
     The report contains the following types of keys:
     - Single key-value pairs
     - List key-value pairs (indicated by '[]' in the key)
     - Comments (lines starting with '#')
 
-    == Types of values ==
+    == Values ==
     
-    The values can be strings or lists of strings:
-    Example:
-    
-    # List key-value pair with multiple values delimited by '|'
-    suggestion[]=LYNIS|This release is more than 4 months old. Check the website or GitHub to see if there is an update available.|-|-|
-
-    # Single key-value pair with a string value
-    binary_paths=/snap/bin,/usr/bin,/usr/sbin,/usr/local/bin,/usr/local/sbin
-
-    # List key-value pair with multiple values delimited by '|', itself delimited by ','
-    network_listen[]=raw,ss,v1|udp|224.0.0.251:5353|chrome|
+    The value can be a simple value or a delimiter-separated value ('|' or ',').
     """
 
     class LynisData:
@@ -46,7 +36,7 @@ class LynisReport:
         The following types are supported:
         - Single value
         - Multiple values delimited by '|' or by ','
-        - Multiple values delimited by '|', itself delimited by ','
+        - Multiple values delimited by '|' inner and ',' outer
 
         This class will parse the raw string and return a list of lists containing the values.
         """
@@ -121,12 +111,11 @@ class LynisReport:
                     continue
                 if line.startswith('+'):
                     changes['added'].append(line[1:])
-                    logging.debug(f'Parsed LynisData value: {myvalue.get()}')
                 elif line.startswith('-'):
                     changes['removed'].append(line[1:])
             return changes
         
-        def _compare_delimited_values(self, old_value: str, new_value: str, delimiter: str = '|') -> Tuple[List[str], List[str]]:
+        def _compare_delimited_values(self, old_value: str, new_value: str) -> Tuple[List[str], List[str]]:
             '''
             Compare two delimited values and return the added and removed items
             :param old_value: str
@@ -134,11 +123,15 @@ class LynisReport:
             :param delimiter: str
             :return: tuple
             '''
-            old_items = set(old_value.split(delimiter))
-            new_items = set(new_value.split(delimiter))
-            added_items = new_items - old_items
-            removed_items = old_items - new_items
-            return list(added_items), list(removed_items)
+            old_value = LynisReport.LynisData(old_value).get()
+            new_value = LynisReport.LynisData(new_value).get()
+
+            # Compare the values between the two lists and return the added and removed items
+            added_items = list(set(new_value) - set(old_value))
+            removed_items = list(set(old_value) - set(new_value))
+            logging.debug('Added items: %s', added_items)
+            logging.debug('Removed items: %s', removed_items)
+            return added_items, removed_items
         
         def analyze(self, ignore_keys: List[str] = []) -> Dict[str, Any]:
             '''
@@ -170,10 +163,28 @@ class LynisReport:
                     new_value = added_dict[key]
                     
                     if old_value != new_value:
+                        logging.debug('Changed key: %s', key)
                         if "|" in old_value or "|" in new_value:
+                            logging.debug('Delimited value detected. Looking for added and removed items.')
+                            # If the value is a delimited value, compare the values and get the added and removed items
                             added_items, removed_items = self._compare_delimited_values(old_value, new_value)
-                            change_details['changed'].append((key, 'added_items', added_items))
-                            change_details['changed'].append((key, 'removed_items', removed_items))
+                            
+                            # Add added items to the added list
+                            if added_items:
+                                for item in added_items:
+                                    # if key-value is already in the added list, do not add
+                                    if {key: added_items} in change_details['added']:
+                                        break
+                                    change_details['added'].append({key: added_items})
+                            
+                            # Add removed items to the removed list
+                            if removed_items:
+                                for item in removed_items:
+                                    # if key-value is already in the removed list, do not add
+                                    if {key: removed_items} in change_details['removed']:
+                                        break
+                                    change_details['removed'].append({key: removed_items})
+
                         else:
                             change_details['changed'].append((key, old_value, new_value))
                 else:
@@ -262,6 +273,8 @@ class LynisReport:
                 continue
             
             key, value = line.split('=', 1)
+            # Parse the value using the LynisData class
+            value = self.LynisData(value).get()
             
             # Check if the key indicates a list type (contains '[]')
             if '[]' in key:
