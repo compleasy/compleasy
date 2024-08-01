@@ -123,12 +123,12 @@ def device_report(request, device_id):
 
 @login_required
 def device_report_changelog(request, device_id):
-    """Device report changelog view: show the changelog of a device"""
+    """Device report changelog view: show all the changelogs of a device"""
     device = get_object_or_404(Device, id=device_id)
     changelog = DiffReport.objects.filter(device=device).order_by('-created_at')
     if not changelog:
         return HttpResponse('No changelog found for the device', status=404)
-    return HttpResponse(changelog.first().diff_report, content_type='text/plain')
+    return HttpResponse(changelog.values_list('diff_report', flat=True), content_type='text/plain')
 
 def enroll_sh(request):
     """Enroll view: generate enroll bash script to install the agent on a new device"""
@@ -199,6 +199,10 @@ def activity(request):
             'uptime_in_seconds',        # It's always different
             'uptime_in_days',           # It's always different
             'deleted_file[]',           # Very noisy, is not relevant for the user
+            'lynis_timer_next_trigger', # It's always different
+            'clamav_last_update',       # It's always different (or should be)
+            'tests_executed',           # Fix this
+            'tests_skipped',             # Fix this
         ]
         #diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
         lynis_diff = LynisReport.Diff(diff)
