@@ -39,6 +39,65 @@ class LynisReport:
     network_listen[]=raw,ss,v1|udp|224.0.0.251:5353|chrome|
     """
 
+    class LynisData:
+        """
+        Class to represent a Lynis value string, present in list key-value pairs.
+
+        The following types are supported:
+        - Single value
+        - Multiple values delimited by '|' or by ','
+        - Multiple values delimited by '|', itself delimited by ','
+
+        This class will parse the raw string and return a list of lists containing the values.
+        """
+        class SimpleValue:
+            def __init__(self, raw_value: str):
+                self.value = raw_value
+
+            def get (self) -> str:
+                return self.value
+
+        class SimpleList:
+            def __init__(self, raw_value: str, delimiter: str = '|'):
+                self.raw_value = raw_value
+                self.delimiter = delimiter
+                self.values = self._parse_values()
+
+            def _parse_values(self) -> List[str]:
+                return self.raw_value.split(self.delimiter)
+            
+            def get(self) -> List[str]:
+                return self.values
+        
+        class NestedList:
+            def __init__(self, raw_value: str, outer_delimiter: str = ',', inner_delimiter: str = '|'):
+                self.raw_value = raw_value
+                self.outer_delimiter = outer_delimiter
+                self.inner_delimiter = inner_delimiter
+                self.values = self._parse_values()
+
+            def _parse_values(self) -> List[List[str]]:
+                return [line.split(self.inner_delimiter) for line in self.raw_value.split(self.outer_delimiter)]
+            
+            def get(self) -> List[List[str]]:
+                return self.values
+            
+        def __init__(self, raw_value: str):
+            self.raw_value = raw_value
+            # Detect the type of value and assign the correct class
+            if '|' in raw_value and ',' in raw_value:
+                self.value = self.NestedList(raw_value, ',', '|')
+            elif '|' in raw_value:
+                self.value = self.SimpleList(raw_value, '|')
+            elif ',' in raw_value:
+                self.value = self.SimpleList(raw_value, ',')
+            else:
+                self.value = self.SimpleValue(raw_value)
+            
+        def get(self) -> Any:
+            return self.value.get()
+
+
     class Diff:
         '''
         Class to represent a diff between two Lynis reports
@@ -62,6 +121,7 @@ class LynisReport:
                     continue
                 if line.startswith('+'):
                     changes['added'].append(line[1:])
+                    logging.debug(f'Parsed LynisData value: {myvalue.get()}')
                 elif line.startswith('-'):
                     changes['removed'].append(line[1:])
             return changes
@@ -93,8 +153,12 @@ class LynisReport:
                 'changed': [],
             }
 
-            added_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['added'] if '=' in line}
-            removed_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['removed'] if '=' in line}
+            try:
+                added_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['added'] if '=' in line}
+                removed_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['removed'] if '=' in line}
+            except (ValueError, IndexError) as e:
+                logging.error('Error parsing diff: %s', e)
+                return change_details
 
             # Detect added and removed fields
             for key in added_dict:
@@ -128,9 +192,14 @@ class LynisReport:
 
     def __init__(self, full_report: str):
         self.report = full_report
-        self.report = self._clean_full_report()
-        self.keys = self._parse_report()
-        self._generate_custom_variables()
+        self.keys = {}
+
+        try:
+            self.report = self._clean_full_report()
+            self.keys = self._parse_report()
+            self._generate_custom_variables()
+        except Exception as e:
+            logging.error(f'Error initializing LynisReport: {e}')
     
     def diff(self, new_full_report: str) -> str:
         """
@@ -204,7 +273,7 @@ class LynisReport:
                 parsed_keys[key] = value
         
         return parsed_keys
-    
+
     def _generate_custom_variables(self) -> None:
         """Add custom variables to the report."""
 
