@@ -83,111 +83,102 @@ class LynisReport:
         '''
         def __init__(self, diff):
             self.diff = diff
-            self.changes = self._parse_diff()
+            self.added, self.removed = self._parse_diff()
 
-        def _parse_diff(self) -> Dict[str, List[str]]:
+            self.added = self._parse_report(self.added)
+            self.removed = self._parse_report(self.removed)
+
+        def _parse_diff(self) -> Tuple[List[str], List[str]]:
             '''
-            Parse the diff and return the changes
+            Parse the diff and return the changes as added and removed
             :return: dict
             '''
-            changes = {
-                'added': [],
-                'removed': []
-            }
+            added = []
+            removed = []
             diff_lines = self.diff.splitlines(keepends=True)
             for line in diff_lines:
                 if line.startswith('+++') or line.startswith('@@') or line.startswith('---'):
                     continue
                 if line.startswith('+'):
-                    changes['added'].append(line[1:])
+                    added.append(line[1:])
                 elif line.startswith('-'):
-                    changes['removed'].append(line[1:])
-            return changes
+                    removed.append(line[1:])
+            return added, removed
         
-        def _compare_delimited_values(self, old_value: str, new_value: str) -> Tuple[List[str], List[str]]:
-            '''
-            Compare two delimited values and return the added and removed items
-            :param old_value: str
-            :param new_value: str
-            :param delimiter: str
-            :return: tuple
-            '''
-            old_value = LynisReport.LynisData(old_value).get()
-            new_value = LynisReport.LynisData(new_value).get()
-
-            # Compare the values between the two lists and return the added and removed items
-            added_items = list(set(new_value) - set(old_value))
-            removed_items = list(set(old_value) - set(new_value))
-            logging.debug('Added items: %s', added_items)
-            logging.debug('Removed items: %s', removed_items)
-            return added_items, removed_items
+        def _parse_report(self, report: List) -> Dict[str, Any]:
+            """
+            Parse the report. Return a dictionary with the parsed keys
+            :param report: List of lines
+            :return: dict
+            """
+            parsed_keys = {}
+            
+            for line in report:
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                
+                key, value = line.split('=', 1)
+                # Parse the value using the LynisData class
+                value = value.strip()
+                value = LynisReport.LynisData(value).get()
+                
+                # Check if the key indicates a list type (contains '[]')
+                if '[]' in key:
+                    base_key = key.replace('[]', '')
+                    if base_key not in parsed_keys:
+                        parsed_keys[base_key] = []
+                    parsed_keys[base_key].append(value)
+                else:
+                    parsed_keys[key] = value
+            
+            return parsed_keys
+        
         
         def analyze(self, ignore_keys: List[str] = []) -> Dict[str, Any]:
             '''
-            Analyze the parsed changes
+            This function will analyze the diff and categorize the changes
+            in the following categories: added, removed, changed
+
             :param ignore_keys: List of keys to ignore
             :return: dict with changes categorized
             '''
-            changes = self.changes
-            change_details = {
-                'added': [],
-                'removed': [],
+            changes = {
+                'added': self.added.copy(),
+                'removed': self.removed.copy(),
                 'changed': [],
             }
 
-            try:
-                added_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['added'] if '=' in line}
-                removed_dict = {line.split('=')[0].strip(): line.split('=', 1)[1].strip() for line in changes['removed'] if '=' in line}
-            except (ValueError, IndexError) as e:
-                logging.error('Error parsing diff: %s', e)
-                return change_details
+            logging.debug('Analyzing changes...')
+            logging.debug('Added keys: %s', self.added)
+            logging.debug('Removed keys: %s', self.removed)
 
-            # Detect added and removed fields
-            for key in added_dict:
+            # Check if the same key has been added and removed
+            # If so, compare the values and move the key to the changed list
+            for key in self.added:
                 if key in ignore_keys:
+                    del changes['added'][key]
                     continue
-                
-                if key in removed_dict:
-                    old_value = removed_dict[key]
-                    new_value = added_dict[key]
+            
+                if not isinstance(self.added[key], list):
+                    # If the key is not a list, check if the same key has been removed
+                    if key in self.removed:
+                        # Then compare the values
+                        old_value = self.removed[key]
+                        new_value = self.added[key]
+                        if old_value != new_value:
+                            # Move the key to the changed list
+                            changes['changed'].append({key: {'old': old_value, 'new': new_value}})
+                            # And remove it from the added and removed lists
+                            del changes['added'][key]
+                            del changes['removed'][key]
+
+            for key in self.removed:
+                if key in ignore_keys:
+                    del changes['removed'][key]
+                    continue
                     
-                    if old_value != new_value:
-                        logging.debug('Changed key: %s', key)
-                        if "|" in old_value or "|" in new_value or "," in old_value or "," in new_value:
-                            logging.debug('Delimited value detected. Looking for added and removed items.')
-                            # If the value is a delimited value, compare the values and get the added and removed items
-                            added_items, removed_items = self._compare_delimited_values(old_value, new_value)
-                            
-                            # Add added items to the added list
-                            if added_items:
-                                for item in added_items:
-                                    # if key-value is already in the added list, do not add
-                                    if {key: added_items} in change_details['added']:
-                                        break
-                                    change_details['added'].append({key: added_items})
-                            
-                            # Add removed items to the removed list
-                            if removed_items:
-                                for item in removed_items:
-                                    # if key-value is already in the removed list, do not add
-                                    if {key: removed_items} in change_details['removed']:
-                                        break
-                                    change_details['removed'].append({key: removed_items})
-
-                        else:
-                            change_details['changed'].append((key, old_value, new_value))
-                else:
-                    change_details['added'].append({key: added_dict[key]})
-            
-            for key in removed_dict:
-                if key in ignore_keys:
-                    continue
-                
-                if key not in added_dict:
-                    change_details['removed'].append({key: removed_dict[key]})
-            
-            return change_details
-
+            logging.debug('Analyzed changes: %s', changes)
+            return changes
 
 
     def __init__(self, full_report: str):

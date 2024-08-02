@@ -178,7 +178,7 @@ def activity(request):
 
     # My activity list with the devices and the changelog (added lines, removed lines and changed lines)
     activities = []
-    max_activities = 30
+    max_activities = 50
 
     # Get all diff reports (from most recent to oldest)
     diff_reports = DiffReport.objects.all().order_by('-created_at')
@@ -195,63 +195,54 @@ def activity(request):
         ignore_keys = [
             'report_datetime_start',    # It's always different
             'report_datetime_end',      # It's always different
-            'slow_test[]',              # It will repeat the same line every audit
+            'slow_test',                # It will repeat the same line every audit
             'uptime_in_seconds',        # It's always different
             'uptime_in_days',           # It's always different
-            'deleted_file[]',           # Very noisy, is not relevant for the user
+            'deleted_file',             # Very noisy, is not relevant for the user
             'lynis_timer_next_trigger', # It's always different
             'clamav_last_update',       # It's always different (or should be)
             'tests_executed',           # Fix this
-            'tests_skipped',             # Fix this
+            'tests_skipped',            # Fix this
         ]
         #diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
         lynis_diff = LynisReport.Diff(diff)
         diff_analysis = lynis_diff.analyze(ignore_keys)
 
-        # Get the device
-        device = diff_report.device
+        # Check if 'added' and 'removed' keys are in the diff_analysis
+        if 'added' in diff_analysis and 'removed' in diff_analysis:
+            for change_type in ['added', 'removed']:
+                logging.debug('Change type: %s', change_type)
+                for key in diff_analysis[change_type]:
+                    logging.debug('Added/removed Key: %s', key)
+                    values = diff_analysis[change_type][key]
+                    # For every value in the list of values, append a new activity
 
-        for keyvalue in diff_analysis['added']:
-            for key, value in keyvalue.items():
-                value = LynisReport.LynisData(value).get()
-                logging.debug('Added key: %s, value: %s', key, value)
+                    for value in values:
+                        activities.append({
+                            'device': diff_report.device,
+                            'created_at': diff_report.created_at,
+                            'key': key,
+                            'value': value,
+                            'type': change_type
+                        })
+
+        if 'changed' in diff_analysis:
+            for change in diff_analysis['changed']:
+                # change = {'slow_test': {'old': [['DEB-0001', '17.179738'], ['PKGS-7392', '22.329404'], ['CRYP-7902', '28.998732']], 'new': [['DEB-0001', '19.197790'], ['PKGS-7345', '11.064739'], ['PKGS-7392', '17.606281'], ['CRYP-7902', '31.913178']]}}
+                key = list(change.keys())[0]
+                logging.debug('Changed key: %s', key)
                 
+                old_value = change[key]['old']
+                new_value = change[key]['new']
+
                 activities.append({
-                    'device': device,
+                    'device': diff_report.device,
                     'created_at': diff_report.created_at,
                     'key': key,
-                    'value': value,
-                    'type': 'added'
+                    'old_value': old_value,
+                    'new_value': new_value,
+                    'type': 'changed'
                 })
-        
-        for keyvalue in diff_analysis['removed']:
-            for key, value in keyvalue.items():
-                value = LynisReport.LynisData(value).get()
-                logging.debug('Removed key: %s, value: %s', key, value)
-                
-                activities.append({
-                    'device': device,
-                    'created_at': diff_report.created_at,
-                    'key': key,
-                    'value': value,
-                    'type': 'removed'
-                })
-        
-        for keyvalue in diff_analysis['changed']:
-            # Changed, keyvalue is a tuple with the key, old value and new value
-            logging.debug('Keyvalue is: %s', keyvalue)
-
-            # Get the key, old value and new value
-            key, old_value, new_value = keyvalue
-                
-            activities.append({
-                'device': device,
-                'created_at': diff_report.created_at,
-                'key': key,
-                'old_value': LynisReport.LynisData(old_value).get(),
-                'new_value': LynisReport.LynisData(new_value).get(),
-                'type': 'changed'
-            })
 
         # Order activities by date (most recent first) and type (added, removed, changed)
         activities = sorted(activities, key=lambda x: (x['created_at'], x['type']), reverse=True)

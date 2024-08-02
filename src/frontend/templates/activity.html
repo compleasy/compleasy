@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load custom_filters %}
 
 {% block title %}Activity{% endblock %}
 {% block content %}
@@ -36,7 +37,7 @@
                 </div>
                 <div class="flex-1">
                     {% if activity.type == 'changed' %}
-                        <p class="text-sm text-gray-600">{{ activity.old_value }} -> {{ activity.new_value }}</p>
+                        <p class="text-sm text-gray-600">{{ activity.new_value }} (Before: {{ activity.old_value }})</p>
                     {% else %}
                         
                         <p class="text-sm text-gray-600">{{ activity.value }}</p>

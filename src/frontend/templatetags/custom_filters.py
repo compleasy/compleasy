@@ -22,8 +22,8 @@ def boolean_icon(value):
     return mark_safe(cross)
 
 
-@register.filter(name='format_list')
-def format_list(value, separator=', '):
+@register.filter(name='format_csv_line')
+def format_csv_line(value, separator=', '):
     """ Convert a list to a string """
     if not value:
         return ''
