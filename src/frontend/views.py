@@ -203,6 +203,7 @@ def activity(request):
             'clamav_last_update',       # It's always different (or should be)
             'tests_executed',           # Fix this
             'tests_skipped',            # Fix this
+            'installed_packages_array'  # Very noisy
         ]
         #diff_analysis = analyze_diff(diff, ignore_keys=ignore_keys)
         lynis_diff = LynisReport.Diff(diff)
