@@ -212,26 +212,47 @@ def activity(request):
         device = diff_report.device
 
         for keyvalue in diff_analysis['added']:
-            activities.append({
-                'device': device,
-                'created_at': diff_report.created_at,
-                'line': keyvalue,
-                'type': 'added'
-            })
+            for key, value in keyvalue.items():
+                value = LynisReport.LynisData(value).get()
+                logging.debug('Added key: %s, value: %s', key, value)
+                
+                activities.append({
+                    'device': device,
+                    'created_at': diff_report.created_at,
+                    'line': keyvalue,
+                    'key': key,
+                    'value': value,
+                    'type': 'added'
+                })
         
         for keyvalue in diff_analysis['removed']:
-            activities.append({
-                'device': device,
-                'created_at': diff_report.created_at,
-                'line': keyvalue,
-                'type': 'removed'
-            })
+            for key, value in keyvalue.items():
+                value = LynisReport.LynisData(value).get()
+                logging.debug('Removed key: %s, value: %s', key, value)
+                
+                activities.append({
+                    'device': device,
+                    'created_at': diff_report.created_at,
+                    'line': keyvalue,
+                    'key': key,
+                    'value': value,
+                    'type': 'removed'
+                })
         
         for keyvalue in diff_analysis['changed']:
+            # Changed, keyvalue is a tuple with the key, old value and new value
+            logging.debug('Keyvalue is: %s', keyvalue)
+
+            # Get the key, old value and new value
+            key, old_value, new_value = keyvalue
+                
             activities.append({
                 'device': device,
                 'created_at': diff_report.created_at,
                 'line': keyvalue,
+                'key': key,
+                'old_value': LynisReport.LynisData(old_value).get(),
+                'new_value': LynisReport.LynisData(new_value).get(),
                 'type': 'changed'
             })
 

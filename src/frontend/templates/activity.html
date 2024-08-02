@@ -23,24 +23,24 @@
                 <!-- Key -->
                 <div class="flex-1">
                     {% if activity.type == 'changed' %}
-                        <p class="text-sm text-gray-600">{{ activity.line.0 }}</p>
+                        <p class="text-sm text-gray-600">{{ activity.key }}</p>
                     {% else %}
-                        {% for key, value in activity.line.items %}
-                        {% if key == 'warning[]' or key == 'vulnerable_package[]' %}
-                        <p class="text-sm text-red-700">{{ key }}</p>
+                        
+                        {% if activity.key == 'warning[]' or activity.key == 'vulnerable_package[]' %}
+                        <p class="text-sm text-red-700">{{ activity.key }}</p>
                         {% else %}
-                        <p class="text-sm text-gray-600">{{ key }}</p>
+                        <p class="text-sm text-gray-600">{{ activity.key }}</p>
                         {% endif %}
-                        {% endfor %}
+                        
                     {% endif %}
                 </div>
                 <div class="flex-1">
                     {% if activity.type == 'changed' %}
-                        <p class="text-sm text-gray-600">{{ activity.line.1 }} -> {{ activity.line.2 }}</p>
+                        <p class="text-sm text-gray-600">{{ activity.old_value }} -> {{ activity.new_value }}</p>
                     {% else %}
-                        {% for key, value in activity.line.items %}
-                        <p class="text-sm text-gray-600">{{ value }}</p>
-                        {% endfor %}
+                        
+                        <p class="text-sm text-gray-600">{{ activity.value }}</p>
+                        
                     {% endif %}
                 </div>
             </div>
