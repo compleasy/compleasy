@@ -192,7 +192,7 @@ def activity(request):
             break
         
         diff = diff_report.diff_report
-        
+
         # Ignore some noisy or irrelevant keys
         ignore_keys = [
             'report_datetime_start',
@@ -205,8 +205,8 @@ def activity(request):
             'clamav_last_update',
             'tests_executed',
             'tests_skipped',
-            'installed_packages_array'
-            'vulnerable_package'
+            'installed_packages_array',
+            'vulnerable_package',
         ]
 
         lynis_diff = LynisReport.Diff(diff)
