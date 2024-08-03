@@ -207,6 +207,7 @@ def activity(request):
             'tests_skipped',
             'installed_packages_array',
             'vulnerable_package',
+            'suggestion',
         ]
 
         lynis_diff = LynisReport.Diff(diff)
