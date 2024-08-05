@@ -56,6 +56,9 @@ class PolicyRule(models.Model):
 
     def evaluate(self, report):
         return evaluate_query(report, self.rule_query)
+    
+    def __str__(self):
+        return self.name
 
 class PolicyRuleset(models.Model):
     name = models.CharField(max_length=255)
@@ -69,3 +72,6 @@ class PolicyRuleset(models.Model):
             if not rule.evaluate(report):
                 return False
         return True
+    
+    def __str__(self):
+        return self.name

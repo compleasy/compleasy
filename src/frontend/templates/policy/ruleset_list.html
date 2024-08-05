@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Policies{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Ruleset Policies</h1>
+
+        <!-- Rule selection side-panel -->
+        {% include 'policy/rule_selection_sidebar.html' %}
+
+        <!-- Rule edition side-panel -->
+        {% include 'policy/rule_edit_sidebar.html' %}
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Name</th>
+                        <th class="py-3 px-6 text-left">Description</th>
+                        <th class="py-3 px-6 text-center">Rules</th>
+                        <th class="py-3 px-6 text-center">Devices</th>
+                        <th class="py-3 px-6 text-left">Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+
+                    {% for ruleset in rulesets %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100" data-ruleset-id="{{ruleset.id}}">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span class="font-medium"><a href="{% url 'ruleset_edit' ruleset_id=ruleset.id %}">{{ ruleset.name }}</a></span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-center">
+                                <span>{{ ruleset.description }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex items-center inline-flex hover:text-gray-900">
+                                <!-- align items vertically -->
+                                <span class="align-middle">{{ ruleset.rules_count }}</span>
+                                <!-- hover gray 800 -->
+                                <span class="ml-1 my-auto hover:text-gray-900" data- onclick="toggleRuleSelectionPanel({{ruleset.id}})">
+                                    <svg class="size-4 hover:fill-gray-600 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                      </svg>
+                                      
+                                </span>                   
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex items-center inline-flex">
+                                <span>{{ ruleset.devices_count }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <span>{{ ruleset.updated_at }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+            </table>
+{% endblock %}
+{% block scripts %}
+<script>
+    let rulesets = {};
+    let rules = {};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        rulesets = JSON.parse(document.getElementById('rulesets-data').textContent);
+        rules = JSON.parse(document.getElementById('rules-data').textContent);
+        console.log(rulesets);
+        console.log(rules);
+    });
+</script>
+{% endblock %}

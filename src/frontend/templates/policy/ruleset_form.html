@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Policies{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Edit ruleset</h1>
+        
+
+        <div id="ruleset-form">
+            <!-- Back button (arrow) -->
+            <a href="{% url 'ruleset_list' %}" class="p-2 text-gray-600 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+
+            <!-- Form -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <form action="{% url 'ruleset_edit' ruleset_id=ruleset.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <label for="name" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Name</label>
+                            <input type="text" name="name" id="name" value="{{ ruleset.name }}" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                            <p class="text-red-500 text-xs italic">Please fill out this field.</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea name="description" id="description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ ruleset.description }}</textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="rules" class="block text-sm font-medium text-gray-700">Rules</label>
+                            <input type="text" name="rules" id="rules" value="{{ ruleset.rules.count }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="devices" class="block text-sm font-medium text-gray-700">Devices</label>
+                            <input type="text" name="devices" id="devices" value="{{ ruleset.devices.count }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="last_update" class="block text-sm font-medium text-gray-700">Last Updated</label>
+                            <input type="text" name="last_update" id="last_update" value="{{ ruleset.last_update }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="p-6 bg-gray-100 flex justify-end">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
@@ -169,6 +169,67 @@ def download_lynis_custom_profile(request):
                       'lynis_version': lynis_version
                     },
                     content_type='text/plain')
+
+@login_required
+def ruleset_list(request):
+    """Policy list view: show all policy rulesets"""
+    policy_rulesets = PolicyRuleset.objects.prefetch_related('rules').all()
+    policy_rules = PolicyRule.objects.values()
+    if not policy_rulesets:
+        return HttpResponse('No policy rulesets found', status=404)
+    
+    rulesets_data = []
+    for ruleset in policy_rulesets:
+        # Get the rule count for the ruleset
+        ruleset_data = {
+            'id': ruleset.id,
+            'name': ruleset.name,
+            'description': ruleset.description,
+            'created_at': ruleset.created_at,
+            'updated_at': ruleset.updated_at,
+            'rules': list(ruleset.rules.values()),
+            'rules_count': ruleset.rules.count(),
+            'devices_count': ruleset.devices.count()
+        }
+        rulesets_data.append(ruleset_data)
+    
+    context = {
+        'rulesets': rulesets_data,
+        'rules': list(policy_rules),
+        'xabi': ['1', '2', '3']
+    }
+    
+    return render(request, 'policy/ruleset_list.html', context)
+
+@login_required
+def ruleset_edit(request, ruleset_id):
+    """Policy edit view: edit a policy ruleset"""
+    policy_ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+    return render(request, 'policy/ruleset_form.html', {'ruleset': policy_ruleset})
+
+@login_required
+def ruleset_add(request):
+    """Policy add view: add a new policy ruleset"""
+    return render(request, 'policy/ruleset_form.html')
+
+@login_required
+def ruleset_delete(request, ruleset_id):
+    """Policy delete view: delete a policy ruleset"""
+    policy_ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+    policy_ruleset.delete()
+    return redirect('ruleset_list')
+
+@login_required
+def rule_edit(request, rule_id):
+    """Rule edit view: edit a policy rule"""
+    policy_rule = get_object_or_404(PolicyRule, id=rule_id)
+    return render(request, 'policy/rule_form.html', {'rule': policy_rule})
+
+@login_required
+def rule_add(request):
+    """Rule add view: add a new policy rule"""
+    return render(request, 'policy/rule_form.html')
+
 
 @login_required
 def activity(request):

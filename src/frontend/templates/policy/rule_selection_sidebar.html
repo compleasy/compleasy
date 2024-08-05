@@ -1,0 +1,104 @@
+{% block head %}
+{{ rulesets|json_script:"rulesets-data" }}
+{{ rules|json_script:"rules-data" }}
+{% endblock %}
+
+<!-- Hidden right panel, for rule management -->
+<div id="rule-selection-panel" class="hidden fixed right-0 bottom-0 h-full w-1/4 bg-white shadow-md">
+    <div class="flex justify-between items-center p-4 border-b bg-gray-200">
+        <h2 class="text-xl font-bold">Rules</h2>
+        <button class="text-gray-600" onclick="toggleRuleSelectionPanel()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    <!-- under the Rules title: search bar and create button (both in 1-row) -->
+    <div class="p-4 bg-gray-200">
+        <input type="text" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rules" onKeyUp="searchRuleByName(this.value)" autocomplete="off" />
+        <button class="bg-gray-500 text-white px-4 py-2 rounded" onclick="openRuleEditPanel(event)">+ Rule</button>
+    </div>
+
+    <div class="p-4">
+        <ul>
+            {% for rule in rules %}
+            <li id="rule-{{rule.id}}" name="rule" class="py-1 group/rule hover:bg-gray-200 cursor-pointer flex justify-between items-center" onclick="toggleRuleSelection(this)" data-rule-id="{{rule.id}}">
+                <span class="text-sm font-light hover:text-gray-900 ml-4">{{rule.name}}</span>
+                <a href="#" onclick="openRuleEditPanel(event, {{rule.id}} )">
+                    <svg class="size-4 mr-4 align-middle group/edit invisible group-hover/rule:visible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                    </svg>
+                </a>
+            </li>
+            {% endfor %}
+
+        </ul>
+    </div>
+
+    <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
+    <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
+        <button class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded" onclick="applyRuleSelection()">Apply</button>
+        <button class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleSelectionPanel()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    function toggleRuleSelectionPanel(rulesetId) {
+        const rulesetPanel = document.getElementById('rule-selection-panel');
+        rulesetPanel.classList.toggle('hidden');
+        if (!rulesetPanel.classList.contains('hidden')) {
+            selectRulesetRules(rulesetId);
+        }
+    }
+    function selectRulesetRules(rulesetId){
+        // Get the ruleset by ID
+        const ruleset = rulesets.find(ruleset => ruleset.id === rulesetId);
+        if (!ruleset) {
+            console.error(`Ruleset with ID ${rulesetId} not found.`);
+            return;
+        }
+        const rules = ruleset.rules;
+        
+        rules.forEach(rule => {
+            const ruleElement = document.querySelector(`[data-rule-id="${rule.id}"]`);
+            ruleElement.classList.add('bg-blue-200');
+        });
+    }
+    function toggleRuleSelection(element) {
+        element.classList.toggle('bg-blue-200');
+    }
+    function searchRuleByName(name) {
+        // Get all rule elements (li elements with name="rule")
+        const ruleElements = document.querySelectorAll('li[name="rule"]');
+        if (!name) {
+            ruleElements.forEach(element => element.classList.remove('hidden'));
+            return;
+        }
+        ruleElements.forEach(element => {
+            const ruleName = element.querySelector('span').textContent;
+            if (ruleName.toLowerCase().includes(name.toLowerCase())) {
+                element.classList.remove('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
+        });
+    }
+    function applyRuleSelection() {
+        // Get all selected rule elements
+        const selectedRuleElements = document.querySelectorAll('li.bg-blue-200');
+        const selectedRuleIds = Array.from(selectedRuleElements).map(element => element.dataset.ruleId);
+        console.log(selectedRuleIds);
+        // Ajax call to save selected rules: /policies/{rulesetId}/rules
+
+    }
+    function openRuleEditPanel(event, ruleId) {
+        // Stop propagation
+        event.stopPropagation();
+        // Hide the rule selection panel
+        document.getElementById('rule-selection-panel').classList.add('hidden');
+        // Show the rule edit panel
+        document.getElementById('rule-edit-panel').classList.remove('hidden');
+        // Load rule details (for demonstration, assuming an AJAX call or similar)
+        loadRuleDetails(ruleId);
+    }
+</script>
