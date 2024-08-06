@@ -16,7 +16,7 @@
     <!-- under the Rules title: search bar and create button (both in 1-row) -->
     <div class="p-4 bg-gray-200">
         <input type="text" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rules" onKeyUp="searchRuleByName(this.value)" autocomplete="off" />
-        <button class="bg-gray-500 text-white px-4 py-2 rounded" onclick="openRuleEditPanel(event)">+ Rule</button>
+        <button class="bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel(event)">+ Rule</button>
     </div>
 
     <div class="p-4">
@@ -24,7 +24,7 @@
             {% for rule in rules %}
             <li id="rule-{{rule.id}}" name="rule" class="py-1 group/rule hover:bg-gray-200 cursor-pointer flex justify-between items-center" onclick="toggleRuleSelection(this)" data-rule-id="{{rule.id}}">
                 <span class="text-sm font-light hover:text-gray-900 ml-4">{{rule.name}}</span>
-                <a href="#" onclick="openRuleEditPanel(event, {{rule.id}} )">
+                <a href="#" onclick="toggleRuleEditPanel(event, {{rule.id}} )">
                     <svg class="size-4 mr-4 align-middle group/edit invisible group-hover/rule:visible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                     </svg>
