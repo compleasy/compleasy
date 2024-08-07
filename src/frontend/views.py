@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
+from .forms import PolicyRulesetForm
 import os
+import json
 import logging
 
 @login_required
@@ -188,6 +191,7 @@ def ruleset_list(request):
             'created_at': ruleset.created_at,
             'updated_at': ruleset.updated_at,
             'rules': list(ruleset.rules.values()),
+            'devices': list(ruleset.devices.values()),
             'rules_count': ruleset.rules.count(),
             'devices_count': ruleset.devices.count()
         }
@@ -196,16 +200,54 @@ def ruleset_list(request):
     context = {
         'rulesets': rulesets_data,
         'rules': list(policy_rules),
-        'xabi': ['1', '2', '3']
+        'rules_count': len(policy_rules)
     }
     
     return render(request, 'policy/ruleset_list.html', context)
 
 @login_required
-def ruleset_edit(request, ruleset_id):
-    """Policy edit view: edit a policy ruleset"""
-    policy_ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
-    return render(request, 'policy/ruleset_form.html', {'ruleset': policy_ruleset})
+def ruleset_create(request):
+    if request.method == 'POST':
+        form = PolicyRulesetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('ruleset_list')
+    else:
+        form = PolicyRulesetForm()
+    
+    return render(request, 'policy/ruleset_form.html', {'form': form})
+
+@login_required
+def ruleset_detail(request, ruleset_id):
+    ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+    if request.method == 'POST':
+        form = PolicyRulesetForm(request.POST, instance=ruleset)
+        if form.is_valid():
+            form.save()
+            return redirect('ruleset_detail', ruleset_id=ruleset.id)
+    else:
+        form = PolicyRulesetForm(instance=ruleset)
+    return render(request, 'policy/ruleset_form.html', {'form': form, 'ruleset': ruleset})
+
+
+@csrf_protect
+@login_required
+def ruleset_update(request, ruleset_id):
+    """Update the rules of a policy ruleset"""
+    if request.method == 'POST':
+        selected_rule_ids = request.POST.getlist('rules')
+        if not ruleset_id:
+            return HttpResponse('No ruleset ID provided', status=400)
+        
+        # Get the PolicyRuleset object
+        ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+        # Get the PolicyRule objects for the selected rules
+        selected_rules = PolicyRule.objects.filter(id__in=selected_rule_ids)
+        if selected_rules:
+            ruleset.rules.set(selected_rules)
+        ruleset.save()
+        return redirect('ruleset_list')
+    return HttpResponse('Invalid request method', status=405)
 
 @login_required
 def ruleset_add(request):

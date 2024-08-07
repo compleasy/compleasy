@@ -6,7 +6,7 @@ from utils.lynis_report import LynisReport
 
 # Define the components of the query
 word = Word(alphas + '_')
-operator = oneOf("= != > < >= <=")
+operator = oneOf("= != > < >= <= contains")
 integer = Word(nums)
 quoted_string = quotedString
 
@@ -24,8 +24,8 @@ def parse_query(query):
         return None
 
 def evaluate_query(report, query):
-    """Evaluate a query against a report, so we can determine if a device is compliant with a policy."""
-    """Query example: hardening_index > 80"""
+    """Evaluate a query against a report to determine if a device is compliant with a policy."""
+    """Query example: automation_tool_running contains "ansible" or hardening_index > 80"""
     parsed_query = parse_query(query)
     if not parsed_query or len(parsed_query) < 3:
         logging.error('Invalid query: %s', query)
@@ -36,20 +36,42 @@ def evaluate_query(report, query):
     field, operator, value = parsed_query
     logging.debug('Field: %s, operator: %s, value: %s', field, operator, value)
 
+    # Remove quotes from the value if it's a quoted string
+    if value.startswith('"') and value.endswith('"'):
+        value = value[1:-1]
+    elif value.startswith("'") and value.endswith("'"):
+        value = value[1:-1]
+
     # Get full report from report object and parse it using LynisReport class
     report_value = report.get(field)
     logging.debug('Report value: %s', report_value)
 
-    if not report_value:
+    if report_value is None:
         logging.error('Field not found in report: %s', field)
         return None
-    
+
+    if operator == 'contains':
+        # If the field is a string, check if the value is in the string
+        if not isinstance(value, str):
+            logging.error('Query value is not a string: %s', value)
+            return None
+        
+        # If the field is a string or list, check if the value is in the string or list
+        if isinstance(report_value, str) or isinstance(report_value, list):
+            logging.debug('Checking if %s contains %s', report_value, value)
+            logging.debug('RESULT: %s', value in report_value)
+            return value in report_value
+        else:
+            logging.error('Field is not a string or list: %s', report_value)
+            return None
+
     try:
         if operator in ['>', '>=', '<', '<=']:
             report_value = int(report_value)
             value = int(value)
     except ValueError as e:
         logging.error('Value error: cannot cast value to integer: %s', e)
+        return None
 
     # Evaluate the query
     if operator == '=':
@@ -64,6 +86,8 @@ def evaluate_query(report, query):
         return report_value < value
     elif operator == '<=':
         return report_value <= value
+    elif operator == 'contains':
+        pass
     else:
         logging.error('Invalid operator: %s', operator)
         return None

@@ -83,3 +83,12 @@ def distro_icon(value):
     
     if 'debian' in value.lower():
         return mark_safe(debian)
+    
+@register.filter(name='substract')
+def substract(value, arg):
+    """ Substract arg from value """
+    # Try to convert the value and arg to integers
+    try:
+        return int(value) - int(arg)
+    except (ValueError, TypeError):
+        return value

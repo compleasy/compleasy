@@ -10,6 +10,7 @@ services:
       - COMPLEASY_ADMIN_PASSWORD=compleasy
     ports:
       - 8000:8000
+    restart: unless-stopped
   
   nginx:
     image: nginx:latest

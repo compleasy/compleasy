@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}Policies{% endblock %}
 {% block content %}
@@ -18,18 +19,18 @@
                     <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                         <th class="py-3 px-6 text-left">Name</th>
                         <th class="py-3 px-6 text-left">Description</th>
-                        <th class="py-3 px-6 text-center">Rules</th>
-                        <th class="py-3 px-6 text-center">Devices</th>
+                        <th class="py-3 px-6 text-left">Rules</th>
+                        <th class="py-3 px-6 text-left">Devices</th>
                         <th class="py-3 px-6 text-left">Last Updated</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm font-light">
 
                     {% for ruleset in rulesets %}
-                    <tr class="border-b border-gray-200 hover:bg-gray-100" data-ruleset-id="{{ruleset.id}}">
+                    <tr class="border-b border-gray-200 hover:bg-gray-100 align-top" data-ruleset-id="{{ruleset.id}}">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
                             <div class="flex items-center">
-                                <span class="font-medium"><a href="{% url 'ruleset_edit' ruleset_id=ruleset.id %}">{{ ruleset.name }}</a></span>
+                                <span class="font-medium"><a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}">{{ ruleset.name }}</a></span>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left">
@@ -37,22 +38,46 @@
                                 <span>{{ ruleset.description }}</span>
                             </div>
                         </td>
-                        <td class="py-3 px-6 text-center">
-                            <div class="flex items-center inline-flex hover:text-gray-900">
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-start inline-flex hover:text-gray-900">
                                 <!-- align items vertically -->
-                                <span class="align-middle">{{ ruleset.rules_count }}</span>
+                                <span class="align-left text-left">
+                                    {% for rule in ruleset.rules|slice:"4" %}
+                                    <!-- Rules (max. 4 items) one per line -->
+                                    <p class="text-gray-900 py-1 text-xs">{{ rule.name }}</p>
+                                    {% endfor %}
+                                    <!-- The following line will only be visible if there are more than 4 rules -->
+                                    {% if ruleset.rules_count > 4 %}
+                                    <span class="bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs">+{{ ruleset.rules_count|substract:"4" }}</span>
+                                    {% endif %}
+                                </span>
                                 <!-- hover gray 800 -->
-                                <span class="ml-1 my-auto hover:text-gray-900" data- onclick="toggleRuleSelectionPanel({{ruleset.id}})">
-                                    <svg class="size-4 hover:fill-gray-600 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <div class="ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900" data- onclick="toggleRuleSelectionPanel({{ruleset.id}})">
+                                    <svg class="size-4 hover:fill-gray-600 cursor-pointer relative top-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                      </svg>
+                                    </svg>
                                       
-                                </span>                   
+                                </div>                   
                             </div>
                         </td>
-                        <td class="py-3 px-6 text-center">
-                            <div class="flex items-center inline-flex">
-                                <span>{{ ruleset.devices_count }}</span>
+                        <td class="py-3 px-6 text-left">
+                            <!-- Show device list -->
+                            <div class="flex inline-flex items-start">
+                                <span class="align-top text-left">
+                                    {% for device in ruleset.devices %}
+                                    <!-- Devices (max. 4 items) one per line -->
+                                    <p class="text-gray-900 py-1 text-xs">{{ device.hostname }}</p>
+                                    {% endfor %}
+                                    <!-- The following line will only be visible if there are more than 4 devices -->
+                                    {% if ruleset.devices_count > 4 %}
+                                    <span class="bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs">+{{ ruleset.devices_count }}</span>
+                                    {% endif %}
+                                </span>
+                                <div class="ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900" onclick="toggleDeviceSelectionPanel({{ruleset.id}})">
+                                    <svg class="size-4 hover:fill-gray-600 cursor-pointer align-top" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </div>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left">
@@ -61,6 +86,10 @@
                     </tr>
                     {% endfor %}
             </table>
+            <!-- Add new ruleset button -->
+            <div class="p-6 bg-gray-100 flex justify-end">
+                <a href="{% url 'ruleset_create' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">+ New ruleset</a>
+            </div>
 {% endblock %}
 {% block scripts %}
 <script>
