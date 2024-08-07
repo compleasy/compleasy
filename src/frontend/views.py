@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
+from .forms import PolicyRulesetForm
 import os
 import json
 import logging
@@ -204,16 +205,59 @@ def ruleset_list(request):
     
     return render(request, 'policy/ruleset_list.html', context)
 
+@login_required
+def ruleset_create(request):
+    if request.method == 'POST':
+        form = PolicyRulesetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('ruleset_list')
+    else:
+        form = PolicyRulesetForm()
+    
+    return render(request, 'policy/ruleset_form.html', {'form': form})
+
+@login_required
+def ruleset_detail(request, ruleset_id):
+    ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+    if request.method == 'POST':
+        form = PolicyRulesetForm(request.POST, instance=ruleset)
+        if form.is_valid():
+            form.save()
+            return redirect('ruleset_detail', ruleset_id=ruleset.id)
+    else:
+        form = PolicyRulesetForm(instance=ruleset)
+    return render(request, 'policy/ruleset_form.html', {'form': form, 'ruleset': ruleset})
+
+
 @csrf_protect
 @login_required
 def ruleset_update(request, ruleset_id):
+    """Update the rules of a policy ruleset"""
+    if request.method == 'POST':
+        selected_rule_ids = request.POST.getlist('rules')
+        if not ruleset_id:
+            return HttpResponse('No ruleset ID provided', status=400)
+        
+        # Get the PolicyRuleset object
+        ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
+        # Get the PolicyRule objects for the selected rules
+        selected_rules = PolicyRule.objects.filter(id__in=selected_rule_ids)
+        if selected_rules:
+            ruleset.rules.set(selected_rules)
+        ruleset.save()
+        return redirect('ruleset_list')
+    return HttpResponse('Invalid request method', status=405)
+
+
+@csrf_protect
+@login_required
+def ruleset_update_ajax(request, ruleset_id):
+    """Update the rules of a policy ruleset (ajax)"""
     try:
         # Parse the incoming JSON request body
         data = json.loads(request.body)
-        ruleset_name = data.get('name', '')
-        ruleset_description = data.get('description', '')
         selected_rule_ids = data.get('rules', [])
-        selected_device_ids = data.get('devices', [])
 
         if not ruleset_id:
             return JsonResponse({'status': 'error', 'message': 'No ruleset ID provided'}, status=400)
@@ -224,22 +268,9 @@ def ruleset_update(request, ruleset_id):
         # Get the PolicyRule objects for the selected rules
         selected_rules = PolicyRule.objects.filter(id__in=selected_rule_ids)
 
-        # Get the Device objects for the selected devices
-        selected_devices = Device.objects.filter(id__in=selected_device_ids)
-
-        # Update the ruleset with the selected rules
-        if ruleset_name:
-            ruleset.name = ruleset_name
-
-        if ruleset_description:
-            ruleset.description = ruleset_description
-        
         if selected_rules:
             ruleset.rules.set(selected_rules)
 
-        if selected_devices:
-            ruleset.devices.set(selected_devices)
-        
         ruleset.save()
 
         return JsonResponse({'status': 'success'}, status=200)

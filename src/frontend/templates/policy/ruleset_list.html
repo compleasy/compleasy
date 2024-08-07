@@ -30,7 +30,7 @@
                     <tr class="border-b border-gray-200 hover:bg-gray-100 align-top" data-ruleset-id="{{ruleset.id}}">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
                             <div class="flex items-center">
-                                <span class="font-medium"><a href="#">{{ ruleset.name }}</a></span>
+                                <span class="font-medium"><a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}">{{ ruleset.name }}</a></span>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left">
@@ -86,6 +86,10 @@
                     </tr>
                     {% endfor %}
             </table>
+            <!-- Add new ruleset button -->
+            <div class="p-6 bg-gray-100 flex justify-end">
+                <a href="{% url 'ruleset_create' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">+ New ruleset</a>
+            </div>
 {% endblock %}
 {% block scripts %}
 <script>
