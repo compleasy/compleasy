@@ -5,13 +5,21 @@
 {% block title %}Policies{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-6">Ruleset Policies</h1>
+        <h1 class="text-3xl font-bold mb-6">Policies: Rulesets</h1>
 
         <!-- Rule selection side-panel -->
         {% include 'policy/rule_selection_sidebar.html' %}
 
         <!-- Rule edition side-panel -->
         {% include 'policy/rule_edit_sidebar.html' %}
+
+        <!-- Submenu for Rulesets or Rules -->
+        <div class="flex justify-between mb-4">
+            <div class="flex">
+                <a href="{% url 'ruleset_list' %}" class="text-gray-600 hover:text-gray-90  0 mr-4 font-medium">Rulesets</a>
+                <a href="{% url 'rule_list' %}" class="text-gray-600 hover:text-gray-900">Rules</a>
+            </div>
+        </div>
 
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full">
