@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
-from .forms import PolicyRulesetForm
+from .forms import PolicyRulesetForm, PolicyRuleForm
 import os
 import json
 import logging
@@ -273,8 +273,15 @@ def rule_list(request):
 @login_required
 def rule_detail(request, rule_id):
     """Rule detail view: show the details of a policy rule"""
-    policy_rule = get_object_or_404(PolicyRule, id=rule_id)
-    return render(request, 'policy/rule_detail.html', {'rule': policy_rule})
+    rule = get_object_or_404(PolicyRule, id=rule_id)
+    if request.method == 'POST':
+        form = PolicyRuleForm(request.POST, instance=rule)
+        if form.is_valid():
+            form.save()
+            return redirect('ruleset_detail', ruleset_id=rule.id)
+    else:
+        form = PolicyRuleForm(instance=rule)
+    return render(request, 'policy/rule_detail.html', {'form': form, 'rule': rule})
 
 @login_required
 def rule_update(request, rule_id):
@@ -286,19 +293,19 @@ def rule_update(request, rule_id):
         policy_rule.rule_query = request.POST.get('rule_query')
         policy_rule.save()
         return redirect('rule_detail', rule_id=policy_rule.id)
-    return render(request, 'policy/rule_form.html', {'rule': policy_rule})
+    return render(request, 'policy/rule_detail.html', {'rule': policy_rule})
 
 @login_required
 def rule_create(request):
     """Rule create view: create a new policy rule"""
     if request.method == 'POST':
-        policy_rule = PolicyRule()
-        policy_rule.name = request.POST.get('name')
-        policy_rule.description = request.POST.get('description')
-        policy_rule.rule_query = request.POST.get('rule_query')
-        policy_rule.save()
-        return redirect('rule_list')
-    return render(request, 'policy/rule_form.html')
+        form = PolicyRuleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('rule_list')
+    else:
+        form = PolicyRuleForm()
+    return render(request, 'policy/rule_detail.html', {'form': form})
 
 @login_required
 def rule_add(request):

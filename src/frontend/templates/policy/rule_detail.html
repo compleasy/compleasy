@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-6">Rule Details</h2>
+    {% if form.errors %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Error:</strong>
+        <ul>
+            {% for error in form.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="{{ form.enabled.id_for_label }}" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Enabled</label>
+            <div class="mt-1">
+                {{ form.enabled }}
+            </div>
+        
+        <div class="mb-4">
+            <label for="{{ form.name.id_for_label }}" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Name</label>
+            <div class="mt-1">
+                {{ form.name }}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
+            <div class="mt-1">
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.rule_query.id_for_label }}" class="block text-sm font-medium text-gray-700">Rule Query</label>
+            <div class="mt-1">
+                {{ form.rule_query }}
+            </div>
+        </div>
+        
+        <div class="p-6 bg-gray-100 flex justify-end">
+            <button type="submit" class="mr-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
+            <a href="{% url 'ruleset_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Back to List</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

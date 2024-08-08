@@ -30,8 +30,11 @@ class PolicyRulesetForm(forms.ModelForm):
 class PolicyRuleForm(forms.ModelForm):
     class Meta:
         model = PolicyRule
-        fields = ['name', 'description', 'rule_query']
+        fields = ['enabled', 'name', 'description', 'rule_query']
         widgets = {
+            'enabled': forms.CheckboxInput(attrs={
+                'class': 'mt-1 block border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
+            }),
             'name': forms.TextInput(attrs={
                 'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
                 'placeholder': 'Enter rule name',
