@@ -268,7 +268,7 @@ def rule_list(request):
     if not policy_rules:
         return HttpResponse('No policy rules found', status=404)
     
-    return render(request, 'policy/rules_list.html', {'rules': policy_rules})
+    return render(request, 'policy/rule_list.html', {'rules': policy_rules})
 
 @login_required
 def rule_detail(request, rule_id):

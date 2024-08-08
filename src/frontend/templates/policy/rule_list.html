@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Policies{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Policies: Rules</h1>
+
+        <!-- Submenu for Rulesets or Rules -->
+        <div class="flex justify-between mb-4">
+            <div class="flex">
+                <a href="{% url 'ruleset_list' %}" class="text-gray-600 hover:text-gray-90  0 mr-4">Rulesets</a>
+                <a href="{% url 'rule_list' %}" class="text-gray-600 hover:text-gray-900 font-medium">Rules</a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Enabled</th>
+                        <th class="py-3 px-6 text-left">Name</th>
+                        <th class="py-3 px-6 text-left">Description</th>
+                        <th class="py-3 px-6 text-left">Rule query</th>
+                        <th class="py-3 px-6 text-left">Alert</th>
+                        <th class="py-3 px-6 text-left">Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+
+                    {% for rule in rules %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100 align-top" data-rule-id="{{rule.id}}">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" {% if rule.enabled %}checked{% endif %}>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span class="font-medium"><a href="{% url 'rule_detail' rule_id=rule.id %}">{{ rule.name }}</a></span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-center">
+                                <span>{{ rule.description }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-left">
+                                <span>{{ rule.rule_query }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-left">
+                                <span>{{ rule.alert }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-left">
+                            <span>{{ rule.updated_at }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-3 px-6 text-left">No rules found</td>
+                    </tr>
+                    {% endfor %}
+            </table>
+            <!-- Add new rule button -->
+            <div class="p-6 bg-gray-100 flex justify-end">
+                <a href="{% url 'rule_create' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">+ New rule</a>
+            </div>
+{% endblock %}
