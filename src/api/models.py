@@ -69,7 +69,7 @@ class PolicyRuleset(models.Model):
 
     def evaluate(self, report):
         for rule in self.rules.all():
-            if not rule.evaluate(report):
+            if rule.enabled and not rule.evaluate(report):
                 return False
         return True
     
