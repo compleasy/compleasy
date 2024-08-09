@@ -9,46 +9,70 @@
     </div>
     <div>
         <!-- Rule edit form goes here -->
-        <form id="rule-edit-form">
+        <form id="rule-edit-form" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="rule_id" id="rule_id" value="">
             <div class="p-4 mb-4">
-                <label for="rule-name" class="block text-sm font-medium text-gray-700">Rule Name</label>
-                <input type="text" id="rule-name" name="rule-name" class="mt-1 p-2 block w-full border border-gray-300 rounded-md" />
+                <label for="rule_name" class="block text-sm font-medium text-gray-700">Rule Name</label>
+                <input type="text" id="rule_name" name="name" class="mt-1 p-2 block w-full border border-gray-300 rounded-md" />
             </div>
             <div class="p-4 mb-4">
-                <label for="rule-description" class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea id="rule-description" name="rule-description" class="mt-1 p-2 block w-full border border-gray-300 rounded-md"></textarea>
+                <label for="rule_description" class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea id="rule_description" name="description" class="mt-1 p-2 block w-full border border-gray-300 rounded-md"></textarea>
             </div>
             <!-- Rule query -->
              <div class="p-4 mb-4">
-                <label for="rule-query" class="block text-sm font-medium text-gray-700">Rule query</label>
-                <textarea id="rule-query" name="rule-query" class="mt-1 p-2 block w-full border border-gray-300 rounded-md"></textarea>
+                <label for="rule_query" class="block text-sm font-medium text-gray-700">Rule query</label>
+                <textarea id="rule_query" name="rule_query" class="mt-1 p-2 block w-full border border-gray-300 rounded-md"></textarea>
             </div>
             <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
             <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
-                <button class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
-                <button class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel()">Cancel</button>
+                <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
+                <button type="button" class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel()">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function toggleRuleEditPanel() {
+    function toggleRuleEditPanel(event, ruleId) {
         const panel = document.getElementById('rule-edit-panel');
         panel.classList.toggle('hidden');
+
+        // If the panel is hidden, do nothing
+        if (panel.classList.contains('hidden')) {
+            return;
+        }
+
+        // Update the form action dynamically
+        const form = document.getElementById('rule-edit-form');
+
+        if (ruleId) {
+            console.log('Editing rule:', ruleId);
+            form.action = `/rule/${ruleId}/edit/`;
+            loadRuleDetails(ruleId);
+        } else {
+            console.log('Creating a new rule');
+            form.action = '/rule/create/';
+            loadRuleDetails();
+        }
     }
     function loadRuleDetails(ruleId) {
         // Empty data if ruleId is not provided (i.e. when creating a new rule)
         if (!ruleId) {
-            document.getElementById('rule-name').value = '';
-            document.getElementById('rule-description').value = '';
-            document.getElementById('rule-query').value = '';
+            document.getElementById('rule_name').value = '';
+            document.getElementById('rule_description').value = '';
+            document.getElementById('rule_query').value = '';
+
             return;
         }
         // Get rule details by ID
-        const ruleDetails = rules.find(rule => rule.id === ruleId);
-        document.getElementById('rule-name').value = ruleDetails.name;
-        document.getElementById('rule-description').value = ruleDetails.description;
-        document.getElementById('rule-query').value = ruleDetails.rule_query;
+        const rule = rules.find(rule => rule.id === ruleId);
+        console.log('Rule details:', rule);
+
+        // Populate the form fields with the rule details
+        document.getElementById('rule_name').value = rule.name;
+        document.getElementById('rule_description').value = rule.description;
+        document.getElementById('rule_query').value = rule.rule_query;
     }
 </script>

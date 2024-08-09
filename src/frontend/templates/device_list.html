@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
+{% load humanize %}
 
 {% block title %}Devices{% endblock %}
 {% block content %}
@@ -53,7 +54,7 @@
                             <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">{{ device.warnings }}</span>
                         </td>
                         <td class="py-3 px-6 text-left">
-                            <span>{{ device.last_update }}</span>
+                            <span>{{ device.last_update|timesince }}</span>
                         </td>
                     </tr>
                     {% endfor %}

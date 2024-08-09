@@ -288,11 +288,12 @@ def rule_update(request, rule_id):
     """Rule update view: update a policy rule"""
     policy_rule = get_object_or_404(PolicyRule, id=rule_id)
     if request.method == 'POST':
+        logging.debug('Request POST: %s', request.POST)
         policy_rule.name = request.POST.get('name')
         policy_rule.description = request.POST.get('description')
         policy_rule.rule_query = request.POST.get('rule_query')
         policy_rule.save()
-        return redirect('rule_detail', rule_id=policy_rule.id)
+        return redirect('rule_list')
     return render(request, 'policy/rule_detail.html', {'rule': policy_rule})
 
 @login_required
