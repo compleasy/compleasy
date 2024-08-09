@@ -27,8 +27,8 @@
             </div>
             <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
             <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
-                <button class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
-                <button class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel()">Cancel</button>
+                <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
+                <button type="button" class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel()">Cancel</button>
             </div>
         </form>
     </div>
@@ -38,6 +38,11 @@
     function toggleRuleEditPanel(event, ruleId) {
         const panel = document.getElementById('rule-edit-panel');
         panel.classList.toggle('hidden');
+
+        // If the panel is hidden, do nothing
+        if (panel.classList.contains('hidden')) {
+            return;
+        }
 
         // Update the form action dynamically
         const form = document.getElementById('rule-edit-form');
