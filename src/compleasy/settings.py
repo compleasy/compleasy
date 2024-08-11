@@ -165,3 +165,8 @@ LOGIN_REDIRECT_URL = '/'
 # Media files
 MEDIA_ROOT = BASE_DIR / 'frontend/media'
 MEDIA_URL = '/media/'
+
+# Static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend/static',
+]
