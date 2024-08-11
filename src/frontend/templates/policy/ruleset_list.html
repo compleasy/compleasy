@@ -4,6 +4,7 @@
 {% load humanize %}
 
 {% block title %}Policies{% endblock %}
+
 {% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6">Policies: Rulesets</h1>
@@ -105,20 +106,7 @@
             </div>
 {% endblock %}
 {% block scripts %}
-<script>
-    let rulesets = {};
-    let rules = {};
-
-    document.addEventListener('DOMContentLoaded', function() {
-        rulesets = JSON.parse(document.getElementById('rulesets-data').textContent);
-        rules = JSON.parse(document.getElementById('rules-data').textContent);
-        console.log(rulesets);
-        console.log(rules);
-
-        // If rules is empty; redirect to rules list
-        if (Object.keys(rules).length === 0) {
-            window.location.href = "{% url 'rule_list' %}";
-        }
-    });
-</script>
+<script src="{% static 'js/rulesets.js' %}" defer></script>
+{{ rulesets|json_script:"rulesets-data" }}
+{{ rules|json_script:"rules-data" }}
 {% endblock %}
