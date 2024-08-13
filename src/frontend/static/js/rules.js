@@ -1,4 +1,4 @@
-function toggleRuleEditPanel(event, ruleId) {
+function toggleRuleEditPanel(ruleId) {
     const panel = document.getElementById('rule-edit-panel');
     panel.classList.toggle('hidden');
 
@@ -31,6 +31,10 @@ function loadRuleDetails(ruleId) {
 
         return;
     }
+
+    // Convert ruleId to a number
+    ruleId = Number(ruleId);
+
     // Get rule details by ID
     const rule = rules.find(rule => rule.id === ruleId);
     console.log('Rule details:', rule);

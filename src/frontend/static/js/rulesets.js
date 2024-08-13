@@ -5,16 +5,22 @@ let rules = {};
 document.addEventListener('DOMContentLoaded', function() {
     rulesets = JSON.parse(document.getElementById('rulesets-data').textContent);
     rules = JSON.parse(document.getElementById('rules-data').textContent);
-    //console.log(rulesets);
-    //console.log(rules);
 
-    // Search rules by name
-    const ruleSelectionIcons = document.getElementsByName('rule-selection-icon');
-    ruleSelectionIcons.forEach(button => {
+    // Search rules selection panel buttons by class
+    document.querySelectorAll('.rule-select-panel-button').forEach(button => {
         button.addEventListener('click', function() {
             const rulesetId = button.dataset.rulesetId;
             toggleRuleSelectionPanel(rulesetId);
         });
+    });
+
+    // Search rules edition panel buttons by class
+    document.querySelectorAll('.rule-edit-panel-button').forEach(button => {
+        button.addEventListener('click', event => {
+            const ruleId = button.dataset.ruleId;
+            toggleRuleEditPanel(ruleId);
+        }
+        );
     });
 
     // If rules is empty; redirect to rules list
@@ -26,6 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleRuleSelectionPanel(rulesetId) {
     const rulesetPanel = document.getElementById('rule-selection-panel');
     rulesetPanel.classList.toggle('hidden');
+
+    // If rulesetId is not provided, do nothing more
+    if (!rulesetId) {
+        return;
+    }
 
     // Store the ruleset ID in the panel's data attribute and the hidden input field
     rulesetPanel.dataset.rulesetId = rulesetId;
