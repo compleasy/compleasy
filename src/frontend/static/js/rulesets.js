@@ -80,13 +80,15 @@ function selectRulesetRules(rulesetId) {
 }
 
 function searchRuleByName(name) {
-    const ruleCheckboxes = document.querySelectorAll('#rules div');
+    const ruleCheckboxes = document.querySelectorAll('#rules > div');
     if (!name) {
         ruleCheckboxes.forEach(checkbox => checkbox.classList.remove('hidden'));
         return;
     }
+       
     ruleCheckboxes.forEach(checkbox => {
-        const ruleName = checkbox.querySelector('label').textContent;
+        // Get the rule name from the checkbox label
+        const ruleName = checkbox.querySelector('label').textContent.trim();
         if (ruleName.toLowerCase().includes(name.toLowerCase())) {
             checkbox.classList.remove('hidden');
         } else {
