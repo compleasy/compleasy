@@ -4,6 +4,7 @@
 {% load humanize %}
 
 {% block title %}Policies{% endblock %}
+
 {% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6">Policies: Rulesets</h1>
@@ -61,7 +62,7 @@
                                     {% endif %}
                                 </span>
                                 <!-- hover gray 800 -->
-                                <div class="ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900" data- onclick="toggleRuleSelectionPanel({{ruleset.id}})">
+                                <div id="rule-{{ruleset.id}}-selection-icon" name="rule-selection-icon" data-ruleset-id="{{ruleset.id}}" class="rule-select-panel-button ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900">
                                     <svg class="size-4 hover:fill-gray-600 cursor-pointer relative top-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                     </svg>
@@ -82,7 +83,7 @@
                                     <span class="bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs">+{{ ruleset.devices_count }}</span>
                                     {% endif %}
                                 </span>
-                                <div class="ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900" onclick="toggleDeviceSelectionPanel({{ruleset.id}})">
+                                <div class="device-select-panel-button ml-1 mt-1 p-1 rounded-full hover:bg-gray-200 hover:text-gray-900">
                                     <svg class="size-4 hover:fill-gray-600 cursor-pointer align-top" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                                     </svg>
@@ -105,20 +106,8 @@
             </div>
 {% endblock %}
 {% block scripts %}
-<script>
-    let rulesets = {};
-    let rules = {};
-
-    document.addEventListener('DOMContentLoaded', function() {
-        rulesets = JSON.parse(document.getElementById('rulesets-data').textContent);
-        rules = JSON.parse(document.getElementById('rules-data').textContent);
-        console.log(rulesets);
-        console.log(rules);
-
-        // If rules is empty; redirect to rules list
-        if (Object.keys(rules).length === 0) {
-            window.location.href = "{% url 'rule_list' %}";
-        }
-    });
-</script>
+<script src="{% static 'js/rulesets.js' %}" defer></script>
+<script src="{% static 'js/rules.js' %}" defer></script>
+{{ rulesets|json_script:"rulesets-data" }}
+{{ rules|json_script:"rules-data" }}
 {% endblock %}

@@ -278,7 +278,8 @@ def rule_detail(request, rule_id):
         form = PolicyRuleForm(request.POST, instance=rule)
         if form.is_valid():
             form.save()
-            return redirect('ruleset_detail', ruleset_id=rule.id)
+            return redirect('rule_list')
+        form = PolicyRuleForm(instance=rule)
     else:
         form = PolicyRuleForm(instance=rule)
     return render(request, 'policy/rule_detail.html', {'form': form, 'rule': rule})
@@ -289,11 +290,13 @@ def rule_update(request, rule_id):
     policy_rule = get_object_or_404(PolicyRule, id=rule_id)
     if request.method == 'POST':
         logging.debug('Request POST: %s', request.POST)
-        policy_rule.name = request.POST.get('name')
-        policy_rule.description = request.POST.get('description')
-        policy_rule.rule_query = request.POST.get('rule_query')
-        policy_rule.save()
-        return redirect('rule_list')
+        form = PolicyRuleForm(request.POST, instance=policy_rule)
+        if form.is_valid():
+            policy_rule.save()
+            # Redirect to the referer page
+            return redirect(request.META.get('HTTP_REFERER'))
+    else:
+        form = PolicyRuleForm(instance=policy_rule)
     return render(request, 'policy/rule_detail.html', {'rule': policy_rule})
 
 @login_required
@@ -303,7 +306,8 @@ def rule_create(request):
         form = PolicyRuleForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('rule_list')
+            # Redirect to the referer page
+            return redirect(request.META.get('HTTP_REFERER'))
     else:
         form = PolicyRuleForm()
     return render(request, 'policy/rule_detail.html', {'form': form})

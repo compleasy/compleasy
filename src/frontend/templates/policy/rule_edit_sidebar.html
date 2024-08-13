@@ -1,7 +1,7 @@
 <div id="rule-edit-panel" class="hidden fixed right-0 top-0 h-full w-1/4 bg-white shadow-md">
     <div class="flex justify-between items-center p-4 border-b bg-gray-200">
         <h2 class="text-xl font-bold">Edit Rule</h2>
-        <button class="text-gray-600" onclick="toggleRuleEditPanel()">
+        <button class="rule-edit-panel-button text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -12,6 +12,14 @@
         <form id="rule-edit-form" method="POST" action="">
             {% csrf_token %}
             <input type="hidden" name="rule_id" id="rule_id" value="">
+            <!-- Enable/disable toggle -->
+            <div class="p-4 mb-4 inline-flex items-center cursor-pointer">
+                <label class="inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="enabled" id="rule_enabled" class="rule-status-button sr-only peer" onchange="toggleRuleStatus()">
+                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <span name="rule_enabled_message" id="rule_enabled_message" class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">DISABLED</span>
+            </label>
+            </div>
             <div class="p-4 mb-4">
                 <label for="rule_name" class="block text-sm font-medium text-gray-700">Rule Name</label>
                 <input type="text" id="rule_name" name="name" class="mt-1 p-2 block w-full border border-gray-300 rounded-md" />
@@ -28,51 +36,8 @@
             <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
             <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
                 <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
-                <button type="button" class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded" onclick="toggleRuleEditPanel()">Cancel</button>
+                <button type="button" class="rule-edit-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-    function toggleRuleEditPanel(event, ruleId) {
-        const panel = document.getElementById('rule-edit-panel');
-        panel.classList.toggle('hidden');
-
-        // If the panel is hidden, do nothing
-        if (panel.classList.contains('hidden')) {
-            return;
-        }
-
-        // Update the form action dynamically
-        const form = document.getElementById('rule-edit-form');
-
-        if (ruleId) {
-            console.log('Editing rule:', ruleId);
-            form.action = `/rule/${ruleId}/edit/`;
-            loadRuleDetails(ruleId);
-        } else {
-            console.log('Creating a new rule');
-            form.action = '/rule/create/';
-            loadRuleDetails();
-        }
-    }
-    function loadRuleDetails(ruleId) {
-        // Empty data if ruleId is not provided (i.e. when creating a new rule)
-        if (!ruleId) {
-            document.getElementById('rule_name').value = '';
-            document.getElementById('rule_description').value = '';
-            document.getElementById('rule_query').value = '';
-
-            return;
-        }
-        // Get rule details by ID
-        const rule = rules.find(rule => rule.id === ruleId);
-        console.log('Rule details:', rule);
-
-        // Populate the form fields with the rule details
-        document.getElementById('rule_name').value = rule.name;
-        document.getElementById('rule_description').value = rule.description;
-        document.getElementById('rule_query').value = rule.rule_query;
-    }
-</script>

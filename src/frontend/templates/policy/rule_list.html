@@ -24,7 +24,9 @@
                         <th class="py-3 px-6 text-left">Name</th>
                         <th class="py-3 px-6 text-left">Description</th>
                         <th class="py-3 px-6 text-left">Rule query</th>
+                        <!--
                         <th class="py-3 px-6 text-left">Alert</th>
+                        -->
                         <th class="py-3 px-6 text-left">Last Updated</th>
                     </tr>
                 </thead>
@@ -34,7 +36,7 @@
                     <tr class="border-b border-gray-200 hover:bg-gray-100 align-top" data-rule-id="{{rule.id}}">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
                             <div class="flex items-center">
-                                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" {% if rule.enabled %}checked{% endif %}>
+                                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" {% if rule.enabled %}checked{% endif %} disabled>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left whitespace-nowrap">
@@ -52,11 +54,11 @@
                                 <span>{{ rule.rule_query }}</span>
                             </div>
                         </td>
-                        <td class="py-3 px-6 text-left">
+                        <!-- <td class="py-3 px-6 text-left">
                             <div class="flex items-left">
                                 <span>{{ rule.alert }}</span>
                             </div>
-                        </td>
+                        </td> -->
                         <td class="py-3 px-6 text-left">
                             <span>{{ rule.updated_at|timesince }}</span>
                         </td>
