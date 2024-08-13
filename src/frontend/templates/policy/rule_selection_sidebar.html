@@ -1,50 +1,44 @@
-
-
-<!-- Hidden right panel, for rule management -->
-<div id="rule-selection-panel" class="hidden fixed right-0 bottom-0 h-full w-1/4 bg-white shadow-md" data-ruleset-id="">
+<div id="rule-selection-panel" class="hidden fixed right-0 top-0 h-screen w-1/4 bg-white shadow-md flex flex-col">
     <div class="flex justify-between items-center p-4 border-b bg-gray-200">
-        <h2 class="text-xl font-bold">Rules</h2>
-        <button class="rule-select-panel-button text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+      <h2 class="text-xl font-bold">Rules</h2>
+      <button class="rule-select-panel-button text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
     <!-- search bar and create button -->
     <div class="p-4 bg-gray-200 flex justify-between">
-        <input type="text" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rules" onKeyUp="searchRuleByName(this.value)" autocomplete="off" />
-        <button class="rule-edit-panel-button bg-gray-500 text-white px-4 py-2 rounded" aria-label="Create new rule">+ Rule</button>
+      <input type="text" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rules" onKeyUp="searchRuleByName(this.value)" autocomplete="off" />
+      <button class="rule-edit-panel-button bg-gray-500 text-white px-4 py-2 rounded" aria-label="Create new rule">+ Rule</button>
     </div>
-
-    <div>
-        <form id="rule-selection-form" method="post" action="">
-            {% csrf_token %}
-            <input type="hidden" name="ruleset_id" id="ruleset_id" value="">
-            <div id="rules" class="p-4 space-y-2">
-                {% for rule in rules %}
-                <div class="flex items-center group/rule">
-                    <input type="checkbox" id="rule-{{ rule.id }}" name="rules" value="{{ rule.id }}" class="hidden peer">
-                    <label for="rule-{{ rule.id }}" class="flex-1 flex justify-between items-center py-1 px-4 bg-white rounded cursor-pointer hover:bg-gray-200 peer-checked:bg-amber-100 peer-checked:hover:bg-yellow-600/50 font-light">
-                        {{ rule.name }}
-                        <a href="#" class="group rule-edit-panel-button relative rounded-full p-1 bg-transparent" data-rule-id="{{ rule.id }}">
-                            <!-- Overlay layer -->
-                            <div class="opacity-0 group-hover:opacity-100 absolute inset-0 group-hover/icon:visible bg-black/10 rounded-full"></div>
-                            <!-- SVG icon -->
-                            <svg class="group/icon size-4 align-middle invisible group-hover/rule:visible relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                            </svg>
-                        </a>
-                    </label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
-            <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
-                <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
-                <button type="button" class="rule-select-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-            </div>
-        </form>
+    <div class="flex-grow overflow-hidden">
+      <form id="rule-selection-form" method="post" action="" class="h-full flex flex-col">
+        {% csrf_token %}
+        <input type="hidden" name="ruleset_id" id="ruleset_id" value="">
+        <div id="rules" class="p-4 space-y-2 overflow-y-auto flex-grow">
+          {% for rule in rules %}
+          <div class="flex items-center group/rule">
+            <input type="checkbox" id="rule-{{ rule.id }}" name="rules" value="{{ rule.id }}" class="hidden peer">
+            <label for="rule-{{ rule.id }}" class="flex-1 flex justify-between items-center py-1 px-4 bg-white rounded cursor-pointer hover:bg-gray-200 peer-checked:bg-amber-100 peer-checked:hover:bg-yellow-600/50 font-light">
+              {{ rule.name }}
+              <a href="#" class="group rule-edit-panel-button relative rounded-full p-1 bg-transparent" data-rule-id="{{ rule.id }}">
+                <!-- Overlay layer -->
+                <div class="opacity-0 group-hover:opacity-100 absolute inset-0 group-hover/icon:visible bg-black/10 rounded-full"></div>
+                <!-- SVG icon -->
+                <svg class="group/icon size-4 align-middle invisible group-hover/rule:visible relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                </svg>
+              </a>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
+        <div class="flex space-x-2 w-full p-4 bg-gray-200">
+          <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
+          <button type="button" class="rule-select-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
     </div>
-
-</div>
+  </div>
