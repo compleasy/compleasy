@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load custom_filters %}
 {% load humanize %}
 
@@ -6,6 +7,9 @@
 {% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6"><a href="{% url 'index' %}">Compleasy</a></h1>
+
+        <!-- Rule selection side-panel -->
+        {% include 'policy/ruleset_selection_sidebar.html' %}
         
         <!-- Device details Screen -->
         <div id="serverDetails">
@@ -339,10 +343,14 @@
                             {% endfor %}
                     </table>
                 </div>
-                <!-- Button: create a ruleset -->
+                <!-- Buttons to assign or unassign ruleset to the device -->
                 <div class="text-right">
-                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded inline-flex items-center">New ruleset</button>
-                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded inline-flex items-center">New rule</button>
+                    <button type="button" id="button-ruleset-selection-panel" class="button-ruleset-selection-panel bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>                          
+                        <span class="ml-2">Select rulesets</span>
+                    </button>
                 </div>
                 
 
@@ -442,3 +450,78 @@
 <!-- </body>
 </html> -->
 {% endblock %}
+
+{% block scripts %}
+    <script>
+        const ruleset_checkbox_elements = document.querySelectorAll('#rulesets input[type="checkbox"]');
+        const ruleset_checkbox_divs = document.querySelectorAll('#rulesets > div');
+
+        function toggleRulesetSelectionPanel() {
+            // Toggle the hidden ruleset selection side-panel
+            document.getElementById('ruleset-selection-panel').classList.toggle('hidden');
+        }
+
+        function selectRulesets(deviceId) {
+            console.log('Selecting rulesets for device', deviceId);
+            const evaluated_rulesets = JSON.parse(document.getElementById('evaluated-rulesets-data').textContent);
+            
+            // Find rulesets elements in the side-panel
+            ruleset_checkbox_elements.forEach(function(ruleset) {
+                var ruleset_id = parseInt(ruleset.value);
+                var evaluated_ruleset_ids = evaluated_rulesets.map(function(ruleset) {
+                    return ruleset.id;
+                });
+
+                // Check if the ruleset is in the evaluated rulesets (assigned to the device)
+                if (evaluated_ruleset_ids.includes(ruleset_id)) {
+                    ruleset.checked = true;
+                } else {
+                    ruleset.checked = false;
+                }
+            });        
+        }
+
+        function searchRulesetByName(name) {
+            if (!name) {
+                // Remove hidden for every ruleset checkbox element
+                ruleset_checkbox_divs.forEach(function(ruleset) {
+                    ruleset.classList.remove('hidden');
+                });
+                return;
+            }
+            
+            // Hide rulesets that do not match the search query
+            ruleset_checkbox_divs.forEach(function(ruleset) {
+                // The ruleset name is in the label element
+                var ruleset_name = ruleset.querySelector('label').textContent.trim();
+                if (ruleset_name.toLowerCase().includes(name.toLowerCase())) {
+                    ruleset.classList.remove('hidden');
+                } else {
+                    ruleset.classList.add('hidden');
+                }
+            });
+        }
+
+        // Event listeners added after DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const ruleset_selection_panel = document.getElementById('ruleset-selection-panel');
+            const device_id = ruleset_selection_panel.dataset.deviceId;
+            const ruleset_selection_panel_button = document.getElementById('button-ruleset-selection-panel');
+            const ruleset_search_input = document.getElementById('ruleset-search-input');
+
+            // Add a click event listener to the hidden ruleset selection side-panel
+            document.querySelectorAll('.button-ruleset-selection-panel').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    toggleRulesetSelectionPanel();
+                    selectRulesets(device_id);
+                });
+            });
+
+            ruleset_search_input.addEventListener('onkeyup', function() {
+                searchRulesetByName(ruleset_search_input.value);
+            });
+        });
+    </script>
+    {{ evaluated_rulesets|json_script:"evaluated-rulesets-data" }}
+{% endblock %}
+

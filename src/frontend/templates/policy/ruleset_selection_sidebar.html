@@ -1,7 +1,7 @@
-<div id="rule-selection-panel" class="hidden fixed right-0 top-0 h-screen w-1/4 bg-white shadow-md flex flex-col">
+<div id="ruleset-selection-panel" class="hidden fixed right-0 top-0 h-screen w-1/4 bg-white shadow-md flex flex-col" data-device-id="{{ device.id }}" >
     <div class="flex justify-between items-center p-4 border-b bg-gray-200">
-      <h2 class="text-xl font-bold">Rules</h2>
-      <button class="rule-select-panel-button text-gray-600">
+      <h2 class="text-xl font-bold">Rulesets</h2>
+      <button class="button-ruleset-selection-panel text-gray-600">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -9,20 +9,20 @@
     </div>
     <!-- search bar and create button -->
     <div class="p-4 bg-gray-200 flex justify-between">
-      <input type="text" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rules" onKeyUp="searchRuleByName(this.value)" autocomplete="off" />
-      <button class="rule-edit-panel-button bg-gray-500 text-white px-4 py-2 rounded" aria-label="Create new rule">+ Rule</button>
+      <input type="text" id="ruleset-search-input" class="w-4/5 border border-gray-300 p-2 rounded-lg" placeholder="Search rulesets" onKeyUp="searchRulesetByName(this.value)" autocomplete="off" />
+      <button class="rule-edit-panel-button bg-gray-500 text-white px-2 py-2 rounded" aria-label="Create new ruleset">+ Ruleset</button>
     </div>
     <div class="flex-grow overflow-hidden">
-      <form id="rule-selection-form" method="post" action="" class="h-full flex flex-col">
+      <form id="ruleset-selection-form" method="post" action="" class="h-full flex flex-col">
         {% csrf_token %}
-        <input type="hidden" name="ruleset_id" id="ruleset_id" value="">
-        <div id="rules" class="p-4 space-y-2 overflow-y-auto flex-grow">
-          {% for rule in rules %}
+        <input type="hidden" name="device_id" id="device_id" value="{{ device.id }}">
+        <div id="rulesets" class="p-4 space-y-2 overflow-y-auto flex-grow">
+          {% for ruleset in rulesets %}
           <div class="flex items-center group/rule">
-            <input type="checkbox" id="rule-{{ rule.id }}" name="rules" value="{{ rule.id }}" class="hidden peer">
-            <label for="rule-{{ rule.id }}" class="flex-1 flex justify-between items-center py-1 px-4 bg-white rounded cursor-pointer hover:bg-gray-200 peer-checked:bg-amber-100 peer-checked:hover:bg-yellow-600/50 font-light">
-              {{ rule.name }}
-              <a href="#" class="group rule-edit-panel-button relative rounded-full p-1 bg-transparent" data-rule-id="{{ rule.id }}">
+            <input type="checkbox" id="ruleset-{{ ruleset.id }}" value="{{ ruleset.id }}" class="hidden peer">
+            <label for="ruleset-{{ ruleset.id }}" class="flex-1 flex justify-between items-center py-1 px-4 bg-white rounded cursor-pointer hover:bg-gray-200 peer-checked:bg-amber-100 peer-checked:hover:bg-yellow-600/50 font-light">
+              {{ ruleset.name }}
+              <a href="#" class="group rule-edit-panel-button relative rounded-full p-1 bg-transparent" data-ruleset-id="{{ ruleset.id }}">
                 <!-- Overlay layer -->
                 <div class="opacity-0 group-hover:opacity-100 absolute inset-0 group-hover/icon:visible bg-black/10 rounded-full"></div>
                 <!-- SVG icon -->
@@ -37,7 +37,7 @@
         <!-- Apply and cancel buttons (in a row, down at the bottom of the panel) -->
         <div class="flex space-x-2 w-full p-4 bg-gray-200">
           <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
-          <button type="button" class="rule-select-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+          <button type="button" class="button-ruleset-selection-panel ruleset-select-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
         </div>
       </form>
     </div>

@@ -88,6 +88,7 @@ def device_detail(request, device_id):
     policy_rulesets = device.policy_ruleset.all()
     for policy_ruleset in policy_rulesets:
         ruleset_dict = {
+            'id': policy_ruleset.id,
             'name': policy_ruleset.name,
             'description': policy_ruleset.description,
             'rules': []
@@ -106,9 +107,12 @@ def device_detail(request, device_id):
         ruleset_dict['compliant'] = all([rule['compliant'] for rule in ruleset_dict['rules']])
         # Add the ruleset to the evaluated rulesets
         evaluated_rulesets.append(ruleset_dict)
+
+    # Get all rulesets (will be used to select the rulesets for the device from the side-panel)
+    policy_rulesets = PolicyRuleset.objects.all()
     logging.debug('Evaluated rulesets: %s', evaluated_rulesets)
 
-    return render(request, 'device_detail.html', {'device': device, 'report': report, 'evaluated_rulesets': evaluated_rulesets})
+    return render(request, 'device_detail.html', {'device': device, 'report': report, 'evaluated_rulesets': evaluated_rulesets, 'rulesets': policy_rulesets})
 
 @login_required
 def device_report(request, device_id):
