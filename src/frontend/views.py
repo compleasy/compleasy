@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
+from utils.compliance import check_device_compliance
 from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm
 import os
 import json
@@ -32,42 +33,33 @@ def device_list(request):
     devices = Device.objects.all()
     if not devices:
         return redirect('onboarding')
-    
-    
+
     for device in devices:
         logging.debug('Checking compliance for device %s', device)
-
-        # Get the PolicyRulesets that Device must comply with
-        policy_rulesets = device.rulesets.all()
-        policy_rulesets = list(policy_rulesets)
-        logging.debug('Policy rulesets: %s', policy_rulesets)
-
-        device.compliant = True
-        for policy_ruleset in policy_rulesets:
-            logging.info("Checking compliance for device %s with policy ruleset %s", device, policy_ruleset)
-            report = FullReport.objects.filter(device=device).order_by('-created_at').first()
-            report = LynisReport(report.full_report)
-            if not report:
-                logging.error('No report found for device %s', device)
-                continue
-
-            if not policy_ruleset.evaluate(report):
-                # Mark the device as non-compliant
-                device.compliant = False
-                logging.debug(f'Device {device} is not compliant with policy ruleset {policy_ruleset}')
-                break
+        
+        # Get the latest report for the device
+        report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+        if not report:
+            logging.error('No report found for device %s', device)
+            device.compliant = False
+            device.save()
+            continue
+        
+        report = LynisReport(report.full_report)
+        
+        # Use utility function to check compliance
+        compliant, _ = check_device_compliance(device, report)
+        device.compliant = compliant
         device.save()
-
-        # Order devices by last updated (most recent first)
-        devices = Device.objects.all().order_by('-last_update')
+    
+    # Order devices by last updated (most recent first)
+    devices = devices.order_by('-last_update')
 
     return render(request, 'device_list.html', {'devices': devices})
 
 @login_required
 def device_detail(request, device_id):
     """Device detail view: show the details of a device"""
-    warnings = {}
-    suggestions = {}
     device = Device.objects.get(id=device_id)
     
     # Get last report for the device
@@ -83,37 +75,22 @@ def device_detail(request, device_id):
     if not report:
         return HttpResponse('Failed to parse the report', status=500)
     
-    # Get the PolicyRulesets that Device must comply with
-    evaluated_rulesets = []
-    policy_rulesets = device.rulesets.all()
-    for policy_ruleset in policy_rulesets:
-        ruleset_dict = {
-            'id': policy_ruleset.id,
-            'name': policy_ruleset.name,
-            'description': policy_ruleset.description,
-            'rules': []
-        }
-        
-        for rule in policy_ruleset.rules.all():
-            rule_dict = {
-                'id': rule.id,
-                'name': rule.name,
-                'description': rule.description,
-                'enabled': rule.enabled,
-                'alert': rule.alert,
-                'compliant': rule.evaluate(report)
-            }
-            ruleset_dict['rules'].append(rule_dict)
-        # If any rule is not compliant, the ruleset is not compliant
-        ruleset_dict['compliant'] = all([rule['compliant'] for rule in ruleset_dict['rules']])
-        # Add the ruleset to the evaluated rulesets
-        evaluated_rulesets.append(ruleset_dict)
+    # Use utility function to check compliance and get detailed ruleset evaluation
+    compliant, evaluated_rulesets = check_device_compliance(device, report)
 
-    # Get all rulesets (will be used to select the rulesets for the device from the side-panel)
+    # Update the device compliance status
+    device.compliant = compliant
+
+    # Get all rulesets (used to select the rulesets for the device from the side-panel)
     policy_rulesets = PolicyRuleset.objects.all()
-    logging.debug('Evaluated rulesets: %s', evaluated_rulesets)
 
-    return render(request, 'device_detail.html', {'device': device, 'report': report, 'evaluated_rulesets': evaluated_rulesets, 'rulesets': policy_rulesets})
+    return render(request, 'device_detail.html', {
+        'device': device,
+        'report': report,
+        'evaluated_rulesets': evaluated_rulesets,
+        'rulesets': policy_rulesets
+    })
+
 
 @login_required
 @csrf_protect
