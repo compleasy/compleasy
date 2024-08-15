@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
 from utils.lynis_report import LynisReport
-from .forms import PolicyRulesetForm, PolicyRuleForm
+from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm
 import os
 import json
 import logging
@@ -38,7 +38,7 @@ def device_list(request):
         logging.debug('Checking compliance for device %s', device)
 
         # Get the PolicyRulesets that Device must comply with
-        policy_rulesets = device.policy_ruleset.all()
+        policy_rulesets = device.rulesets.all()
         policy_rulesets = list(policy_rulesets)
         logging.debug('Policy rulesets: %s', policy_rulesets)
 
@@ -85,7 +85,7 @@ def device_detail(request, device_id):
     
     # Get the PolicyRulesets that Device must comply with
     evaluated_rulesets = []
-    policy_rulesets = device.policy_ruleset.all()
+    policy_rulesets = device.rulesets.all()
     for policy_ruleset in policy_rulesets:
         ruleset_dict = {
             'id': policy_ruleset.id,
@@ -113,6 +113,27 @@ def device_detail(request, device_id):
     logging.debug('Evaluated rulesets: %s', evaluated_rulesets)
 
     return render(request, 'device_detail.html', {'device': device, 'report': report, 'evaluated_rulesets': evaluated_rulesets, 'rulesets': policy_rulesets})
+
+@login_required
+@csrf_protect
+def device_update(request, device_id):
+    """Device update view: update the device information"""
+    device = get_object_or_404(Device, id=device_id)
+    if request.method == 'POST':
+        form = DeviceForm(request.POST, instance=device)
+        if form.is_valid():
+            # Process the rulesets
+            selected_rulesets = request.POST.getlist('rulesets')
+            logging.debug('Selected rulesets: %s', selected_rulesets)
+            device.rulesets.set(selected_rulesets)
+            form.save()
+            # Return to the referer page
+            return redirect(request.META.get('HTTP_REFERER'))
+        else:
+            logging.error('Form is not valid')
+    else:
+        # Error
+        return HttpResponse('Invalid request method', status=405)
 
 @login_required
 def device_report(request, device_id):

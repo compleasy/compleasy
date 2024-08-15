@@ -20,7 +20,7 @@ class Device(models.Model):
     lynis_version = models.CharField(max_length=255, blank=True, null=True)
     last_update = models.DateTimeField(blank=True, null=True)
     warnings = models.IntegerField(blank=True, null=True)
-    policy_ruleset = models.ManyToManyField('PolicyRuleset', related_name='devices', blank=True)
+    rulesets = models.ManyToManyField('PolicyRuleset', related_name='devices', blank=True)
     compliant = models.BooleanField(default=True)
 
 class FullReport(models.Model):
