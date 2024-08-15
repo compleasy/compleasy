@@ -440,7 +440,13 @@
         </div>
     </div>
 
+{% endblock %}
+
+{% block scripts %}
     <script>
+        const ruleset_checkbox_elements = document.querySelectorAll('#rulesets input[type="checkbox"]');
+        const ruleset_checkbox_divs = document.querySelectorAll('#rulesets > div');
+
         function toggleDetails(element) {
             var details = element.closest('td').querySelector('.hidden-details');
             if (details.style.display === 'none' || details.style.display === '') {
@@ -458,14 +464,6 @@
                 rule.classList.toggle('hidden');
             });
         }
-    </script>
-
-{% endblock %}
-
-{% block scripts %}
-    <script>
-        const ruleset_checkbox_elements = document.querySelectorAll('#rulesets input[type="checkbox"]');
-        const ruleset_checkbox_divs = document.querySelectorAll('#rulesets > div');
 
         function toggleRulesetSelectionPanel() {
             // Toggle the hidden ruleset selection side-panel
