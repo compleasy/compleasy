@@ -1,0 +1,32 @@
+<div>
+    <h4 class="text-lg font-medium mb-2">Suggestions</h4>
+    <table class="min-w-full">
+        <thead>
+            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                <th class="w-36 py-3 px-6 text-left">Test-ID</th>
+                <th class="py-3 px-6 text-left">Description</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-600 text-sm font-light">
+
+            {% for suggestion in suggestions %}
+            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                <td class="py-3 px-6 text-left">{{ suggestion.0 }}</td>
+                <td class="py-3 px-6 text-left">
+                    <span {%  if suggestion|length > 2 %}class="expand-description" onclick="toggleDetails(this)"{% endif %}>{{ suggestion.1 }}
+                    {% if suggestion|length > 2 %}
+                    <i class="fas fa-info-circle info-icon"></i>
+                    {% endif %}
+                    </span>
+                    <div class="hidden-details hidden mt-2">
+                        {% for detail in suggestion|slice:'2:' %}
+                        <p class="italic">{{ detail }}</p>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+    </table>
+</div>
