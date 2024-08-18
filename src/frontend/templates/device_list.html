@@ -14,7 +14,7 @@
                         <th class="py-3 px-6 text-left w-4">OS</th>
                         <th class="py-3 px-6 text-left">OS Version</th>
                         <th class="py-3 px-6 text-left">Agent Version</th>
-                        <th class="py-3 px-6 text-center">Compliant</th>
+                        <th class="py-3 px-6 text-left">Compliant</th>
                         <th class="py-3 px-6 text-center">Warnings</th>
                         <th class="py-3 px-6 text-left">Last Updated</th>
                     </tr>
@@ -43,7 +43,7 @@
                                 <span>{{ device.lynis_version }}</span>
                             </div>
                         </td>
-                        <td class="py-3 px-6 text-center">
+                        <td class="py-3 px-6 text-left">
                             {% if device.compliant %}
                             <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Compliant</span>
                             {% else %}
