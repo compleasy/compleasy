@@ -1,5 +1,19 @@
 #!/bin/sh
 
+#########################################################################
+#
+#    * DO NOT REMOVE *
+#-----------------------------------------------------
+# PLUGIN_AUTHOR=Xabi Ezpeleta <xezpeleta@gmail.com>
+# PLUGIN_CATEGORY=Compleasy
+# PLUGIN_DESC=Compleasy tests
+# PLUGIN_NAME=compleasy
+# PLUGIN_VERSION=0.0.1
+# PLUGIN_REQUIRED_TESTS=
+#-----------------------------------------------------
+#
+#########################################################################
+#
 
 ###################################################################################
 # This custom test file is part of the Compleasy Lynis tests
