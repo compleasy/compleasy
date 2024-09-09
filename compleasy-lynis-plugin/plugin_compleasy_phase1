@@ -1,5 +1,19 @@
 #!/bin/sh
 
+#########################################################################
+#
+#    * DO NOT REMOVE *
+#-----------------------------------------------------
+# PLUGIN_AUTHOR=Xabi Ezpeleta <xezpeleta@gmail.com>
+# PLUGIN_CATEGORY=Compleasy
+# PLUGIN_DESC=Compleasy tests
+# PLUGIN_NAME=compleasy
+# PLUGIN_VERSION=0.0.1
+# PLUGIN_REQUIRED_TESTS=
+#-----------------------------------------------------
+#
+#########################################################################
+#
 
 ###################################################################################
 # This custom test file is part of the Compleasy Lynis tests
@@ -8,13 +22,13 @@
 # of Lynis.
 #
 # The following tests are included:
-# - CUST-9000: Compleasy Lynis custom test ping. Just to know that the Compleasy
-#              Lynis custom tests are enabled.
-# - CUST-9010: Lynis systemd timer info. It will gather information about the Lynis
-#              systemd timer.
-# - CUST-9020: Antivirus version check. It will check the version of the installed
-#              antivirus software and the last update.
-# - CUST-9030: Custom test to check the status of the firewall.
+# - CUST-COMPLEASY-0000: Compleasy Lynis custom test ping. Just to know that the Compleasy
+#              		 Lynis custom tests are enabled.
+# - CUST-COMPLEASY-0010: Lynis systemd timer info. It will gather information about the Lynis
+#              		 systemd timer.
+# - CUST-COMPLEASY-0020: Antivirus version check. It will check the version of the installed
+#              		 antivirus software and the last update.
+# - CUST-COMPLEASY-0030: Custom test to check the status of the firewall.
 #
 ###################################################################################
 
@@ -23,7 +37,7 @@
 
 #################################################################################
 #
-    # Test        : CUST-0010
+    # Test        : CUST-COMPLEASY-0010
     # Description : Compleasy Lynis custom test ping. Just to know that the Compleasy Lynis custom tests are enabled.
 
     # Register our first custom test
@@ -31,7 +45,7 @@
     # --test-no   unique ID
     # --weight    L/M/H
     # --category  category (e.g. performance, privacy, security)
-    Register --test-no CUST-9000 --weight L --network NO --category security --description "Compleasy custom tests status"
+    Register --test-no CUST-COMPLEASY-0000 --weight L --network NO --category security --description "Compleasy custom tests status"
     if [ ${SKIPTEST} -eq 0 ]; then
         # The Display function makes it easy to show something on screen, with colors.
         # --indent  defines amount of spaces
@@ -46,9 +60,9 @@
 #
 #################################################################################
 #
-    # Test        : CUST-0010
+    # Test        : CUST-COMPLEASY-0010
     # Description : Lynis systemd timer info. It will gather information about the Lynis systemd timer.
-    Register --test-no CUST-9010 --weight L --network NO --category security --description "Compleasy Lynis systemd timer info"
+    Register --test-no CUST-COMPLEASY-0010 --weight L --network NO --category security --description "Compleasy Lynis systemd timer info"
 
     LYNIS_TIMER="/etc/systemd/system/timers.target.wants/lynis.timer"
 
@@ -126,14 +140,14 @@
 #
 #################################################################################
 #
-    # Test        : CUST-0010
+    # Test        : CUST-COMPLEASY-0020
     # Description : Anti-virus version and last update check
 
     # First check if ClamAV is installed as a prerequisite for this test
 
     CLAMAVBINARY=$(command -v clamscan)
     if [ ! "${CLAMAVBINARY}" = "" ]; then PREQS_MET="YES"; else PREQS_MET="NO"; SKIPREASON="No ClamAV binary found"; fi
-    Register --test-no CUST-9020 --preqs-met ${PREQS_MET} --skip-reason "${SKIPREASON}" --weight M --network NO --category security --description "Compleasy check anti-virus version and last update"
+    Register --test-no CUST-COMPLEASY-0020 --preqs-met ${PREQS_MET} --skip-reason "${SKIPREASON}" --weight M --network NO --category security --description "Compleasy check anti-virus version and last update"
     if [ ${SKIPTEST} -eq 0 ]; then
         # Set variable to zero, to indicate that we have no problems found (yet)
         FOUNDPROBLEM=0
