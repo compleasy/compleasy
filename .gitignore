@@ -2,3 +2,6 @@
 __pycache__
 compleasy.sqlite3
 nginx/certs/*
+
+# Environment variables (keep .env.example)
+.env
