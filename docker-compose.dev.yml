@@ -1,0 +1,61 @@
+services:
+  compleasy-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compleasy-dev
+    volumes:
+      - ./src:/app
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - DJANGO_DEBUG=True
+      - COMPLEASY_URL=http://compleasy-dev:8000
+      - COMPLEASY_ADMIN_USERNAME=admin
+      - COMPLEASY_ADMIN_PASSWORD=compleasy
+      - DJANGO_ALLOWED_HOSTS=*
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: compleasy-test
+    volumes:
+      - ./src:/app
+      - ./pytest.ini:/app/pytest.ini
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-test-secret-key-for-testing}
+      - DJANGO_DEBUG=False
+      - DJANGO_ALLOWED_HOSTS=*
+    working_dir: /app
+    command: ["pytest", "-v", "--cov=api", "--cov=frontend", "--cov-report=term-missing"]
+    profiles:
+      - test
+
+  lynis-client:
+    build:
+      context: .
+      dockerfile: lynis/Dockerfile
+    container_name: lynis-client
+    environment:
+      - COMPLEASY_SERVER_URL=http://compleasy-dev:8000
+      - COMPLEASY_LICENSE_KEY=${COMPLEASY_LICENSE_KEY}
+    depends_on:
+      compleasy-dev:
+        condition: service_healthy
+    networks:
+      - default
+    command: ["/test/run-lynis-test.sh"]
+
+networks:
+  default:
+    name: compleasy-dev-network
+

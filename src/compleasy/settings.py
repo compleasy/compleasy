@@ -40,7 +40,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError(
         'SECRET_KEY environment variable is not set. '
-        'Please set it in your environment or docker-compose.yml file. '
+        'Please set it in your environment or docker compose configuration file. '
         'Generate a secure key using: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
     )
 

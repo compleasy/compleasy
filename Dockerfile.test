@@ -1,0 +1,32 @@
+FROM python:3.8-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+
+# Copy the test entrypoint
+COPY docker-entrypoint-test.sh /docker-entrypoint-test.sh
+RUN chmod +x /docker-entrypoint-test.sh
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install pip
+RUN pip install --upgrade pip
+
+# Copy requirements files (will be overridden by volume mount, but needed for build)
+COPY src/requirements.txt /tmp/requirements.txt
+COPY src/requirements-dev.txt /tmp/requirements-dev.txt
+
+# Install dependencies
+RUN pip install -r /tmp/requirements.txt && \
+    pip install -r /tmp/requirements-dev.txt
+
+# Copy pytest configuration (will be overridden by volume mount)
+COPY pytest.ini /tmp/pytest.ini
+
+# Run the entrypoint
+ENTRYPOINT ["/docker-entrypoint-test.sh"]
+
+# Default command (can be overridden)
+CMD ["pytest", "-v"]
+

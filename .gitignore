@@ -5,3 +5,10 @@ nginx/certs/*
 
 # Environment variables (keep .env.example)
 .env
+
+# Testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.pyc
+__pycache__/

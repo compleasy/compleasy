@@ -54,10 +54,10 @@ cd compleasy
 > [!IMPORTANT]
 > **Security Note:** The `SECRET_KEY` is a critical security setting for Django. Never commit your actual secret key to version control. The `.env` file is excluded from git to protect your secrets. For production deployments, always generate a new unique SECRET_KEY.
 
-3. Run docker-compose:
+3. Run docker compose:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 ## Client configuration
@@ -116,3 +116,132 @@ sudo apt install rkhunter auditd aide
 
 - **Add a license key**: `curl -k https://yourserver:3000/admin/license -X POST -d "licensekey=YOUR_LICENSE`
 - **Empty the database**: `curl https://yourserver:3000/admin/db/init?delete=true -k`
+
+## Development & Testing
+
+### Prerequisites
+
+- Docker and Docker Compose
+- No local Python installation required
+
+### Setup Development Environment
+
+No local installation required! All development and testing happens in Docker containers.
+
+The test container automatically runs database migrations before executing tests.
+
+### Running Tests Locally
+
+All tests run inside Docker containers - no local installation required.
+
+#### Unit Tests
+
+Run all unit tests:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test
+```
+
+Run specific test file:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test pytest api/tests.py -v
+```
+
+Run with HTML coverage report:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test pytest --cov=api --cov=frontend --cov-report=html --cov-report=term-missing
+```
+
+Run specific test:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test pytest api/tests.py::TestUploadReport::test_upload_report_valid_license_new_device -v
+```
+
+Run tests excluding integration tests:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test pytest -m "not integration" -v
+```
+
+Access the test container shell for debugging:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test /bin/bash
+```
+
+#### Integration Tests
+
+Integration tests require Docker and test the full Lynis workflow:
+
+1. Start the development environment:
+
+```bash
+# Set environment variables
+export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')
+export COMPLEASY_LICENSE_KEY=test-license-key-$(date +%s)
+
+# Start services
+docker compose -f docker compose.dev.yml up -d compleasy-dev
+```
+
+2. Wait for the service to be ready:
+
+```bash
+# Wait for health check
+docker compose -f docker compose.dev.yml ps
+```
+
+3. Create a test license key in the database:
+
+```bash
+docker compose -f docker compose.dev.yml exec compleasy-dev python manage.py shell <<EOF
+from django.contrib.auth.models import User
+from api.models import LicenseKey
+user = User.objects.first()
+LicenseKey.objects.create(licensekey='$COMPLEASY_LICENSE_KEY', created_by=user)
+EOF
+```
+
+4. Run the Lynis integration test:
+
+```bash
+docker compose -f docker compose.dev.yml up --abort-on-container-exit lynis-client
+```
+
+5. Run Python integration tests:
+
+```bash
+docker compose -f docker compose.dev.yml --profile test run --rm test pytest api/tests_integration.py -v -m integration
+```
+
+6. Cleanup:
+
+```bash
+docker compose -f docker compose.dev.yml down -v
+```
+
+### Test Structure
+
+- `src/api/tests.py` - Unit tests for API endpoints (`upload_report`, `check_license`)
+- `src/api/tests_integration.py` - Integration tests for end-to-end Lynis workflow
+- `src/conftest.py` - Shared pytest fixtures (LicenseKey, Device, mock Lynis reports)
+- `pytest.ini` - Pytest configuration
+- `docker compose.dev.yml` - Development environment with Compleasy and Lynis client
+- `lynis/Dockerfile` - Docker image for Lynis client testing
+- `lynis/run-lynis-test.sh` - Script to automate Lynis scan and report upload
+
+### Continuous Integration
+
+Tests run automatically on:
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
+
+The CI pipeline includes:
+- Unit tests with coverage reporting
+- Integration tests with Docker
+- Code quality checks
+
+See `.github/workflows/test.yml` for the complete CI configuration.
