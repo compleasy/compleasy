@@ -5,7 +5,7 @@ services:
     volumes:
       - ./src:/app
     environment:
-      - SECRET_KEY=KQ7sk-2G0RUQ_tAAchzsGBwhxr0FpB8RzuRr5J08VQ9TUdzPAX9yOIbBC19_tiJgokQ
+      - SECRET_KEY=${SECRET_KEY}
       - COMPLEASY_URL=https://localhost:3000
       - COMPLEASY_ADMIN_USERNAME=admin
       - COMPLEASY_ADMIN_PASSWORD=compleasy

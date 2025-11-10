@@ -24,13 +24,13 @@ Before starting, you need to set up the required environment variables:
 cp .env.example .env
 ```
 
-2. Generate a secure SECRET_KEY:
+2. (Optional but recommended for production) Generate a new SECRET_KEY:
 
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
-3. Edit the `.env` file and replace `your-secret-key-here` with the generated key, or set it directly in `docker-compose.yml`.
+Then edit the `.env` file and replace the SECRET_KEY value with your newly generated key.
 
 ### Setup
 
@@ -47,7 +47,7 @@ cd compleasy
 ```
 
 > [!IMPORTANT]
-> **Security Note:** The `SECRET_KEY` is a critical security setting for Django. Never commit your actual secret key to version control. The key in `docker-compose.yml` is provided as an example and should be changed for any deployment.
+> **Security Note:** The `SECRET_KEY` is a critical security setting for Django. Never commit your actual secret key to version control. The `.env` file is excluded from git to protect your secrets. For production deployments, always generate a new unique SECRET_KEY.
 
 3. Run docker-compose:
 
