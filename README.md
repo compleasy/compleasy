@@ -14,6 +14,26 @@
 
 ## Installation vía Docker
 
+### Prerequisites
+
+Before starting, you need to set up the required environment variables:
+
+1. Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+2. Generate a secure SECRET_KEY:
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+3. Edit the `.env` file and replace `your-secret-key-here` with the generated key, or set it directly in `docker-compose.yml`.
+
+### Setup
+
 1. Clone the repository:
 
 ```bash
@@ -25,6 +45,9 @@ git clone https://github.com/compleasy/compleasy.git
 ```bash
 cd compleasy
 ```
+
+> [!IMPORTANT]
+> **Security Note:** The `SECRET_KEY` is a critical security setting for Django. Never commit your actual secret key to version control. The key in `docker-compose.yml` is provided as an example and should be changed for any deployment.
 
 3. Run docker-compose:
 
