@@ -24,13 +24,13 @@ Before starting, you need to set up the required environment variables:
 cp .env.example .env
 ```
 
-2. (Optional but recommended for production) Generate a new SECRET_KEY:
+2. Generate a secure SECRET_KEY:
 
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
-Then edit the `.env` file and replace the SECRET_KEY value with your newly generated key.
+3. Edit the `.env` file and replace `GENERATE_THIS_SECRET_KEY_AS_EXPLAINED_ABOVE` with your newly generated key.
 
 ### Setup
 
