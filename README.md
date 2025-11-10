@@ -32,6 +32,11 @@ python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 
 3. Edit the `.env` file and replace `GENERATE_THIS_SECRET_KEY_AS_EXPLAINED_ABOVE` with your newly generated key.
 
+4. (Optional) For development environments only, you can enable DEBUG mode by adding `DJANGO_DEBUG=True` to your `.env` file. 
+
+> [!CAUTION]
+> **Security Critical:** NEVER set `DJANGO_DEBUG=True` in production environments. Running with DEBUG enabled exposes sensitive information including stack traces, environment variables, and database queries to potential attackers. The default is `False` for security.
+
 ### Setup
 
 1. Clone the repository:

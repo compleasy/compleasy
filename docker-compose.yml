@@ -6,6 +6,7 @@ services:
       - ./src:/app
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
       - COMPLEASY_URL=https://localhost:3000
       - COMPLEASY_ADMIN_USERNAME=admin
       - COMPLEASY_ADMIN_PASSWORD=compleasy
