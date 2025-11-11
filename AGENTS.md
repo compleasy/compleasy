@@ -181,7 +181,7 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test
 ### Running Development Server
 
 ```bash
-docker compose -f docker-compose.dev.yml up compleasy-dev
+docker compose -f docker-compose.dev.yml up compleasy
 ```
 
 ### Running Integration Tests with Lynis
@@ -192,7 +192,7 @@ export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))
 export COMPLEASY_LICENSE_KEY=test-license-key-$(date +%s)
 
 # Start services
-docker compose -f docker-compose.dev.yml up -d compleasy-dev
+docker compose -f docker-compose.dev.yml up -d compleasy
 
 # Wait for health check, then run Lynis client
 docker compose -f docker-compose.dev.yml up --abort-on-container-exit lynis-client
