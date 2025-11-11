@@ -142,9 +142,9 @@ def enroll_sh(request):
     licensekey = request.GET.get('licensekey')
     if not licensekey:
         return HttpResponse('No license key provided', status=400)
-    # Should we check licensekey is valid?
-    # By now we just render the enroll page with the license key provided
-    # If the license is not valid, the agent will not be able to send the reports
+    # Validate license key exists
+    if not LicenseKey.objects.filter(licensekey=licensekey).exists():
+        return HttpResponse('Invalid license key', status=401)
 
     # Get the server url from environment variable
     compleasy_url = os.getenv('COMPLEASY_URL')
