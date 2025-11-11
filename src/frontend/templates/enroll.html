@@ -25,6 +25,11 @@ fi
 curl -s "${COMPLEASY_URL}" -o /dev/null
 if [ $? -ne 0 ]; then
     echo "Server certificate is self-signed. Adding it to the trusted certificates."
+    # Check if openssl and ca-certificates are installed
+    if [ ! -x "$(command -v openssl)" ] || [ ! -x "$(command -v update-ca-certificates)" ]; then
+        echo "openssl or ca-certificates are not installed. Installing them..."
+        ${SUDO} apt-get update && ${SUDO} apt-get install -y openssl ca-certificates
+    fi
     openssl s_client -showcerts -connect ${COMPLEASY_URL#https://} </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p' > ${COMPLEASY_CERT_TMP}
     ${SUDO} cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
     ${SUDO} update-ca-certificates
