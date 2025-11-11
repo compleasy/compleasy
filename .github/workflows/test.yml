@@ -19,14 +19,14 @@ jobs:
     
     - name: Build test image
       run: |
-        docker compose -f docker compose.dev.yml --profile test build test
+        docker compose -f docker-compose.dev.yml --profile test build test
     
     - name: Run unit tests with coverage
       env:
         SECRET_KEY: test-secret-key-for-ci
         DJANGO_DEBUG: 'False'
       run: |
-        docker compose -f docker compose.dev.yml --profile test run --rm test pytest --cov=api --cov=frontend --cov-report=xml --cov-report=term-missing -v -m "not integration"
+        docker compose -f docker-compose.dev.yml --profile test run --rm test pytest --cov=api --cov=frontend --cov-report=xml --cov-report=term-missing -v -m "not integration"
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -59,11 +59,11 @@ jobs:
     
     - name: Build Docker images
       run: |
-        docker compose -f docker compose.dev.yml build
+        docker compose -f docker-compose.dev.yml build
     
     - name: Start Compleasy service
       run: |
-        docker compose -f docker compose.dev.yml up -d compleasy-dev
+        docker compose -f docker-compose.dev.yml up -d compleasy-dev
       env:
         SECRET_KEY: ${{ env.SECRET_KEY }}
     
@@ -73,7 +73,7 @@ jobs:
     
     - name: Create test license key in database
       run: |
-        docker compose -f docker compose.dev.yml exec -T compleasy-dev python manage.py shell <<EOF
+        docker compose -f docker-compose.dev.yml exec -T compleasy-dev python manage.py shell <<EOF
         from django.contrib.auth.models import User
         from api.models import LicenseKey
         user = User.objects.first()
@@ -83,21 +83,21 @@ jobs:
     
     - name: Run Lynis integration test
       run: |
-        docker compose -f docker compose.dev.yml up --abort-on-container-exit lynis-client
+        docker compose -f docker-compose.dev.yml up --abort-on-container-exit lynis-client
       env:
         COMPLEASY_LICENSE_KEY: ${{ env.COMPLEASY_LICENSE_KEY }}
     
     - name: Check integration test results
       run: |
-        EXIT_CODE=$(docker compose -f docker compose.dev.yml ps -q lynis-client | xargs docker inspect -f '{{.State.ExitCode}}')
+        EXIT_CODE=$(docker compose -f docker-compose.dev.yml ps -q lynis-client | xargs docker inspect -f '{{.State.ExitCode}}')
         if [ "$EXIT_CODE" != "0" ]; then
           echo "Integration test failed with exit code $EXIT_CODE"
-          docker compose -f docker compose.dev.yml logs lynis-client
+          docker compose -f docker-compose.dev.yml logs lynis-client
           exit 1
         fi
     
     - name: Cleanup
       if: always()
       run: |
-        docker compose -f docker compose.dev.yml down -v
+        docker compose -f docker-compose.dev.yml down -v
 
