@@ -643,7 +643,7 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test pytest -m 
 ## Verification Checklist
 
 - [x] Health check endpoint returns correct status
-- [ ] Error responses are standardized across API
+- [x] Error responses are standardized across API
 - [ ] Backup documentation is complete and tested
 - [ ] Policy query security tests all pass
 - [ ] Admin interfaces show enhanced functionality
@@ -691,7 +691,7 @@ Critical Lynis endpoints are not modified in this phase, ensuring backward compa
 ### To-dos
 
 - [x] Create health check endpoint with database and cache connectivity checks
-- [ ] Implement standardized error response format across API endpoints
+- [x] Implement standardized error response format across API endpoints
 - [ ] Add comprehensive backup and recovery documentation to README
 - [ ] Write security tests for policy query parser to prevent injection attacks
 - [ ] Enhance Django admin interfaces with filters, search, and better displays
