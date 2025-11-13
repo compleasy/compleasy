@@ -326,4 +326,4 @@ class LynisReport:
         # Convert list to string
         logging.debug(f'Filtered IPv4 addresses: {filtered_addresses}')
         return filtered_addresses
-        
+

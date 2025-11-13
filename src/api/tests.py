@@ -219,7 +219,7 @@ class TestUploadReport:
         assert report.full_report.strip() == real_lynis_report.strip()
         
         # Verify the report can be parsed (basic validation)
-        from utils.lynis_report import LynisReport
+        from api.utils.lynis_report import LynisReport
         parsed_report = LynisReport(real_lynis_report)
         assert parsed_report.keys is not None
         assert len(parsed_report.keys) > 0

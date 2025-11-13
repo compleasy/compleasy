@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from .models import LicenseKey, Device, FullReport, DiffReport
 from .forms import ReportUploadForm
-from utils.lynis_report import LynisReport
+from api.utils.lynis_report import LynisReport
 #from utils.diff_utils import generate_diff, analyze_diff
 import os
 import logging

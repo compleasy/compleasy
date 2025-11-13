@@ -17,9 +17,17 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
     path('', include('frontend.urls')),
-]
+    
+    # API v1 (versioned endpoints)
+    path('api/v1/', include('api.urls', namespace='api_v1')),
+    
+    # Legacy API (backward compatibility for Lynis)
+    # These endpoints must remain for external Lynis clients
+    path('api/', include('api.urls_legacy')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -2,7 +2,7 @@ from pyparsing import Word, alphas, nums, oneOf, quotedString, ParseException, S
 import logging
 from django.db.models import Q
 from django.apps import apps
-from utils.lynis_report import LynisReport
+from api.utils.lynis_report import LynisReport
 
 # Define the components of the query
 word = Word(alphas + '_')

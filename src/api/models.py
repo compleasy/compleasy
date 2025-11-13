@@ -33,12 +33,6 @@ class FullReport(models.Model):
 
     def save(self, *args, **kwargs):
         super(FullReport, self).save(*args, **kwargs)
-        # Keep only the latest 1 reports for each device
-        reports = FullReport.objects.filter(device=self.device).order_by('-created_at')
-        if reports.count() > 1:
-            # Delete older reports except the latest 2
-            for report in reports[2:]:
-                report.delete()
 
 class DiffReport(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)

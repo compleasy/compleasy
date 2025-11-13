@@ -3,8 +3,8 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset
-from utils.lynis_report import LynisReport
-from utils.compliance import check_device_compliance
+from api.utils.lynis_report import LynisReport
+from api.utils.compliance import check_device_compliance
 from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm
 import os
 import json

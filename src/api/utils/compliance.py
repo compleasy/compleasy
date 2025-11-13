@@ -41,3 +41,4 @@ def check_device_compliance(device, report):
             compliant = False
     
     return compliant, evaluated_rulesets
+

@@ -8,6 +8,7 @@ services:
       - ./src:/app
     environment:
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - DJANGO_ENV=development
       - DJANGO_DEBUG=True
       - COMPLEASY_URL=https://compleasy:443
       - COMPLEASY_ADMIN_USERNAME=admin
@@ -51,6 +52,7 @@ services:
       - ./pytest.ini:/app/pytest.ini
     environment:
       - SECRET_KEY=${SECRET_KEY:-test-secret-key-for-testing}
+      - DJANGO_ENV=testing
       - DJANGO_DEBUG=False
       - DJANGO_ALLOWED_HOSTS=*
     working_dir: /app

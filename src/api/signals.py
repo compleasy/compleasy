@@ -1,6 +1,6 @@
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
-from api.models import LicenseKey
+from api.models import LicenseKey, FullReport
 from django.core.management import call_command
 from django.db import connection
 import random
@@ -21,3 +21,16 @@ def first_run(sender, **kwargs):
                 if not tables:
                     call_command('migrate')
                     call_command('populate_db_licensekey')
+
+@receiver(post_save, sender=FullReport)
+def cleanup_old_reports(sender, instance, created, **kwargs):
+    """
+    Keep only the latest 2 reports for each device.
+    This signal fires after a FullReport is saved.
+    """
+    if created:  # Only run for new reports
+        reports = FullReport.objects.filter(device=instance.device).order_by('-created_at')
+        if reports.count() > 2:
+            # Delete older reports except the latest 2
+            for report in reports[2:]:
+                report.delete()

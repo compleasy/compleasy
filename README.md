@@ -121,6 +121,15 @@ sudo apt install rkhunter auditd aide
 
 1. Access the Compleasy server at `http://yourserver:3000`.
 
+### Collecting Static Files for Production
+
+Before deploying to production, collect static files:
+
+```bash
+docker compose -f docker-compose.yml run --rm compleasy python manage.py collectstatic --no-input
+```
+
+This collects all static files into `STATIC_ROOT` (default: `staticfiles/`) for serving by Nginx/Apache.
 
 ### Advanced configuration
 
@@ -239,6 +248,40 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test pytest api
 ```bash
 docker compose -f docker-compose.dev.yml down -v
 ```
+
+### Project Structure
+
+#### Code Organization
+
+- `src/api/` - API application (models, views, forms, tests)
+  - `src/api/utils/` - Utility modules (compliance, lynis_report, policy_query)
+- `src/frontend/` - Frontend application (views, templates, static files)
+- `src/compleasy/` - Django project settings
+  - `src/compleasy/settings/` - Environment-specific settings package
+    - `base.py` - Common settings shared across all environments
+    - `development.py` - Development-specific settings (default)
+    - `production.py` - Production-specific settings
+    - `testing.py` - Testing-specific settings
+- `src/conftest.py` - Pytest fixtures
+
+#### Settings Configuration
+
+Settings are organized by environment using the `DJANGO_ENV` environment variable:
+
+- **Development** (`DJANGO_ENV=development` or unset): Debug mode enabled, relaxed security
+- **Production** (`DJANGO_ENV=production`): Debug disabled, strict security, requires `DJANGO_ALLOWED_HOSTS` and `DATABASE_URL`
+- **Testing** (`DJANGO_ENV=testing`): In-memory SQLite, faster password hashing, rate limiting disabled
+
+The settings package automatically loads the appropriate configuration based on `DJANGO_ENV`.
+
+#### API Versioning
+
+Compleasy supports API versioning while maintaining backward compatibility:
+
+- **Versioned API**: `/api/v1/lynis/upload/`, `/api/v1/lynis/license/`
+- **Legacy API**: `/api/lynis/upload/`, `/api/lynis/license/` (for Lynis client compatibility)
+
+Both endpoints route to the same views. The legacy endpoints are maintained for external Lynis installations.
 
 ### Test Structure
 
