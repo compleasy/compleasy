@@ -465,6 +465,16 @@ The CI pipeline includes:
 
 See `.github/workflows/test.yml` for the complete CI configuration.
 
+## Acknowledgments
+
+Compleasy is built on [Lynis](https://cisofy.com/lynis/), an excellent open-source security auditing tool. We are grateful to the Lynis project and its community for providing such a robust foundation.
+
+### Important Note
+
+**Compleasy is not a professional product.** This is an open-source project in active development. If you are looking for a robust, production-ready security solution with professional support, service level agreements, and enterprise features, we recommend considering [Lynis Enterprise](https://cisofy.com/pricing/) by CISOfy.
+
+> **Note:** We have no relationship, affiliation, or partnership with CISOfy. This recommendation is made solely to help users find appropriate solutions for their needs.
+
 ## License
 
 Compleasy is licensed under the **GNU General Public License v3.0** (GPL-3.0).

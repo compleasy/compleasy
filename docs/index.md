@@ -69,6 +69,17 @@ Compleasy is ideal for:
 !!! warning "Development Status"
     This project is still in development and should **NOT** be used in production.
 
+## Acknowledgments
+
+Compleasy is built on [Lynis](https://cisofy.com/lynis/), an excellent open-source security auditing tool. We are grateful to the Lynis project and its community for providing such a robust foundation.
+
+### Important Note
+
+**Compleasy is not a professional product.** This is an open-source project in active development. If you are looking for a robust, production-ready security solution with professional support, service level agreements, and enterprise features, we recommend considering [Lynis Enterprise](https://cisofy.com/pricing/) by CISOfy.
+
+!!! note "No Affiliation"
+    We have no relationship, affiliation, or partnership with CISOfy. This recommendation is made solely to help users find appropriate solutions for their needs.
+
 ## Getting Help
 
 - **Issues:** [GitHub Issues](https://github.com/compleasy/compleasy/issues)
