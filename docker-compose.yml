@@ -16,6 +16,12 @@ services:
     ports:
       - 8000:8000
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
   
   nginx:
     image: nginx:latest
@@ -29,4 +35,5 @@ services:
     environment:
       - NGINX_CERT_CN=${NGINX_CERT_CN:-nginx}
     depends_on:
-      - compleasy
+      compleasy:
+        condition: service_healthy

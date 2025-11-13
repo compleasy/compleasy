@@ -19,7 +19,7 @@ services:
       - 8000:8000
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/')"]
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health/"]
       interval: 10s
       timeout: 5s
       retries: 5
