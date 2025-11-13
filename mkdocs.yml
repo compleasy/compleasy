@@ -1,0 +1,146 @@
+site_name: Compleasy Documentation
+site_description: Linux server auditing solution based on Lynis
+site_url: https://compleasy.github.io/compleasy
+repo_url: https://github.com/compleasy/compleasy
+repo_name: compleasy/compleasy
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2024 Compleasy Contributors
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/book-open-variant
+  language: en
+
+plugins:
+  - search:
+      lang: en
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+      fallback_to_build_date: false
+  - awesome-pages
+
+markdown_extensions:
+  # Admonitions
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  # Code highlighting
+  - codehilite:
+      guess_lang: true
+      use_pygments: true
+      pygments_style: material
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  # Tables
+  - tables
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  # Navigation
+  - toc:
+      permalink: true
+      baselevel: 2
+      toc_depth: 3
+  # Typography
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.critic
+  - pymdownx.keys
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  # Math (if needed)
+  - pymdownx.arithmatex:
+      generic: true
+  # Footnotes
+  - footnotes
+  - pymdownx.snippets:
+      auto_append:
+        - docs/snippets/abbreviations.txt
+  # Attributes
+  - attr_list
+  - md_in_html
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/compleasy/compleasy
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Installation:
+    - installation/index.md
+    - installation/docker.md
+    - installation/postgresql.md
+    - installation/client-setup.md
+  - Configuration:
+    - configuration/index.md
+    - configuration/environment-variables.md
+    - configuration/security.md
+    - configuration/advanced.md
+  - Usage:
+    - usage/index.md
+    - usage/getting-started.md
+    - usage/dashboard.md
+    - usage/policies.md
+    - usage/reports.md
+  - API Reference:
+    - api/index.md
+    - api/endpoints.md
+    - api/authentication.md
+    - api/examples.md
+  - Development:
+    - development/index.md
+    - development/setup.md
+    - development/testing.md
+    - development/contributing.md
+  - License: license.md
+
+strict: true
+

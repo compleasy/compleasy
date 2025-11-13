@@ -17,3 +17,6 @@ __pycache__/
 # Log files
 logs/*.log
 *.log
+
+# MkDocs build output
+site/

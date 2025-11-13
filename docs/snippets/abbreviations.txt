@@ -1,0 +1,14 @@
+*[API]: Application Programming Interface
+*[HSTS]: HTTP Strict Transport Security
+*[SSL]: Secure Sockets Layer
+*[TLS]: Transport Layer Security
+*[CSRF]: Cross-Site Request Forgery
+*[SQL]: Structured Query Language
+*[HTTPS]: HTTP Secure
+*[HTTP]: Hypertext Transfer Protocol
+*[CI]: Continuous Integration
+*[CD]: Continuous Deployment
+*[DDoS]: Distributed Denial of Service
+*[OWASP]: Open Web Application Security Project
+*[CIS]: Center for Internet Security
+
