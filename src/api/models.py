@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .utils.policy_query import evaluate_query
 
 class LicenseKey(models.Model):
-    licensekey = models.CharField(max_length=255)
+    licensekey = models.CharField(max_length=255, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -11,8 +11,8 @@ class Device(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     licensekey = models.ForeignKey(LicenseKey, on_delete=models.CASCADE)
-    hostid = models.CharField(max_length=255)
-    hostid2 = models.CharField(max_length=255)
+    hostid = models.CharField(max_length=255, db_index=True)
+    hostid2 = models.CharField(max_length=255, db_index=True)
     hostname = models.CharField(max_length=255, blank=True, null=True)
     os = models.CharField(max_length=255, blank=True, null=True)
     distro = models.CharField(max_length=255, blank=True, null=True)
@@ -22,6 +22,13 @@ class Device(models.Model):
     warnings = models.IntegerField(blank=True, null=True)
     rulesets = models.ManyToManyField('PolicyRuleset', related_name='devices', blank=True)
     compliant = models.BooleanField(default=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['licensekey', 'hostid']),
+            models.Index(fields=['licensekey', 'hostid2']),
+            models.Index(fields=['last_update']),
+        ]
 
 class FullReport(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)

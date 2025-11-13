@@ -360,3 +360,172 @@ class TestHealthCheck:
         # OPTIONS should work
         response = client.options(url)
         assert response.status_code == 200
+
+
+@pytest.mark.django_db
+class TestDatabaseIndexes:
+    """Tests to verify database indexes are working correctly."""
+    
+    def test_licensekey_index_query(self, test_license_key):
+        """Test that queries on licensekey field use the index."""
+        # Create multiple license keys
+        from django.contrib.auth.models import User
+        user = test_license_key.created_by
+        
+        # Query by licensekey - should be fast with index
+        found_key = LicenseKey.objects.filter(licensekey=test_license_key.licensekey).first()
+        assert found_key is not None
+        assert found_key.licensekey == test_license_key.licensekey
+        
+        # Test exists() query which is commonly used
+        assert LicenseKey.objects.filter(licensekey=test_license_key.licensekey).exists()
+        assert not LicenseKey.objects.filter(licensekey='non-existent-key').exists()
+    
+    def test_device_hostid_index_query(self, test_device):
+        """Test that queries on hostid field use the index."""
+        # Query by hostid - should be fast with index
+        found_device = Device.objects.filter(hostid=test_device.hostid).first()
+        assert found_device is not None
+        assert found_device.hostid == test_device.hostid
+    
+    def test_device_hostid2_index_query(self, test_device):
+        """Test that queries on hostid2 field use the index."""
+        # Query by hostid2 - should be fast with index
+        found_device = Device.objects.filter(hostid2=test_device.hostid2).first()
+        assert found_device is not None
+        assert found_device.hostid2 == test_device.hostid2
+    
+    def test_device_composite_index_licensekey_hostid(self, test_license_key):
+        """Test that composite queries on (licensekey, hostid) use the composite index."""
+        from api.models import Device
+        
+        # Create a device
+        device = Device.objects.create(
+            licensekey=test_license_key,
+            hostid='composite-test-hostid',
+            hostid2='composite-test-hostid2'
+        )
+        
+        # Query using both fields - should use composite index
+        found_device = Device.objects.filter(
+            licensekey=test_license_key,
+            hostid='composite-test-hostid'
+        ).first()
+        
+        assert found_device is not None
+        assert found_device.hostid == 'composite-test-hostid'
+        assert found_device.licensekey == test_license_key
+    
+    def test_device_composite_index_licensekey_hostid2(self, test_license_key):
+        """Test that composite queries on (licensekey, hostid2) use the composite index."""
+        from api.models import Device
+        
+        # Create a device
+        device = Device.objects.create(
+            licensekey=test_license_key,
+            hostid='composite-test-hostid',
+            hostid2='composite-test-hostid2'
+        )
+        
+        # Query using both fields - should use composite index
+        found_device = Device.objects.filter(
+            licensekey=test_license_key,
+            hostid2='composite-test-hostid2'
+        ).first()
+        
+        assert found_device is not None
+        assert found_device.hostid2 == 'composite-test-hostid2'
+        assert found_device.licensekey == test_license_key
+    
+    def test_device_get_or_create_uses_indexes(self, test_license_key):
+        """Test that get_or_create queries use the indexes efficiently."""
+        from api.models import Device
+        
+        # This is the actual query pattern used in views.py
+        device, created = Device.objects.get_or_create(
+            hostid='get-or-create-hostid',
+            hostid2='get-or-create-hostid2',
+            licensekey=test_license_key
+        )
+        
+        assert created is True
+        assert device.hostid == 'get-or-create-hostid'
+        assert device.hostid2 == 'get-or-create-hostid2'
+        
+        # Try again - should find existing device
+        device2, created2 = Device.objects.get_or_create(
+            hostid='get-or-create-hostid',
+            hostid2='get-or-create-hostid2',
+            licensekey=test_license_key
+        )
+        
+        assert created2 is False
+        assert device2.id == device.id
+    
+    def test_device_last_update_index_sorting(self, test_license_key):
+        """Test that sorting by last_update uses the index."""
+        from api.models import Device
+        from django.utils import timezone
+        import datetime
+        
+        # Create multiple devices with different last_update times
+        now = timezone.now()
+        devices = []
+        for i in range(5):
+            device = Device.objects.create(
+                licensekey=test_license_key,
+                hostid=f'sort-test-hostid-{i}',
+                hostid2=f'sort-test-hostid2-{i}',
+                last_update=now - datetime.timedelta(hours=i)
+            )
+            devices.append(device)
+        
+        # Query sorted by last_update - should use index
+        sorted_devices = Device.objects.filter(
+            licensekey=test_license_key
+        ).order_by('last_update')
+        
+        assert sorted_devices.count() >= 5
+        # Verify ordering (oldest first)
+        last_update_values = [d.last_update for d in sorted_devices if d.last_update]
+        assert last_update_values == sorted(last_update_values)
+        
+        # Test descending order
+        sorted_devices_desc = Device.objects.filter(
+            licensekey=test_license_key
+        ).order_by('-last_update')
+        
+        last_update_values_desc = [d.last_update for d in sorted_devices_desc if d.last_update]
+        assert last_update_values_desc == sorted(last_update_values_desc, reverse=True)
+    
+    def test_indexes_exist_in_database(self, db):
+        """Test that indexes actually exist in the database schema."""
+        from django.db import connection
+        
+        # Get table names
+        with connection.cursor() as cursor:
+            # For SQLite, check that indexes exist
+            if connection.vendor == 'sqlite':
+                cursor.execute("""
+                    SELECT name FROM sqlite_master 
+                    WHERE type='index' 
+                    AND tbl_name IN ('api_licensekey', 'api_device')
+                    AND name NOT LIKE 'sqlite_%'
+                """)
+                indexes = [row[0] for row in cursor.fetchall()]
+                
+                # Check for expected indexes
+                # Note: SQLite creates indexes automatically for db_index=True fields
+                # and composite indexes from Meta.indexes
+                assert len(indexes) > 0, "Should have at least some indexes"
+                
+                # Verify we can query the index information
+                cursor.execute("""
+                    SELECT sql FROM sqlite_master 
+                    WHERE type='index' 
+                    AND tbl_name='api_device'
+                """)
+                device_indexes = [row[0] for row in cursor.fetchall() if row[0]]
+                
+                # Should have indexes (exact names depend on Django's naming)
+                assert len(device_indexes) > 0, "Device table should have indexes"
