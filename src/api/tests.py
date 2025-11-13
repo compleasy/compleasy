@@ -305,3 +305,58 @@ class TestCheckLicense:
         response = client.delete(url)
         assert response.status_code == 405
         assert response.content == b'Invalid request method'
+
+
+@pytest.mark.django_db
+class TestHealthCheck:
+    """Tests for the health check endpoint."""
+
+    def test_health_check_healthy(self):
+        """Test health check returns healthy status when all checks pass."""
+        client = Client()
+        url = reverse('health_check')
+        
+        response = client.get(url)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data['status'] == 'healthy'
+        assert data['checks']['database'] == 'ok'
+        assert data['checks']['cache'] == 'ok'
+
+    def test_health_check_json_format(self):
+        """Test health check returns valid JSON format."""
+        client = Client()
+        url = reverse('health_check')
+        
+        response = client.get(url)
+        
+        assert response.status_code == 200
+        assert response['Content-Type'] == 'application/json'
+        data = response.json()
+        assert 'status' in data
+        assert 'checks' in data
+        assert isinstance(data['checks'], dict)
+        assert 'database' in data['checks']
+        assert 'cache' in data['checks']
+
+    def test_health_check_allows_all_methods(self):
+        """Test health check accepts GET, POST, HEAD, OPTIONS methods."""
+        client = Client()
+        url = reverse('health_check')
+        
+        # GET should work
+        response = client.get(url)
+        assert response.status_code == 200
+        
+        # POST should work (health checks often use POST)
+        response = client.post(url)
+        assert response.status_code == 200
+        
+        # HEAD should work
+        response = client.head(url)
+        assert response.status_code == 200
+        
+        # OPTIONS should work
+        response = client.options(url)
+        assert response.status_code == 200
