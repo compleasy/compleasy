@@ -692,7 +692,7 @@ Critical Lynis endpoints are not modified in this phase, ensuring backward compa
 
 - [x] Create health check endpoint with database and cache connectivity checks
 - [x] Implement standardized error response format across API endpoints
-- [ ] Add comprehensive backup and recovery documentation to README
+- [x] Add comprehensive backup and recovery documentation to docs directory
 - [x] Write security tests for policy query parser to prevent injection attacks
 - [x] Enhance Django admin interfaces with filters, search, and better displays
 - [x] Create audit logging middleware for tracking sensitive operations

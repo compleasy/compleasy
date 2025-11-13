@@ -14,6 +14,7 @@ Compleasy consists of two main components:
 - **[Docker Installation](docker.md)** - Recommended for most users (quick setup)
 - **[PostgreSQL Setup](postgresql.md)** - Database configuration for production
 - **[Client Setup](client-setup.md)** - Configuring Lynis clients to send reports
+- **[Backup & Recovery](backup-recovery.md)** - Backup strategies and recovery procedures
 
 ## Prerequisites
 
