@@ -476,11 +476,11 @@ Each change is independent and can be reverted:
 
 ### To-dos
 
-- [ ] Add validators to ReportUploadForm for license key, hostid, and data fields
-- [ ] Move src/utils/*.py files to src/api/utils/ and update all imports
-- [ ] Add STATIC_ROOT configuration to settings and document collectstatic
-- [ ] Move report cleanup logic from FullReport.save() to signal handler
-- [ ] Add API versioning (/api/v1/) while maintaining backward compatibility
-- [ ] Split settings.py into settings package (base/development/production/testing)
-- [ ] Update README.md with new structure documentation
-- [ ] Run complete test suite and verify Lynis integration works
+- [x] Add validators to ReportUploadForm for license key, hostid, and data fields
+- [x] Move src/utils/*.py files to src/api/utils/ and update all imports
+- [x] Add STATIC_ROOT configuration to settings and document collectstatic
+- [x] Move report cleanup logic from FullReport.save() to signal handler
+- [x] Add API versioning (/api/v1/) while maintaining backward compatibility
+- [x] Split settings.py into settings package (base/development/production/testing)
+- [x] Update README.md with new structure documentation
+- [x] Run complete test suite and verify Lynis integration works
