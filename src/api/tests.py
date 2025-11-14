@@ -52,7 +52,7 @@ class TestUploadReport:
         })
         
         assert response.status_code == 401
-        assert response.content == b'Invalid license key'
+        assert response.content == b'License key does not exist'
 
     def test_upload_report_missing_hostid(self, test_license_key, sample_lynis_report):
         """Test uploading a report with missing hostid returns 400."""
