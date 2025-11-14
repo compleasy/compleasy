@@ -487,6 +487,37 @@ Compleasy supports API versioning while maintaining backward compatibility:
 
 Both endpoints route to the same views. The legacy endpoints are maintained for external Lynis installations.
 
+#### UI/UX Architecture
+
+Compleasy follows a consistent **collapsible sidebar pattern** for CRUD operations:
+
+- **List views**: Full-window display
+- **Detail views**: Full-window with related data
+- **Create/Edit operations**: Collapsible right-side panel (sidebar)
+
+This pattern provides:
+- Context preservation (users see list/details while editing)
+- Reduced cognitive load (no page navigation)
+- Quick operations (fast edits without losing place)
+- Modern, familiar UX
+
+**When to use:**
+- ✅ Simple forms (3-6 fields)
+- ✅ Frequent edit operations
+- ✅ Quick create/update workflows
+
+**When to use full-page forms:**
+- ❌ Complex forms (10+ fields)
+- ❌ Multi-step wizards
+- ❌ Rich content editing
+
+**Current implementations:**
+- Rules: `src/frontend/templates/policy/rule_edit_sidebar.html`
+- Rulesets: `src/frontend/templates/policy/ruleset_selection_sidebar.html`
+- Licenses: `src/frontend/templates/license/license_edit_sidebar.html`
+
+See `AGENTS.md` → "UI/UX Architecture" for detailed implementation patterns and code examples.
+
 ### Test Structure
 
 - `src/api/tests.py` - Unit tests for API endpoints (`upload_report`, `check_license`)

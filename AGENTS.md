@@ -207,6 +207,111 @@ The license system supports both **per-device licenses** and **shared licenses**
 - Migrations are automatically run in test container
 - Never commit database files (`*.sqlite3`)
 
+## UI/UX Architecture
+
+### Collapsible Sidebar Pattern
+
+Compleasy uses a **consistent UX pattern** for CRUD operations:
+
+- **List views**: Full-window display (e.g., license list, device list)
+- **Detail views**: Full-window with related data (e.g., license details with devices)
+- **Create/Edit operations**: Collapsible right-side panel (sidebar)
+
+#### Rationale
+
+This pattern provides:
+- **Context preservation**: Users see the list/details while editing
+- **Reduced cognitive load**: No navigation interruption or page reloads
+- **Quick operations**: Fast edits without losing place
+- **Modern UX**: Follows patterns from popular apps (Gmail, Slack, Linear)
+
+#### When to Use Collapsible Sidebar
+
+✅ **Use sidebar for:**
+- Simple forms (3-6 fields)
+- Frequent edit operations
+- Forms where seeing related data adds value
+- Quick create/update workflows
+
+❌ **Use full-page form for:**
+- Complex forms (10+ fields) or multi-step wizards
+- Critical operations requiring full attention
+- Rich content editing (markdown, WYSIWYG)
+- Heavy media uploads
+- Mobile-first features where sidebars don't work well
+
+#### Implementation Pattern
+
+**Current implementations:**
+- Rules: `src/frontend/templates/policy/rule_edit_sidebar.html` + `src/frontend/static/js/rules.js`
+- Rulesets: `src/frontend/templates/policy/ruleset_selection_sidebar.html` + `src/frontend/static/js/rulesets.js`
+- Licenses: `src/frontend/templates/license/license_edit_sidebar.html` + `src/frontend/static/js/licenses.js`
+
+**Template structure:**
+```html
+<div id="item-edit-panel" class="hidden fixed right-0 top-0 h-full w-1/4 bg-white shadow-md z-50">
+    <div class="flex justify-between items-center p-4 border-b bg-gray-200">
+        <h2 class="text-xl font-bold" id="item-edit-title">Edit Item</h2>
+        <button class="item-edit-panel-button"><!-- Close icon --></button>
+    </div>
+    <form id="item-edit-form" method="POST">
+        {% csrf_token %}
+        <!-- Form fields -->
+        <div class="absolute flex space-x-2 w-full bottom-0 p-4 bg-gray-200">
+            <button type="submit">Save</button>
+            <button type="button" class="item-edit-panel-button">Cancel</button>
+        </div>
+    </form>
+</div>
+```
+
+**JavaScript structure:**
+```javascript
+function toggleItemEditPanel(itemId) {
+    const panel = document.getElementById('item-edit-panel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) {
+        loadItemDetails(itemId);  // Populate form
+    }
+}
+
+function submitItemForm() {
+    // AJAX submission with X-Requested-With header
+    // Handle success (close panel, reload) or errors (show in panel)
+}
+```
+
+**Backend structure:**
+```python
+def item_create(request):
+    if request.method == 'POST':
+        form = ItemForm(request.POST)
+        if form.is_valid():
+            item = form.save()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'item_id': item.id})
+            return redirect('item_detail', item_id=item.id)
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    return redirect('item_list')  # Fallback
+```
+
+**Key requirements:**
+1. Sidebar template included in both list and detail pages
+2. JavaScript file loaded with item data serialized to JSON
+3. Views handle both AJAX (JSON response) and traditional (redirect) requests
+4. Toggle button classes: `.item-edit-panel-button` for open/close
+5. Form submission via AJAX with `X-Requested-With: XMLHttpRequest` header
+
+#### Best Practices
+
+- **Keyboard support**: Sidebar should close on `Esc` key (future enhancement)
+- **Error handling**: Show validation errors inline without closing sidebar
+- **Success feedback**: Currently reloads page; consider toast notifications
+- **Mobile**: Consider full-screen modal for small screens
+- **Consistency**: Follow existing patterns for new features
+
 ## Environment Variables
 
 ### Required

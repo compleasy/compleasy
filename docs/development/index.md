@@ -6,6 +6,7 @@ Guide for developers contributing to Compleasy.
 
 - **[Setup](setup.md)** - Setting up development environment
 - **[Testing](testing.md)** - Running and writing tests
+- **[UI/UX Architecture](ui-ux-architecture.md)** - Frontend patterns and best practices
 - **[Contributing](contributing.md)** - Contribution guidelines
 
 ## Development Environment
@@ -39,5 +40,6 @@ Compleasy development happens entirely in Docker containers - no local Python in
 
 - [Development Setup](setup.md) - Get started with development
 - [Testing Guide](testing.md) - Learn about testing
+- [UI/UX Architecture](ui-ux-architecture.md) - Understand frontend patterns
 - [Contributing](contributing.md) - Contribution guidelines
 
