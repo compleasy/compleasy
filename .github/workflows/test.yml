@@ -69,7 +69,7 @@ jobs:
     
     - name: Wait for service to be ready
       run: |
-        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done'
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs compleasy && exit 1)
     
     - name: Create test license key in database
       run: |

@@ -27,13 +27,15 @@ python manage.py migrate
 python manage.py createsuperuser --noinput --username=${COMPLEASY_ADMIN_USERNAME} --email=${COMPLEASY_ADMIN_EMAIL} || true
 
 # Update admin user password (from environment variable)
-python manage.py change_admin_password
+# Allow this to fail without crashing the container
+python manage.py change_admin_password || true
 
 # Add a license key (use provided env var if available, otherwise generate)
+# Allow this to fail without crashing the container
 if [ -n "${COMPLEASY_LICENSE_KEY}" ]; then
-  python manage.py populate_db_licensekey "${COMPLEASY_LICENSE_KEY}"
+  python manage.py populate_db_licensekey "${COMPLEASY_LICENSE_KEY}" || true
 else
-  python manage.py populate_db_licensekey
+  python manage.py populate_db_licensekey || true
 fi
 
 # Start server

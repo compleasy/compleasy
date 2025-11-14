@@ -32,7 +32,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # Use provided license key if given, otherwise generate one
         provided_license_key = kwargs.get('licensekey')
-        license_name = kwargs.get('name', 'Default License')
+        license_name = kwargs.get('name') or 'Default License'
         max_devices = kwargs.get('max_devices')
         
         if not provided_license_key and LicenseKey.objects.exists():
@@ -57,24 +57,38 @@ class Command(BaseCommand):
             defaults={'name': 'Default Organization', 'is_active': True}
         )
         
-        # Overwrite existing license or create a new one
-        existing = LicenseKey.objects.first()
+        # Check if license key already exists
+        existing = LicenseKey.objects.filter(licensekey=license_key).first()
         if existing:
-            existing.licensekey = license_key
-            # Ensure name is always set (required field)
-            existing.name = license_name or f"License {existing.id}"
+            # Update existing license with provided values
+            existing.name = license_name or existing.name or f"License {existing.id}"
             existing.created_by = user
             existing.organization = default_org
             if max_devices is not None:
                 existing.max_devices = max_devices
             existing.save()
-            self.stdout.write(self.style.SUCCESS('Successfully updated the existing license key'))
+            self.stdout.write(self.style.SUCCESS(f'Successfully updated existing license key: {license_key}'))
         else:
-            LicenseKey.objects.create(
-                licensekey=license_key,
-                name=license_name,
-                created_by=user,
-                organization=default_org,
-                max_devices=max_devices
-            )
-            self.stdout.write(self.style.SUCCESS('Successfully generated and added a license key to the database'))
+            # Check if there's any existing license (for backward compatibility)
+            first_license = LicenseKey.objects.first()
+            if first_license and not provided_license_key:
+                # If no specific key provided and a license exists, just update it
+                first_license.name = license_name or first_license.name or f"License {first_license.id}"
+                first_license.created_by = user
+                first_license.organization = default_org
+                if max_devices is not None:
+                    first_license.max_devices = max_devices
+                first_license.save()
+                self.stdout.write(self.style.SUCCESS('Successfully updated the existing license key'))
+            else:
+                # Create new license
+                # Ensure name is always set (required field)
+                final_name = license_name or f"License {license_key[:8]}"
+                LicenseKey.objects.create(
+                    licensekey=license_key,
+                    name=final_name,
+                    created_by=user,
+                    organization=default_org,
+                    max_devices=max_devices
+                )
+                self.stdout.write(self.style.SUCCESS(f'Successfully created license key: {license_key}'))
