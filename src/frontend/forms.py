@@ -57,7 +57,7 @@ class PolicyRuleForm(forms.ModelForm):
             }),
             'rule_query': forms.Textarea(attrs={
                 'class': 'mt-1 block w-full h-20 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
-                'placeholder': 'Enter rule query',
+                'placeholder': "e.g., os == 'Linux' && hardening_index > `70`",
             }),
         }
 

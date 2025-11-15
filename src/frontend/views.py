@@ -8,7 +8,6 @@ from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, P
 from api.utils.lynis_report import LynisReport
 from api.utils.compliance import check_device_compliance
 from api.utils.license_utils import generate_license_key
-from api.utils.policy_query import parse_query
 from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm, LicenseKeyForm
 import os
 import json
@@ -670,38 +669,8 @@ def rule_evaluate_for_device(request, device_id, rule_id):
             'rule': rule_info
         }, status=500)
     
-    # Parse the query to extract components
-    parsed_query = parse_query(rule.rule_query)
-    
-    if not parsed_query or len(parsed_query) < 3:
-        logging.error(f'Failed to parse query: "{rule.rule_query}". Parsed result: {parsed_query}')
-        return JsonResponse({
-            'success': False,
-            'error': f'Invalid query format: "{rule.rule_query}". Please check the syntax.',
-            'rule': rule_info
-        }, status=400)
-    
-    # Extract query components
-    field, operator, expected_value = parsed_query
-    
-    # Remove quotes from expected value if it's a quoted string
-    if expected_value.startswith('"') and expected_value.endswith('"'):
-        expected_value_clean = expected_value[1:-1]
-    elif expected_value.startswith("'") and expected_value.endswith("'"):
-        expected_value_clean = expected_value[1:-1]
-    else:
-        expected_value_clean = expected_value
-    
-    # Get actual value from report
-    actual_value = parsed_report.get(field)
-    key_found = actual_value is not None
-    
-    # Debug: log available fields if key not found
-    if not key_found:
-        available_fields = list(parsed_report.keys())
-        logging.debug(f'Field "{field}" not found in report. Available fields: {available_fields[:20]}...')  # Log first 20 fields
-    
     # Evaluate the rule with error handling
+    # JMESPath handles parsing internally, so we just evaluate directly
     try:
         evaluation_result = rule.evaluate(parsed_report)
     except Exception as e:
@@ -712,32 +681,53 @@ def rule_evaluate_for_device(request, device_id, rule_id):
             'rule': rule_info
         }, status=500)
     
-    # Format actual value for display
-    if actual_value is None:
-        actual_value_display = None
-    elif isinstance(actual_value, list):
-        actual_value_display = ', '.join(str(v) for v in actual_value)
-    else:
-        actual_value_display = str(actual_value)
-    
-    # Handle None evaluation result (evaluation failed)
+    # Handle None evaluation result (evaluation failed - invalid query syntax)
     evaluation_passed = evaluation_result is True
     if evaluation_result is None:
-        logging.warning(f'Rule evaluation returned None for rule {rule.id}, field: {field}, operator: {operator}')
+        logging.warning(f'Rule evaluation returned None for rule {rule.id}, query: "{rule.rule_query}"')
+        return JsonResponse({
+            'success': False,
+            'error': f'Invalid JMESPath query syntax: "{rule.rule_query}"',
+            'rule': rule_info
+        }, status=400)
+    
+    # Extract field names from the query and get their values from the report
+    # This helps users see what values were actually in the report when a rule fails
+    field_values = {}
+    if not evaluation_passed:
+        # Only extract field values when the rule fails (to help debug)
+        import re
+        # Extract field names from common JMESPath patterns:
+        # - Simple field access: field_name
+        # - Comparisons: field_name ==, field_name >, etc.
+        # - Functions: contains(field_name, ...), field_name in ...
+        # Pattern matches valid field names (letters, numbers, underscores, hyphens)
+        field_pattern = r'\b([a-zA-Z_][a-zA-Z0-9_-]*)\b'
+        # Exclude JMESPath keywords and functions
+        excluded = {'contains', 'length', 'keys', 'values', 'to_string', 'to_number', 
+                    'not_null', 'abs', 'avg', 'ceil', 'floor', 'max', 'min', 'sum',
+                    'true', 'false', 'null', 'and', 'or', 'not'}
+        
+        matches = re.findall(field_pattern, rule.rule_query)
+        for field_name in matches:
+            if field_name not in excluded and field_name[0].isalpha():
+                # Check if this looks like a field name (not a number or operator)
+                if field_name in parsed_report:
+                    value = parsed_report[field_name]
+                    # Format the value for display
+                    if isinstance(value, list):
+                        field_values[field_name] = ', '.join(str(v) for v in value)
+                    else:
+                        field_values[field_name] = str(value)
     
     return JsonResponse({
         'success': True,
         'rule': rule_info,
-        'query_components': {
-            'field': field,
-            'operator': operator,
-            'expected_value': expected_value_clean
-        },
+        'query': rule.rule_query,
         'evaluation': {
-            'key_found': key_found,
-            'actual_value': actual_value_display,
             'result': evaluation_result,
-            'passed': evaluation_passed
+            'passed': evaluation_passed,
+            'field_values': field_values  # Only included when rule fails
         }
     })
 

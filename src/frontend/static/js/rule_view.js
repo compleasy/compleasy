@@ -121,7 +121,6 @@ function displayRuleBasicInfo(rule) {
 
 function displayRuleEvaluation(data) {
     const rule = data.rule;
-    const queryComponents = data.query_components;
     const evaluation = data.evaluation;
     
     // Display rule basic info
@@ -130,18 +129,31 @@ function displayRuleEvaluation(data) {
     // Display query evaluation
     const queryDiv = document.getElementById('rule-view-query');
     if (queryDiv) {
-        queryDiv.textContent = rule.rule_query || '-';
+        // Use data.query if available, otherwise fall back to rule.rule_query
+        queryDiv.textContent = data.query || rule.rule_query || '-';
     }
     
-    // Display report value in format: field_name = value
+    // Display evaluation details
     const actualDiv = document.getElementById('rule-view-actual');
     if (actualDiv) {
-        if (!evaluation.key_found) {
-            actualDiv.textContent = 'Key not found in report';
+        // Reset classes
+        actualDiv.className = 'mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-sm';
+        
+        if (evaluation.result === null || evaluation.result === undefined) {
+            actualDiv.innerHTML = '<span class="text-red-600 font-semibold">Query evaluation failed - invalid syntax</span>';
+        } else if (!evaluation.passed && evaluation.field_values && Object.keys(evaluation.field_values).length > 0) {
+            // Rule failed - show the actual field values from the report
+            let html = '<div class="space-y-1">';
+            html += '<div class="text-gray-600 text-xs mb-2">Actual values from report:</div>';
+            for (const [field, value] of Object.entries(evaluation.field_values)) {
+                html += `<div class="font-mono text-xs"><span class="font-semibold text-gray-700">${field}</span> = <span class="text-gray-900">${value}</span></div>`;
+            }
+            html += '</div>';
+            actualDiv.innerHTML = html;
         } else {
-            const field = queryComponents.field || '';
-            const value = evaluation.actual_value || '-';
-            actualDiv.textContent = `${field} = ${value}`;
+            // Rule passed or no field values available - show evaluation result
+            const resultText = evaluation.result ? 'true' : 'false';
+            actualDiv.innerHTML = `<span class="text-gray-700">Query evaluated to: <strong>${resultText}</strong></span>`;
         }
     }
     

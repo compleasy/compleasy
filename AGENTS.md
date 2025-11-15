@@ -247,6 +247,34 @@ See [E2E Testing Documentation](docs/development/e2e-testing.md) for detailed in
 - Migrations are automatically run in test container
 - Never commit database files (`*.sqlite3`)
 
+## Policy Rules and Query Syntax
+
+### JMESPath Query Language
+
+Policy rules use [JMESPath](https://jmespath.org/) expressions to evaluate device reports against compliance requirements.
+
+**Key Points:**
+- **Location**: `src/api/utils/policy_query.py` - `evaluate_query()` function
+- **Syntax**: JMESPath expressions (e.g., `os == 'Linux' && hardening_index > \`70\``)
+- **Security**: JMESPath is sandboxed - no code execution risk
+- **Complex Queries**: Supports AND (`&&`), OR (`||`), and NOT (`!`) operators
+- **Field Limit**: `rule_query` field has max_length=255 characters
+
+**Common Query Patterns:**
+- Simple comparison: `hardening_index > \`70\``
+- String equality: `os == 'Linux'`
+- Contains check: `contains(automation_tool_running, 'ansible')`
+- Complex logic: `os == 'Linux' && hardening_index > \`70\` || vulnerable_packages_found == \`0\``
+
+**When modifying policy queries:**
+- Always use JMESPath syntax (not custom syntax)
+- Test queries with actual report data
+- Remember: strings use single quotes, numbers use backticks
+- Complex queries are supported (AND/OR/NOT)
+- Query length is limited to 255 characters
+
+See [Policy Documentation](docs/usage/policies.md) for complete syntax guide and examples.
+
 ## UI/UX Architecture
 
 ### Collapsible Sidebar Pattern

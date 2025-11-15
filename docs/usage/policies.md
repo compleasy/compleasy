@@ -32,60 +32,73 @@ Collections of rules that can be applied to devices:
 - **Rules** - List of policy rules
 
 ## Rule Query Syntax
+Rule queries use [JMESPath](https://jmespath.org/) expressions to evaluate device reports. JMESPath is a query language for JSON that provides powerful and safe expression evaluation.
 
-Rule queries use a simple expression format to evaluate device reports. The syntax is:
+### Basic Syntax
 
-```
-field operator value
-```
-
-### Components
-
-**Field**: The name of a field from the Lynis report (case-sensitive)
+**Field Access**: Access fields from the Lynis report using their names
 - Examples: `os`, `hardening_index`, `firewall_active`, `vulnerable_packages_found`
-- Field names can contain letters, numbers, and underscores
+- Field names are case-sensitive
 
-**Operator**: One of the supported comparison operators:
-- `=` - Equals
+**Comparison Operators**:
+- `==` - Equals
 - `!=` - Not equals
 - `>` - Greater than
 - `>=` - Greater than or equal
 - `<` - Less than
 - `<=` - Less than or equal
-- `contains` - String/list contains value (for strings and arrays)
 
-**Value**: The value to compare against
-- **Strings**: Use quotes, e.g., `"Linux"`, `"Ubuntu"`
-- **Numbers**: No quotes needed, e.g., `70`, `0`, `1`
+**Literals**:
+- **Strings**: Use single quotes, e.g., `'Linux'`, `'Ubuntu'`
+- **Numbers**: Use backticks for numeric literals, e.g., `` `70` ``, `` `0` ``, `` `1` ``
+
+**Functions**:
+- `contains(field, 'value')` - Check if string or list contains value
+
+**Boolean Logic** (NEW!):
+- `&&` - AND operator
+- `||` - OR operator
+- `!` - NOT operator
 
 ### Query Examples
 
 **String equality:**
 ```
-os = "Linux"
-os_name = "Ubuntu"
-hostname = "web-server-01"
+os == 'Linux'
+os_name == 'Ubuntu'
+hostname == 'web-server-01'
 ```
 
 **Numeric comparisons:**
 ```
-hardening_index > 70
-hardening_index >= 60
-hardening_index < 80
-vulnerable_packages_found = 0
+hardening_index > `70`
+hardening_index >= `60`
+hardening_index < `80`
+vulnerable_packages_found == `0`
 ```
 
-**Contains operator (for strings or lists):**
+**Contains function (for strings or lists):**
 ```
-automation_tool_running contains "ansible"
-vulnerable_package contains "libc6"
+contains(automation_tool_running, 'ansible')
+contains(vulnerable_package, 'libc6')
 ```
 
 **Not equals:**
 ```
-os != "Windows"
-firewall_active != 0
+os != 'Windows'
+firewall_active != `0`
 ```
+
+**Complex boolean expressions:**
+```
+os == 'Linux' && hardening_index > `70`
+hardening_index < `50` || vulnerable_packages_found > `0`
+!(firewall_active == `1`)
+os == 'Linux' && (hardening_index > `70` || vulnerable_packages_found == `0`)
+```
+
+!!! tip "JMESPath Documentation"
+    For advanced query syntax and more examples, see the [JMESPath Tutorial](https://jmespath.org/tutorial.html) and [JMESPath Examples](https://jmespath.org/examples.html).
 
 ### Available Report Fields
 
@@ -108,7 +121,7 @@ Common fields available in Lynis reports include:
 
 **Package Management:**
 - `installed_packages` - Number of installed packages
-- `vulnerable_package` - List of vulnerable packages (use `contains`)
+- `vulnerable_package` - List of vulnerable packages (use `contains()` function)
 
 **Network:**
 - `ipv6_mode` - IPv6 mode (e.g., "auto")
@@ -136,7 +149,7 @@ Common fields available in Lynis reports include:
 2. Click **Create New Rule** (or use the edit panel)
 3. Configure:
    - **Name**: Descriptive name (e.g., "Linux OS Check")
-   - **Rule Query**: Query expression (e.g., `os = "Linux"`)
+   - **Rule Query**: JMESPath query expression (e.g., `os == 'Linux'`)
    - **Description**: Explanation of what the rule checks
    - **Enabled**: Check to activate the rule
    - **Alert**: Check to generate alerts on failure
@@ -165,7 +178,7 @@ Ensure device is running Linux:
 
 **Query:**
 ```
-os = "Linux"
+os == 'Linux'
 ```
 
 **Description:** Verifies that the operating system is Linux.
@@ -176,7 +189,7 @@ Require minimum hardening score:
 
 **Query:**
 ```
-hardening_index >= 70
+hardening_index >= `70`
 ```
 
 **Description:** Ensures the system has a hardening index of at least 70.
@@ -187,7 +200,7 @@ Ensure no vulnerable packages are found:
 
 **Query:**
 ```
-vulnerable_packages_found = 0
+vulnerable_packages_found == `0`
 ```
 
 **Description:** Checks that no vulnerable packages were detected in the system.
@@ -198,7 +211,7 @@ Require firewall to be active:
 
 **Query:**
 ```
-firewall_active = 1
+firewall_active == `1`
 ```
 
 **Description:** Verifies that the firewall is active and running.
@@ -209,15 +222,10 @@ Require Ubuntu 22.04:
 
 **Query:**
 ```
-os_name = "Ubuntu"
+os_name == 'Ubuntu' && os_version == '22.04'
 ```
 
-**And:**
-```
-os_version = "22.04"
-```
-
-**Description:** Ensures the system is running Ubuntu 22.04 LTS.
+**Description:** Ensures the system is running Ubuntu 22.04 LTS. This example shows how to combine multiple conditions using the `&&` (AND) operator.
 
 ### Automation Tool Check
 
@@ -225,7 +233,7 @@ Check if Ansible is running:
 
 **Query:**
 ```
-automation_tool_running contains "ansible"
+contains(automation_tool_running, 'ansible')
 ```
 
 **Description:** Verifies that Ansible automation tool is present.
@@ -236,7 +244,7 @@ Require SSH daemon to be running:
 
 **Query:**
 ```
-openssh_daemon_running = 1
+openssh_daemon_running == `1`
 ```
 
 **Description:** Ensures OpenSSH daemon is active for remote access.
