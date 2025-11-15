@@ -1,52 +1,126 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ rule.name }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h2 class="text-3xl font-bold mb-6">Rule Details</h2>
-    {% if form.errors %}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong class="font-bold">Error:</strong>
-        <ul>
-            {% for error in form.errors %}
-            <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">{{ rule.name }}</h1>
+            <div>
+                <a href="{% url 'rule_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded mr-2">Back to Rules</a>
+                <button onclick="toggleRuleEditPanel({{ rule.id }})" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Edit Rule</button>
+            </div>
+        </div>
+
+        <!-- Rule Information -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold mb-4">Rule Information</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Name</dt>
+                        <dd class="mt-1 font-medium">{{ rule.name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Status</dt>
+                        <dd class="mt-1">
+                            {% if rule.enabled %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Enabled
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Disabled
+                                </span>
+                            {% endif %}
+                            {% if rule.alert %}
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Alert
+                                </span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div class="col-span-2">
+                        <dt class="text-sm font-medium text-gray-500">Description</dt>
+                        <dd class="mt-1">{{ rule.description|default:"No description provided" }}</dd>
+                    </div>
+                    <div class="col-span-2">
+                        <dt class="text-sm font-medium text-gray-500">Rule Query</dt>
+                        <dd class="mt-1">
+                            <code class="text-sm bg-gray-100 px-2 py-1 rounded">{{ rule.rule_query }}</code>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Created</dt>
+                        <dd class="mt-1">{{ rule.created_at|date:"Y-m-d H:i" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+                        <dd class="mt-1">{{ rule.updated_at|date:"Y-m-d H:i" }} ({{ rule.updated_at|timesince }} ago)</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Rulesets Using This Rule -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold mb-4">Rulesets Using This Rule</h2>
+                {% if rulesets %}
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Name</th>
+                                <th class="py-3 px-6 text-left">Description</th>
+                                <th class="py-3 px-6 text-left">Rules Count</th>
+                                <th class="py-3 px-6 text-left">Created</th>
+                                <th class="py-3 px-6 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+                            {% for ruleset in rulesets %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left">
+                                    <a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}" class="font-medium text-gray-800 hover:text-gray-900">
+                                        {{ ruleset.name }}
+                                    </a>
+                                </td>
+                                <td class="py-3 px-6 text-left">
+                                    {{ ruleset.description|truncatewords:15|default:"-" }}
+                                </td>
+                                <td class="py-3 px-6 text-left">
+                                    {{ ruleset.rules.count }} rules
+                                </td>
+                                <td class="py-3 px-6 text-left">
+                                    {{ ruleset.created_at|date:"Y-m-d H:i" }}
+                                </td>
+                                <td class="py-3 px-6 text-left">
+                                    <a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}" class="text-gray-600 hover:text-gray-800" title="View">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-gray-500">This rule is not used in any rulesets yet.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    {% endif %}
 
-    <form method="POST">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label for="{{ form.enabled.id_for_label }}" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Enabled</label>
-            <div class="mt-1">
-                {{ form.enabled }}
-            </div>
-        
-        <div class="mb-4">
-            <label for="{{ form.name.id_for_label }}" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Name</label>
-            <div class="mt-1">
-                {{ form.name }}
-            </div>
-        </div>
+    <!-- Include sidebars -->
+    {% include 'policy/rule_edit_sidebar.html' %}
 
-        <div class="mb-4">
-            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
-            <div class="mt-1">
-                {{ form.description }}
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <label for="{{ form.rule_query.id_for_label }}" class="block text-sm font-medium text-gray-700">Rule Query</label>
-            <div class="mt-1">
-                {{ form.rule_query }}
-            </div>
-        </div>
-        
-        <div class="p-6 bg-gray-100 flex justify-end">
-            <button type="submit" class="mr-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
-            <a href="{% url 'ruleset_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Back to List</a>
-        </div>
-    </form>
-</div>
+    <script>
+        // Pass data to JavaScript
+        const rules = [{{ rule_json|safe }}];
+    </script>
+    <script src="{% static 'js/rules.js' %}"></script>
 {% endblock %}

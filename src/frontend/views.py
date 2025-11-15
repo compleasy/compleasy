@@ -546,17 +546,31 @@ def rule_list(request):
 
 @login_required
 def rule_detail(request, rule_id):
-    """Rule detail view: show the details of a policy rule"""
+    """Rule detail view: show rule info, rulesets using it"""
     rule = get_object_or_404(PolicyRule, id=rule_id)
-    if request.method == 'POST':
-        form = PolicyRuleForm(request.POST, instance=rule)
-        if form.is_valid():
-            form.save()
-            return redirect('rule_list')
-        form = PolicyRuleForm(instance=rule)
-    else:
-        form = PolicyRuleForm(instance=rule)
-    return render(request, 'policy/rule_detail.html', {'form': form, 'rule': rule})
+    
+    # Get rulesets using this rule (reverse relationship)
+    rulesets = rule.policyruleset_set.all().order_by('name')
+    
+    # Serialize rule for JavaScript
+    rule_data = {
+        'id': rule.id,
+        'name': rule.name,
+        'description': rule.description,
+        'rule_query': rule.rule_query,
+        'enabled': rule.enabled,
+        'alert': rule.alert,
+        'created_at': rule.created_at.isoformat(),
+        'updated_at': rule.updated_at.isoformat(),
+    }
+    
+    context = {
+        'rule': rule,
+        'rulesets': rulesets,  # Rulesets using this rule
+        'rule_json': json.dumps(rule_data),
+    }
+    
+    return render(request, 'policy/rule_detail.html', context)
 
 @login_required
 @csrf_protect
