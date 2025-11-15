@@ -15,6 +15,7 @@
         {% include 'policy/ruleset_edit_sidebar.html' %}
         {% include 'policy/rule_edit_sidebar.html' %}
         {% include 'policy/rule_selection_sidebar.html' %}
+        {% include 'device/rule_view_sidebar.html' %}
         
         <!-- Device details Screen -->
         <div id="serverDetails">
@@ -219,7 +220,7 @@
             </div>
 
             <!-- Compliance Section -->
-            {% include 'device/device_compliance.html' with evaluated_rulesets=evaluated_rulesets %}
+            {% include 'device/device_compliance.html' with evaluated_rulesets=evaluated_rulesets device=device %}
 
             <!-- Security Section -->
             <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
@@ -337,5 +338,6 @@
     </script>
     <script src="{% static 'js/policies.js' %}"></script>
     <script src="{% static 'js/rules.js' %}"></script>
+    <script src="{% static 'js/rule_view.js' %}"></script>
 {% endblock %}
 

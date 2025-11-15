@@ -8,6 +8,7 @@ from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, P
 from api.utils.lynis_report import LynisReport
 from api.utils.compliance import check_device_compliance
 from api.utils.license_utils import generate_license_key
+from api.utils.policy_query import parse_query
 from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm, LicenseKeyForm
 import os
 import json
@@ -624,6 +625,88 @@ def rule_create(request):
 def rule_add(request):
     """Rule add view: add a new policy rule"""
     return render(request, 'policy/rule_form.html')
+
+@login_required
+def rule_evaluate_for_device(request, device_id, rule_id):
+    """Rule evaluation view: evaluate a rule against device's last report and return debug information"""
+    device = get_object_or_404(Device, id=device_id)
+    rule = get_object_or_404(PolicyRule, id=rule_id)
+    
+    # Get last report for the device
+    full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+    
+    if not full_report:
+        return JsonResponse({
+            'success': False,
+            'error': 'No report found for the device'
+        }, status=404)
+    
+    # Parse the report
+    lynis_report = LynisReport(full_report.full_report)
+    parsed_report = lynis_report.get_parsed_report()
+    
+    if not parsed_report:
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to parse the report'
+        }, status=500)
+    
+    # Parse the query to extract components
+    parsed_query = parse_query(rule.rule_query)
+    
+    if not parsed_query or len(parsed_query) < 3:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid query format'
+        }, status=400)
+    
+    # Extract query components
+    field, operator, expected_value = parsed_query
+    
+    # Remove quotes from expected value if it's a quoted string
+    if expected_value.startswith('"') and expected_value.endswith('"'):
+        expected_value_clean = expected_value[1:-1]
+    elif expected_value.startswith("'") and expected_value.endswith("'"):
+        expected_value_clean = expected_value[1:-1]
+    else:
+        expected_value_clean = expected_value
+    
+    # Get actual value from report
+    actual_value = parsed_report.get(field)
+    key_found = actual_value is not None
+    
+    # Evaluate the rule
+    evaluation_result = rule.evaluate(parsed_report)
+    
+    # Format actual value for display
+    if actual_value is None:
+        actual_value_display = None
+    elif isinstance(actual_value, list):
+        actual_value_display = ', '.join(str(v) for v in actual_value)
+    else:
+        actual_value_display = str(actual_value)
+    
+    return JsonResponse({
+        'success': True,
+        'rule': {
+            'id': rule.id,
+            'name': rule.name,
+            'description': rule.description,
+            'rule_query': rule.rule_query,
+            'enabled': rule.enabled
+        },
+        'query_components': {
+            'field': field,
+            'operator': operator,
+            'expected_value': expected_value_clean
+        },
+        'evaluation': {
+            'key_found': key_found,
+            'actual_value': actual_value_display,
+            'result': evaluation_result,
+            'passed': evaluation_result is True
+        }
+    })
 
 
 @login_required
