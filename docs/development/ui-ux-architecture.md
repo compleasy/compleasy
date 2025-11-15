@@ -159,6 +159,30 @@ Follows patterns from popular applications like:
 
 ### JavaScript Structure
 
+**Important: Firefox Compatibility**
+
+When implementing event listeners for buttons in sidebars (especially those initially hidden), use **event delegation** instead of direct event listeners. Firefox has issues with attaching listeners to hidden elements or elements that become visible dynamically.
+
+```javascript
+// ✅ GOOD: Event delegation (works in all browsers including Firefox)
+const panel = document.getElementById('rule-selection-panel');
+if (panel) {
+    panel.addEventListener('click', function(e) {
+        const button = e.target.closest('.rule-edit-panel-button');
+        if (button) {
+            e.preventDefault();
+            e.stopPropagation();
+            const ruleId = button.hasAttribute('data-rule-id') ? button.dataset.ruleId : null;
+            openRuleEditFromSelection(ruleId);
+        }
+    });
+}
+
+// ❌ BAD: Direct event listener (may fail in Firefox for hidden elements)
+const button = document.querySelector('.rule-edit-panel-button');
+button.addEventListener('click', function() { ... }); // May not work in Firefox
+```
+
 ```javascript
 // Toggle sidebar visibility
 function toggleItemEditPanel(itemId) {
@@ -468,6 +492,12 @@ In list and detail templates:
 - Use the same class names (`.item-edit-panel-button`)
 - Follow the same HTML structure
 - Use consistent error handling patterns
+
+### 8. Firefox Compatibility
+- **Always use event delegation** for buttons in sidebars, especially when panels are initially hidden
+- Direct event listeners may fail in Firefox when attached to hidden elements
+- Event delegation (`addEventListener` on parent, use `closest()` to find target) works reliably across all browsers
+- See JavaScript Structure section above for example implementation
 
 ## Testing Checklist
 

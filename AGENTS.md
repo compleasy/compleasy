@@ -321,6 +321,24 @@ function submitItemForm() {
 }
 ```
 
+**Firefox Compatibility Note:**
+When attaching event listeners to buttons in sidebars (especially those initially hidden), **always use event delegation** instead of direct listeners. Firefox has issues with direct listeners on hidden elements. Example:
+
+```javascript
+// ✅ Use event delegation (works in Firefox)
+const panel = document.getElementById('rule-selection-panel');
+panel.addEventListener('click', function(e) {
+    const button = e.target.closest('.rule-edit-panel-button');
+    if (button) {
+        // Handle click
+    }
+});
+
+// ❌ Avoid direct listeners on hidden elements (fails in Firefox)
+const button = document.querySelector('.rule-edit-panel-button');
+button.addEventListener('click', function() { ... });
+```
+
 **Backend structure:**
 ```python
 def item_create(request):
@@ -351,6 +369,7 @@ def item_create(request):
 - **Success feedback**: Currently reloads page; consider toast notifications
 - **Mobile**: Consider full-screen modal for small screens
 - **Consistency**: Follow existing patterns for new features
+- **Firefox compatibility**: Always use event delegation for buttons in sidebars (see JavaScript structure section above)
 
 ## Environment Variables
 
