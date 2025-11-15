@@ -35,12 +35,20 @@ class TestRulesetCRUD:
         # Submit form
         page.click('#ruleset-edit-form button[type="submit"]')
         
-        # Wait for page reload (form submission triggers reload)
+        # Wait for page reload (form submission triggers reload via AJAX)
+        # The form submission is AJAX, so we need to wait for the reload
         page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(1000)  # Extra wait for AJAX response and page reload
         
         # Verify ruleset appears in list
-        assert page.locator('text=Test Ruleset E2E').is_visible()
-        assert page.locator('text=Test description for E2E').is_visible()
+        ruleset_locator = page.locator('text=Test Ruleset E2E')
+        ruleset_locator.wait_for(state="visible", timeout=5000)
+        assert ruleset_locator.is_visible(), f"Ruleset 'Test Ruleset E2E' not found. Page URL: {page.url}"
+        
+        # Verify description is visible
+        description_locator = page.locator('text=Test description for E2E')
+        description_locator.wait_for(state="visible", timeout=5000)
+        assert description_locator.is_visible()
     
     def test_create_ruleset_with_rules(self, authenticated_browser, live_server_url, test_policy_data):
         """Create a ruleset and select rules."""
@@ -68,24 +76,37 @@ class TestRulesetCRUD:
         rule_panel = page.locator('#rule-selection-panel')
         rule_panel.wait_for(state="visible", timeout=5000)
         
-        # Select some rules (checkboxes)
+        # Wait for rules to be rendered in the panel
+        rules_container = page.locator('#rules')
+        rules_container.wait_for(state="visible", timeout=5000)
+        
+        # Select some rules - click the labels since checkboxes are hidden
         rules = test_policy_data['rules']
-        page.check(f'#rule-{rules[0].id}')
-        page.check(f'#rule-{rules[1].id}')
-        page.check(f'#rule-{rules[2].id}')
+        # Wait for the first rule label to be visible
+        first_rule_label = page.locator(f'label[for="rule-{rules[0].id}"]')
+        first_rule_label.wait_for(state="visible", timeout=5000)
+        
+        # Click the labels to check the checkboxes (labels are visible, checkboxes are hidden)
+        page.click(f'label[for="rule-{rules[0].id}"]')
+        page.click(f'label[for="rule-{rules[1].id}"]')
+        page.click(f'label[for="rule-{rules[2].id}"]')
         
         # Click Apply
-        page.click('#rule-selection-form button:has-text("Apply")')
+        apply_button = page.locator('#rule-selection-form button:has-text("Apply")')
+        apply_button.wait_for(state="visible", timeout=5000)
+        apply_button.click()
         
         # Wait for rule selection panel to close and ruleset edit panel to reappear
-        rule_panel.wait_for(state="hidden", timeout=5000)
-        sidebar.wait_for(state="visible", timeout=5000)
+        rule_panel.wait_for(state="hidden", timeout=10000)
+        sidebar.wait_for(state="visible", timeout=10000)
         
         # Submit ruleset form
         page.click('#ruleset-edit-form button[type="submit"]')
         
-        # Wait for page reload
-        page.wait_for_load_state("networkidle")
+        # Wait for page reload (AJAX triggers location.reload())
+        page.wait_for_url(f"{live_server_url}/policies/", timeout=10000)
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(500)  # Small wait for rendering
         
         # Verify ruleset was created
         assert page.locator('text=Ruleset with Rules E2E').is_visible()
@@ -122,8 +143,10 @@ class TestRulesetCRUD:
         # Submit
         page.click('#ruleset-edit-form button[type="submit"]')
         
-        # Wait for reload
-        page.wait_for_load_state("networkidle")
+        # Wait for reload (AJAX triggers location.reload())
+        page.wait_for_url(f"{live_server_url}/policies/", timeout=10000)
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(500)  # Small wait for rendering
         
         # Verify update
         assert page.locator('text=Updated Ruleset Name E2E').is_visible()
@@ -169,31 +192,41 @@ class TestRuleCRUD:
         
         # Navigate to policies page
         page.goto(f"{live_server_url}/policies/")
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         
-        # Click "New Rule" button
-        page.click('button:has-text("New Rule")')
+        # Click "New Rule" button - use onclick attribute to find the correct one
+        # The Rules section button has onclick="toggleRuleEditPanel(null)"
+        new_rule_button = page.locator('button[onclick="toggleRuleEditPanel(null)"]:has-text("New Rule")')
+        new_rule_button.scroll_into_view_if_needed()
+        new_rule_button.wait_for(state="visible", timeout=5000)
+        new_rule_button.click()
         
         # Wait for sidebar
         sidebar = page.locator('#rule-edit-panel')
-        sidebar.wait_for(state="visible", timeout=5000)
+        sidebar.wait_for(state="visible", timeout=10000)  # Increased timeout
         
         # Fill in form
         page.fill('#rule_name', 'Test Rule E2E')
         page.fill('#rule_description', 'Test rule description')
         page.fill('#rule_query', 'test_query_e2e')
         
-        # Enable the rule (checkbox)
-        page.check('#rule_enabled')
+        # Enable the rule (checkbox is hidden with sr-only, click the label instead)
+        enabled_label = page.locator('label:has(#rule_enabled)')
+        enabled_label.wait_for(state="visible", timeout=5000)
+        enabled_label.click()
         
         # Submit
         page.click('#rule-edit-form button[type="submit"]')
         
-        # Wait for reload
-        page.wait_for_load_state("networkidle")
+        # Wait for reload (AJAX triggers location.reload())
+        page.wait_for_url(f"{live_server_url}/policies/", timeout=10000)
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(500)  # Small wait for rendering
         
-        # Verify rule appears
-        assert page.locator('text=Test Rule E2E').is_visible()
+        # Verify rule appears in the rules table (use more specific selector to avoid strict mode violation)
+        rule_link = page.locator('a:has-text("Test Rule E2E")').first
+        rule_link.wait_for(state="visible", timeout=5000)
+        assert rule_link.is_visible()
     
     def test_edit_rule(self, authenticated_browser, live_server_url, test_policy_data):
         """Edit an existing rule."""
@@ -204,11 +237,18 @@ class TestRuleCRUD:
         
         # Navigate to policies page
         page.goto(f"{live_server_url}/policies/")
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
+        
+        # Scroll to Rules section - use more specific selector (text-2xl to avoid sidebars)
+        rules_section = page.locator('h2.text-2xl:has-text("Rules")')
+        rules_section.scroll_into_view_if_needed()
+        page.wait_for_timeout(500)
         
         # Find edit button for the rule
         rule_row = page.locator(f'tr:has-text("{rule.name}")')
+        rule_row.scroll_into_view_if_needed()
         edit_button = rule_row.locator('button[title="Edit"]')
+        edit_button.wait_for(state="visible", timeout=5000)
         edit_button.click()
         
         # Wait for sidebar
@@ -224,8 +264,10 @@ class TestRuleCRUD:
         # Submit
         page.click('#rule-edit-form button[type="submit"]')
         
-        # Wait for reload
-        page.wait_for_load_state("networkidle")
+        # Wait for reload (AJAX triggers location.reload())
+        page.wait_for_url(f"{live_server_url}/policies/", timeout=10000)
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(500)  # Small wait for rendering
         
         # Verify update
         assert page.locator('text=Updated Rule Name E2E').is_visible()
@@ -344,13 +386,18 @@ class TestSidebarStateManagement:
         page.goto(f"{live_server_url}/policies/")
         page.wait_for_load_state("networkidle")
         
-        # Open rule edit panel
-        page.click('button:has-text("New Rule")')
+        # Open rule edit panel - use onclick attribute to find the correct one
+        new_rule_button = page.locator('button[onclick="toggleRuleEditPanel(null)"]:has-text("New Rule")')
+        new_rule_button.scroll_into_view_if_needed()
+        new_rule_button.wait_for(state="visible", timeout=5000)
+        new_rule_button.click()
+        
         sidebar = page.locator('#rule-edit-panel')
-        sidebar.wait_for(state="visible", timeout=5000)
+        sidebar.wait_for(state="visible", timeout=10000)  # Increased timeout
         
         # Find and click X button (close button)
         close_button = sidebar.locator('.rule-edit-panel-button').first
+        close_button.wait_for(state="visible", timeout=5000)
         close_button.click()
         
         # Wait for sidebar to close

@@ -137,7 +137,7 @@ def device_detail(request, device_id):
         'report': report,
         'evaluated_rulesets': evaluated_rulesets,
         'rulesets': policy_rulesets,
-        'rules': all_rules,  # For rule selection sidebar template
+        'all_rules': all_rules,  # For rule selection sidebar template
         'rulesets_json': json.dumps(rulesets_data),
         'rules_json': json.dumps(rules_data),
     })
@@ -280,7 +280,8 @@ def policy_list(request):
     context = {
         'rulesets': rulesets_page_obj,
         'rulesets_json': json.dumps(rulesets_data),
-        'rules': rules_page_obj,
+        'rules': rules_page_obj,  # Paginated rules for the table
+        'all_rules': rules,  # All rules for the rule selection sidebar
         'rules_json': json.dumps(rules_data),
     }
     
@@ -393,7 +394,8 @@ def ruleset_detail(request, ruleset_id):
     
     context = {
         'ruleset': ruleset,
-        'rules': rules,
+        'rules': rules,  # Rules in this ruleset
+        'all_rules': all_rules,  # All rules for rule selection sidebar
         'devices': devices,
         'ruleset_json': json.dumps(ruleset_data),
         'rules_json': json.dumps(rules_data),

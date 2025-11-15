@@ -17,7 +17,7 @@
         {% csrf_token %}
         <input type="hidden" name="ruleset_id" id="ruleset_id" value="">
         <div id="rules" class="p-4 space-y-2 overflow-y-auto flex-grow">
-          {% for rule in rules %}
+          {% for rule in all_rules %}
           <div class="flex items-center group/rule">
             <input type="checkbox" id="rule-{{ rule.id }}" name="rules" value="{{ rule.id }}" class="hidden peer">
             <label for="rule-{{ rule.id }}" class="flex-1 flex justify-between items-center py-1 px-4 bg-white rounded cursor-pointer hover:bg-gray-200 peer-checked:bg-amber-100 peer-checked:hover:bg-yellow-600/50 font-light">
