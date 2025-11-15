@@ -1542,44 +1542,57 @@
 <li><strong>Rules</strong> - List of policy rules</li>
 </ul>
 <h3 id="rule-query-syntax">Rule Query Syntax<a class="headerlink" href="#rule-query-syntax" title="Permanent link">&para;</a></h3>
-<p>Rule queries use a simple expression format to evaluate device reports. The syntax is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>field operator value
-</span></code></pre></div>
-<h4 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h4>
-<p><strong>Field</strong>: The name of a field from the Lynis report (case-sensitive)
+<p>Rule queries use <a href="https://jmespath.org/">JMESPath</a> expressions to evaluate device reports. JMESPath is a query language for JSON that provides powerful and safe expression evaluation.</p>
+<h4 id="basic-syntax">Basic Syntax<a class="headerlink" href="#basic-syntax" title="Permanent link">&para;</a></h4>
+<p><strong>Field Access</strong>: Access fields from the Lynis report using their names
 - Examples: <code>os</code>, <code>hardening_index</code>, <code>firewall_active</code>, <code>vulnerable_packages_found</code>
-- Field names can contain letters, numbers, and underscores</p>
-<p><strong>Operator</strong>: One of the supported comparison operators:
-- <code>=</code> - Equals
+- Field names are case-sensitive</p>
+<p><strong>Comparison Operators</strong>:
+- <code>==</code> - Equals
 - <code>!=</code> - Not equals
 - <code>&gt;</code> - Greater than
 - <code>&gt;=</code> - Greater than or equal
 - <code>&lt;</code> - Less than
-- <code>&lt;=</code> - Less than or equal
-- <code>contains</code> - String/list contains value (for strings and arrays)</p>
-<p><strong>Value</strong>: The value to compare against
-- <strong>Strings</strong>: Use quotes, e.g., <code>"Linux"</code>, <code>"Ubuntu"</code>
-- <strong>Numbers</strong>: No quotes needed, e.g., <code>70</code>, <code>0</code>, <code>1</code></p>
+- <code>&lt;=</code> - Less than or equal</p>
+<p><strong>Literals</strong>:
+- <strong>Strings</strong>: Use single quotes, e.g., <code>'Linux'</code>, <code>'Ubuntu'</code>
+- <strong>Numbers</strong>: Use backticks for numeric literals, e.g., <code>`70`</code>, <code>`0`</code>, <code>`1`</code></p>
+<p><strong>Functions</strong>:
+- <code>contains(field, 'value')</code> - Check if string or list contains value</p>
+<p><strong>Boolean Logic</strong> (NEW!):
+- <code>&amp;&amp;</code> - AND operator
+- <code>||</code> - OR operator
+- <code>!</code> - NOT operator</p>
 <h4 id="query-examples">Query Examples<a class="headerlink" href="#query-examples" title="Permanent link">&para;</a></h4>
 <p><strong>String equality:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>os = &quot;Linux&quot;
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>os_name = &quot;Ubuntu&quot;
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>hostname = &quot;web-server-01&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>os == &#39;Linux&#39;
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>os_name == &#39;Ubuntu&#39;
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>hostname == &#39;web-server-01&#39;
 </span></code></pre></div></p>
 <p><strong>Numeric comparisons:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>hardening_index &gt; 70
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>hardening_index &gt;= 60
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>hardening_index &lt; 80
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>vulnerable_packages_found = 0
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>hardening_index &gt; `70`
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>hardening_index &gt;= `60`
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>hardening_index &lt; `80`
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>vulnerable_packages_found == `0`
 </span></code></pre></div></p>
-<p><strong>Contains operator (for strings or lists):</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>automation_tool_running contains &quot;ansible&quot;
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>vulnerable_package contains &quot;libc6&quot;
+<p><strong>Contains function (for strings or lists):</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>contains(automation_tool_running, &#39;ansible&#39;)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>contains(vulnerable_package, &#39;libc6&#39;)
 </span></code></pre></div></p>
 <p><strong>Not equals:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>os != &quot;Windows&quot;
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>firewall_active != 0
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>os != &#39;Windows&#39;
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>firewall_active != `0`
 </span></code></pre></div></p>
+<p><strong>Complex boolean expressions:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>os == &#39;Linux&#39; &amp;&amp; hardening_index &gt; `70`
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>hardening_index &lt; `50` || vulnerable_packages_found &gt; `0`
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>!(firewall_active == `1`)
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>os == &#39;Linux&#39; &amp;&amp; (hardening_index &gt; `70` || vulnerable_packages_found == `0`)
+</span></code></pre></div></p>
+<div class="admonition tip">
+<p class="admonition-title">JMESPath Documentation</p>
+<p>For advanced query syntax and more examples, see the <a href="https://jmespath.org/tutorial.html">JMESPath Tutorial</a> and <a href="https://jmespath.org/examples.html">JMESPath Examples</a>.</p>
+</div>
 <h4 id="available-report-fields">Available Report Fields<a class="headerlink" href="#available-report-fields" title="Permanent link">&para;</a></h4>
 <p>Common fields available in Lynis reports include:</p>
 <p><strong>System Information:</strong>
@@ -1597,7 +1610,7 @@
 - <code>openssh_daemon_running</code> - OpenSSH daemon status (0 or 1)</p>
 <p><strong>Package Management:</strong>
 - <code>installed_packages</code> - Number of installed packages
-- <code>vulnerable_package</code> - List of vulnerable packages (use <code>contains</code>)</p>
+- <code>vulnerable_package</code> - List of vulnerable packages (use <code>contains()</code> function)</p>
 <p><strong>Network:</strong>
 - <code>ipv6_mode</code> - IPv6 mode (e.g., "auto")
 - <code>dhcp_client_running</code> - DHCP client status (0 or 1)</p>
@@ -1622,7 +1635,7 @@
 <li>Click <strong>Create New Rule</strong> (or use the edit panel)</li>
 <li>Configure:</li>
 <li><strong>Name</strong>: Descriptive name (e.g., "Linux OS Check")</li>
-<li><strong>Rule Query</strong>: Query expression (e.g., <code>os = "Linux"</code>)</li>
+<li><strong>Rule Query</strong>: JMESPath query expression (e.g., <code>os == 'Linux'</code>)</li>
 <li><strong>Description</strong>: Explanation of what the rule checks</li>
 <li><strong>Enabled</strong>: Check to activate the rule</li>
 <li><strong>Alert</strong>: Check to generate alerts on failure</li>
@@ -1647,46 +1660,43 @@
 <h4 id="operating-system-check">Operating System Check<a class="headerlink" href="#operating-system-check" title="Permanent link">&para;</a></h4>
 <p>Ensure device is running Linux:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>os = &quot;Linux&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>os == &#39;Linux&#39;
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Verifies that the operating system is Linux.</p>
 <h4 id="hardening-index-threshold">Hardening Index Threshold<a class="headerlink" href="#hardening-index-threshold" title="Permanent link">&para;</a></h4>
 <p>Require minimum hardening score:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>hardening_index &gt;= 70
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>hardening_index &gt;= `70`
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Ensures the system has a hardening index of at least 70.</p>
 <h4 id="no-vulnerable-packages">No Vulnerable Packages<a class="headerlink" href="#no-vulnerable-packages" title="Permanent link">&para;</a></h4>
 <p>Ensure no vulnerable packages are found:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>vulnerable_packages_found = 0
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>vulnerable_packages_found == `0`
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Checks that no vulnerable packages were detected in the system.</p>
 <h4 id="firewall-active">Firewall Active<a class="headerlink" href="#firewall-active" title="Permanent link">&para;</a></h4>
 <p>Require firewall to be active:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>firewall_active = 1
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>firewall_active == `1`
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Verifies that the firewall is active and running.</p>
 <h4 id="specific-os-distribution">Specific OS Distribution<a class="headerlink" href="#specific-os-distribution" title="Permanent link">&para;</a></h4>
 <p>Require Ubuntu 22.04:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>os_name = &quot;Ubuntu&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>os_name == &#39;Ubuntu&#39; &amp;&amp; os_version == &#39;22.04&#39;
 </span></code></pre></div></p>
-<p><strong>And:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>os_version = &quot;22.04&quot;
-</span></code></pre></div></p>
-<p><strong>Description:</strong> Ensures the system is running Ubuntu 22.04 LTS.</p>
+<p><strong>Description:</strong> Ensures the system is running Ubuntu 22.04 LTS. This example shows how to combine multiple conditions using the <code>&amp;&amp;</code> (AND) operator.</p>
 <h4 id="automation-tool-check">Automation Tool Check<a class="headerlink" href="#automation-tool-check" title="Permanent link">&para;</a></h4>
 <p>Check if Ansible is running:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>automation_tool_running contains &quot;ansible&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>contains(automation_tool_running, &#39;ansible&#39;)
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Verifies that Ansible automation tool is present.</p>
 <h4 id="ssh-service-running">SSH Service Running<a class="headerlink" href="#ssh-service-running" title="Permanent link">&para;</a></h4>
 <p>Require SSH daemon to be running:</p>
 <p><strong>Query:</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>openssh_daemon_running = 1
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>openssh_daemon_running == `1`
 </span></code></pre></div></p>
 <p><strong>Description:</strong> Ensures OpenSSH daemon is active for remote access.</p>
 <h3 id="compliance-tracking">Compliance Tracking<a class="headerlink" href="#compliance-tracking" title="Permanent link">&para;</a></h3>
@@ -1752,7 +1762,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 14, 2025 21:45:08 UTC">November 14, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 15, 2025 21:39:03 UTC">November 15, 2025</span>
   </span>
 
     
