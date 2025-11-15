@@ -37,10 +37,12 @@ Rule queries use [JMESPath](https://jmespath.org/) expressions to evaluate devic
 ### Basic Syntax
 
 **Field Access**: Access fields from the Lynis report using their names
+
 - Examples: `os`, `hardening_index`, `firewall_active`, `vulnerable_packages_found`
 - Field names are case-sensitive
 
 **Comparison Operators**:
+
 - `==` - Equals
 - `!=` - Not equals
 - `>` - Greater than
@@ -49,13 +51,16 @@ Rule queries use [JMESPath](https://jmespath.org/) expressions to evaluate devic
 - `<=` - Less than or equal
 
 **Literals**:
+
 - **Strings**: Use single quotes, e.g., `'Linux'`, `'Ubuntu'`
 - **Numbers**: Use backticks for numeric literals, e.g., `` `70` ``, `` `0` ``, `` `1` ``
 
 **Functions**:
+
 - `contains(field, 'value')` - Check if string or list contains value
 
 **Boolean Logic** (NEW!):
+
 - `&&` - AND operator
 - `||` - OR operator
 - `!` - NOT operator
@@ -105,6 +110,7 @@ os == 'Linux' && (hardening_index > `70` || vulnerable_packages_found == `0`)
 Common fields available in Lynis reports include:
 
 **System Information:**
+
 - `os` - Operating system (e.g., "Linux")
 - `os_name` - OS distribution name (e.g., "Ubuntu")
 - `os_version` - OS version (e.g., "22.04")
@@ -112,6 +118,7 @@ Common fields available in Lynis reports include:
 - `lynis_version` - Lynis version used
 
 **Security Metrics:**
+
 - `hardening_index` - Overall hardening score (0-100)
 - `vulnerable_packages_found` - Number of vulnerable packages (0 or 1)
 - `firewall_active` - Firewall status (0 or 1)
@@ -120,14 +127,17 @@ Common fields available in Lynis reports include:
 - `openssh_daemon_running` - OpenSSH daemon status (0 or 1)
 
 **Package Management:**
+
 - `installed_packages` - Number of installed packages
 - `vulnerable_package` - List of vulnerable packages (use `contains()` function)
 
 **Network:**
+
 - `ipv6_mode` - IPv6 mode (e.g., "auto")
 - `dhcp_client_running` - DHCP client status (0 or 1)
 
 **Services:**
+
 - `automation_tool_running` - Automation tool name (if any)
 - `ntp_daemon_running` - NTP daemon status (0 or 1)
 - `linux_auditd_running` - Audit daemon status (0 or 1)
