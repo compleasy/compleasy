@@ -443,6 +443,72 @@ class TestSidebarStateManagement:
         # Verify ruleset panel is visible again
         assert ruleset_sidebar.is_visible()
     
+    def test_add_rule_button_opens_create_panel(self, authenticated_browser, live_server_url, test_policy_data):
+        """Test that clicking '+ Rule' button in rule selection panel opens rule edit panel in create mode."""
+        page = authenticated_browser
+        
+        # Navigate to policies page
+        page.goto(f"{live_server_url}/policies/")
+        page.wait_for_load_state("networkidle")
+        
+        # Click "New Ruleset" button
+        page.click('button:has-text("New Ruleset")')
+        
+        # Wait for ruleset edit sidebar to appear
+        ruleset_sidebar = page.locator('#ruleset-edit-panel')
+        ruleset_sidebar.wait_for(state="visible", timeout=5000)
+        
+        # Click "Select Rules" button
+        page.click('button:has-text("Select Rules")')
+        
+        # Wait for rule selection panel to appear
+        rule_selection_panel = page.locator('#rule-selection-panel')
+        rule_selection_panel.wait_for(state="visible", timeout=5000)
+        
+        # Wait for rules to be rendered
+        rules_container = page.locator('#rules')
+        rules_container.wait_for(state="visible", timeout=5000)
+        
+        # Click the "+ Rule" button (the create button)
+        add_rule_button = page.locator('button.rule-edit-panel-button:has-text("+ Rule")')
+        add_rule_button.wait_for(state="visible", timeout=5000)
+        add_rule_button.click()
+        
+        # Wait for rule selection panel to close
+        rule_selection_panel.wait_for(state="hidden", timeout=5000)
+        
+        # Wait for rule edit panel to open
+        rule_edit_panel = page.locator('#rule-edit-panel')
+        rule_edit_panel.wait_for(state="visible", timeout=5000)
+        
+        # Verify the panel is in create mode (title should be "Create New Rule")
+        title = page.locator('#rule-edit-title')
+        assert title.is_visible(), "Rule edit panel title should be visible"
+        assert title.text_content() == "Create New Rule", f"Expected 'Create New Rule', got '{title.text_content()}'"
+        
+        # Verify form fields are visible and ready
+        rule_name_field = page.locator('#rule_name')
+        assert rule_name_field.is_visible(), "Rule name field should be visible"
+        assert rule_name_field.input_value() == "", "Rule name field should be empty"
+        
+        rule_description_field = page.locator('#rule_description')
+        assert rule_description_field.is_visible(), "Rule description field should be visible"
+        assert rule_description_field.input_value() == "", "Rule description field should be empty"
+        
+        rule_query_field = page.locator('#rule_query')
+        assert rule_query_field.is_visible(), "Rule query field should be visible"
+        assert rule_query_field.input_value() == "", "Rule query field should be empty"
+        
+        # Verify the form action is set to create
+        rule_form = page.locator('#rule-edit-form')
+        form_action = rule_form.get_attribute('action')
+        assert form_action == '/rule/create/', f"Expected form action to be '/rule/create/', got '{form_action}'"
+        
+        # Verify enabled checkbox is unchecked (default for new rules)
+        enabled_checkbox = page.locator('#rule_enabled')
+        assert enabled_checkbox.is_visible(), "Enabled checkbox should be visible"
+        assert not enabled_checkbox.is_checked(), "Enabled checkbox should be unchecked for new rule"
+    
     def test_rule_selection_pencil_icon_opens_edit_panel(self, authenticated_browser, live_server_url, test_policy_data):
         """Clicking pencil icon in rule selection sidebar opens rule edit panel and hides selection panel."""
         page = authenticated_browser

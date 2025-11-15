@@ -1,15 +1,34 @@
 function toggleRuleEditPanel(ruleId) {
     const panel = document.getElementById('rule-edit-panel');
-    panel.classList.toggle('hidden');
-    
-    // Don't load data if closing
-    if (panel.classList.contains('hidden')) {
+    if (!panel) {
+        console.error('Rule edit panel not found in DOM');
         return;
+    }
+    
+    // If ruleId is provided (including null for create mode), show the panel
+    // If ruleId is undefined, toggle the panel
+    if (ruleId !== undefined) {
+        // Show the panel
+        panel.classList.remove('hidden');
+    } else {
+        // Toggle the panel
+        panel.classList.toggle('hidden');
+        
+        // If we just closed it, return early
+        if (panel.classList.contains('hidden')) {
+            return;
+        }
     }
     
     // Update the form action and title dynamically
     const form = document.getElementById('rule-edit-form');
     const title = document.getElementById('rule-edit-title');
+    
+    if (!form || !title) {
+        console.error('Rule edit form or title not found in DOM', { form: !!form, title: !!title });
+        // Panel is already shown, so just return
+        return;
+    }
     
     if (ruleId) {
         // Edit mode
@@ -17,7 +36,7 @@ function toggleRuleEditPanel(ruleId) {
         title.textContent = 'Edit Rule';
         loadRuleDetails(ruleId);
     } else {
-        // Create mode
+        // Create mode (ruleId is null)
         form.action = '/rule/create/';
         title.textContent = 'Create New Rule';
         loadRuleDetails();
@@ -243,7 +262,7 @@ function attachRuleEditPanelListeners() {
     }
     
     // Buttons in rule selection sidebar that should open rule edit panel
-    // Use event delegation on the panel for better Firefox compatibility
+    // Use event delegation for all buttons (better Firefox compatibility)
     const ruleSelectionPanel = document.getElementById('rule-selection-panel');
     if (ruleSelectionPanel) {
         ruleSelectionPanel.addEventListener('click', function(e) {
@@ -252,15 +271,13 @@ function attachRuleEditPanelListeners() {
             if (button) {
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation(); // Also stop immediate propagation for Firefox
-                const ruleId = button.dataset.ruleId || null;
-                // Only hide selection panel if we have a ruleId (editing existing rule)
-                // For create button (no ruleId), just open edit panel
-                if (ruleId) {
-                    openRuleEditFromSelection(ruleId);
-                } else {
-                    toggleRuleEditPanel(null);
-                }
+                e.stopImmediatePropagation();
+                
+                // Check if it has data-rule-id (edit button) or not (create button)
+                const ruleId = button.hasAttribute('data-rule-id') ? button.dataset.ruleId : null;
+                
+                // Always use openRuleEditFromSelection to properly handle panel state
+                openRuleEditFromSelection(ruleId);
             }
         });
     }
