@@ -12,13 +12,19 @@ def live_server_url(live_server):
 
 
 @pytest.fixture
-def authenticated_browser(page, live_server_url, test_user):
+def authenticated_browser(request, live_server_url, test_user):
     """
     Create an authenticated browser session.
     
     Logs in the test user and returns the page object.
     Note: pytest-playwright uses synchronous Playwright API by default.
     """
+    # Try to get the page fixture (only available when pytest-playwright is installed)
+    try:
+        page = request.getfixturevalue('page')
+    except pytest.FixtureLookupError:
+        pytest.skip("Playwright not available - skipping E2E test")
+    
     # Set a known password for the test user (Django ORM is synchronous)
     test_user.set_password('testpassword123')
     test_user.save()
