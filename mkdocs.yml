@@ -13,15 +13,15 @@ theme:
   palette:
     # Light mode
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: grey
+      accent: grey
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     # Dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: grey
+      accent: grey
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -44,7 +44,7 @@ theme:
     - toc.integrate
   icon:
     repo: fontawesome/brands/github
-    logo: material/book-open-variant
+    logo: assets/img/trikusec_logo.svg
   language: en
 
 plugins:
@@ -111,6 +111,8 @@ extra:
       link: https://github.com/trikusec/trikusec
   version:
     provider: mike
+  css:
+    - assets/css/extra.css
 
 nav:
   - Home: index.md
