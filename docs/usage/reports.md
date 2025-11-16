@@ -1,6 +1,6 @@
 # Report Analysis
 
-Learn how to view and analyze audit reports in Compleasy.
+Learn how to view and analyze audit reports in TrikuSec.
 
 ## Viewing Reports
 
@@ -60,7 +60,7 @@ Compare reports over time to:
 
 ### Export Reports
 
-Compleasy supports exporting device reports to PDF format for documentation, compliance audits, and sharing with teams.
+TrikuSec supports exporting device reports to PDF format for documentation, compliance audits, and sharing with teams.
 
 **To export a device report to PDF:**
 

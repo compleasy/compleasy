@@ -1,6 +1,6 @@
 # Dashboard Guide
 
-Complete guide to using the Compleasy web dashboard.
+Complete guide to using the TrikuSec web dashboard.
 
 ## Main Dashboard
 

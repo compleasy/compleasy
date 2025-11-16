@@ -1,6 +1,6 @@
 # Backup & Recovery
 
-This guide covers backup and recovery strategies for Compleasy deployments using both SQLite and PostgreSQL databases.
+This guide covers backup and recovery strategies for TrikuSec deployments using both SQLite and PostgreSQL databases.
 
 ## Overview
 
@@ -11,7 +11,7 @@ Regular backups are essential for protecting your audit data and ensuring busine
 
 ## SQLite Backup (Development/Small Deployments)
 
-SQLite is the default database for Compleasy and is suitable for small deployments or development environments.
+SQLite is the default database for TrikuSec and is suitable for small deployments or development environments.
 
 ### Manual Backup
 
@@ -27,17 +27,17 @@ SQLite's `.backup` command creates a consistent backup even while the applicatio
 
 ```bash
 # Backup database (while application is running)
-docker compose exec compleasy sqlite3 /app/compleasy.sqlite3 ".backup '/app/backups/compleasy-backup-$(date +%Y%m%d-%H%M%S).sqlite3'"
+docker compose exec trikusec sqlite3 /app/trikusec.sqlite3 ".backup '/app/backups/trikusec-backup-$(date +%Y%m%d-%H%M%S).sqlite3'"
 
 # Copy backup to host
-docker compose cp compleasy:/app/backups/. ./backups/
+docker compose cp trikusec:/app/backups/. ./backups/
 ```
 
 #### Verify Backup
 
 ```bash
 # Check backup file exists and has reasonable size
-ls -lh backups/compleasy-backup-*.sqlite3
+ls -lh backups/trikusec-backup-*.sqlite3
 ```
 
 ### Restore from SQLite Backup
@@ -52,7 +52,7 @@ docker compose down
 
 ```bash
 # Copy backup file to source directory
-cp backups/compleasy-backup-20241113-020000.sqlite3 src/compleasy.sqlite3
+cp backups/trikusec-backup-20241113-020000.sqlite3 src/trikusec.sqlite3
 ```
 
 #### Start Application
@@ -81,10 +81,10 @@ PostgreSQL is recommended for production deployments due to better performance a
 
 ```bash
 # Backup database using pg_dump
-docker compose exec postgres pg_dump -U compleasy_user -d compleasy > backup-$(date +%Y%m%d-%H%M%S).sql
+docker compose exec postgres pg_dump -U trikusec_user -d trikusec > backup-$(date +%Y%m%d-%H%M%S).sql
 
 # Or backup directly from host (if PostgreSQL is accessible)
-pg_dump -h localhost -U compleasy_user -d compleasy > backup-$(date +%Y%m%d-%H%M%S).sql
+pg_dump -h localhost -U trikusec_user -d trikusec > backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
 #### Backup with Compression
@@ -92,7 +92,7 @@ pg_dump -h localhost -U compleasy_user -d compleasy > backup-$(date +%Y%m%d-%H%M
 For large databases, use compression to reduce backup size:
 
 ```bash
-docker compose exec postgres pg_dump -U compleasy_user -d compleasy | gzip > backup-$(date +%Y%m%d-%H%M%S).sql.gz
+docker compose exec postgres pg_dump -U trikusec_user -d trikusec | gzip > backup-$(date +%Y%m%d-%H%M%S).sql.gz
 ```
 
 #### Backup Only Schema
@@ -100,7 +100,7 @@ docker compose exec postgres pg_dump -U compleasy_user -d compleasy | gzip > bac
 To backup only the database structure (without data):
 
 ```bash
-docker compose exec postgres pg_dump -U compleasy_user -d compleasy --schema-only > schema-backup-$(date +%Y%m%d-%H%M%S).sql
+docker compose exec postgres pg_dump -U trikusec_user -d trikusec --schema-only > schema-backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
 #### Backup Only Data
@@ -108,7 +108,7 @@ docker compose exec postgres pg_dump -U compleasy_user -d compleasy --schema-onl
 To backup only the data (without schema):
 
 ```bash
-docker compose exec postgres pg_dump -U compleasy_user -d compleasy --data-only > data-backup-$(date +%Y%m%d-%H%M%S).sql
+docker compose exec postgres pg_dump -U trikusec_user -d trikusec --data-only > data-backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
 ### Restore from PostgreSQL Backup
@@ -122,17 +122,17 @@ docker compose down
 #### Connect to Database Container
 
 ```bash
-docker compose exec postgres psql -U compleasy_user
+docker compose exec postgres psql -U trikusec_user
 ```
 
 #### Drop and Recreate Database
 
 ```sql
 -- Drop existing database
-DROP DATABASE compleasy;
+DROP DATABASE trikusec;
 
 -- Create new database
-CREATE DATABASE compleasy;
+CREATE DATABASE trikusec;
 
 -- Exit psql
 \q
@@ -142,10 +142,10 @@ CREATE DATABASE compleasy;
 
 ```bash
 # Restore from uncompressed backup
-docker compose exec -T postgres psql -U compleasy_user compleasy < backup-20241113-020000.sql
+docker compose exec -T postgres psql -U trikusec_user trikusec < backup-20241113-020000.sql
 
 # Restore from compressed backup
-gunzip < backup-20241113-020000.sql.gz | docker compose exec -T postgres psql -U compleasy_user compleasy
+gunzip < backup-20241113-020000.sql.gz | docker compose exec -T postgres psql -U trikusec_user trikusec
 ```
 
 #### Start Application
@@ -200,14 +200,14 @@ docker compose ps
 
 ```bash
 # Solution: Ensure backup directory exists in container
-docker compose exec compleasy mkdir -p /app/backups
+docker compose exec trikusec mkdir -p /app/backups
 ```
 
 **Problem**: Backup file is empty or corrupted
 
 ```bash
 # Solution: Verify database file exists and is accessible
-docker compose exec compleasy ls -lh /app/compleasy.sqlite3
+docker compose exec trikusec ls -lh /app/trikusec.sqlite3
 ```
 
 ### PostgreSQL Backup Issues
@@ -216,19 +216,19 @@ docker compose exec compleasy ls -lh /app/compleasy.sqlite3
 
 ```bash
 # Solution: Verify database credentials
-docker compose exec postgres psql -U compleasy_user -d compleasy -c "SELECT 1;"
+docker compose exec postgres psql -U trikusec_user -d trikusec -c "SELECT 1;"
 ```
 
 **Problem**: Backup file is too large
 
 ```bash
 # Solution: Use compression
-docker compose exec postgres pg_dump -U compleasy_user -d compleasy | gzip > backup.sql.gz
+docker compose exec postgres pg_dump -U trikusec_user -d trikusec | gzip > backup.sql.gz
 ```
 
 ## Related Documentation
 
-- [Docker Installation](docker.md) - Setting up Compleasy with Docker
+- [Docker Installation](docker.md) - Setting up TrikuSec with Docker
 - [PostgreSQL Setup](postgresql.md) - Configuring PostgreSQL for production
 - [Configuration](../configuration/index.md) - Environment variables and settings
 

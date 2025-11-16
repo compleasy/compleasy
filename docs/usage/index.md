@@ -1,6 +1,6 @@
 # Usage Guide
 
-Learn how to use Compleasy to manage and monitor your servers.
+Learn how to use TrikuSec to manage and monitor your servers.
 
 ## Getting Started
 
@@ -11,7 +11,7 @@ Learn how to use Compleasy to manage and monitor your servers.
 
 ## Overview
 
-Compleasy provides:
+TrikuSec provides:
 
 1. **Centralized Dashboard** - View all your servers and their compliance status
 2. **Policy Management** - Define and apply security policies

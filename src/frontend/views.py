@@ -40,14 +40,14 @@ def index(request):
 def onboarding(request):
     """Onboarding view: show when no devices are found to help the user to enroll a new device"""
     # Use Lynis API URL for enrollment commands
-    lynis_api_url = settings.COMPLEASY_LYNIS_API_URL
+    lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
     #TODO: allow license management. By now, we just get the last license key from the user
     user_license = LicenseKey.objects.filter(created_by=request.user).last()
     if not user_license:
         return HttpResponse('No license key found', status=404)
     
     user_licensekey = user_license.licensekey
-    return render(request, 'onboarding.html', {'compleasy_url': lynis_api_url, 'licensekey': user_licensekey})
+    return render(request, 'onboarding.html', {'trikusec_url': lynis_api_url, 'licensekey': user_licensekey})
 
 @login_required
 def device_list(request):
@@ -277,8 +277,8 @@ def enroll_sh(request):
         return HttpResponse('Invalid license key', status=401)
 
     # Use Lynis API URL for enrollment script
-    lynis_api_url = settings.COMPLEASY_LYNIS_API_URL
-    return render(request, 'enroll.html', {'compleasy_url': lynis_api_url, 'licensekey': licensekey})
+    lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
+    return render(request, 'enroll.html', {'trikusec_url': lynis_api_url, 'licensekey': licensekey})
 
 def download_lynis_custom_profile(request):
     """Generate a custom Lynis profile with the provided license key"""
@@ -300,12 +300,12 @@ def download_lynis_custom_profile(request):
         return HttpResponse('Invalid license key', status=401)
     
     # Build server address based on Lynis API URL (without protocol)
-    lynis_api_url = settings.COMPLEASY_LYNIS_API_URL
+    lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
     server_address_without_proto = lynis_api_url.split('://', 1)[1]
-    compleasy_upload_server = f'{server_address_without_proto}/api/lynis'
+    trikusec_upload_server = f'{server_address_without_proto}/api/lynis'
     return render(request, 'lynis_custom_profile.html',
                     {
-                      'compleasy_upload_server': compleasy_upload_server,
+                      'trikusec_upload_server': trikusec_upload_server,
                       'license_key': licensekey,
                       'lynis_version': lynis_version
                     },
@@ -943,7 +943,7 @@ def license_detail(request, license_id):
     import json
     license = get_object_or_404(LicenseKey, id=license_id)
     devices = Device.objects.filter(licensekey=license).order_by('-last_update')
-    compleasy_url = request.build_absolute_uri('/').rstrip('/')
+    trikusec_url = request.build_absolute_uri('/').rstrip('/')
     
     # Serialize license for JavaScript
     license_data = {
@@ -959,7 +959,7 @@ def license_detail(request, license_id):
         'license': license,
         'license_json': json.dumps(license_data),
         'devices': devices,
-        'compleasy_url': compleasy_url,
+        'trikusec_url': trikusec_url,
         'now': timezone.now()
     })
 
@@ -1061,7 +1061,7 @@ def license_delete(request, license_id):
 def enroll_device(request):
     """Enroll device view: create new license or select existing, show enrollment instructions"""
     # Use Lynis API URL for enrollment commands
-    lynis_api_url = settings.COMPLEASY_LYNIS_API_URL
+    lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
     
     if request.method == 'POST':
         # User chose to create new license or use existing
@@ -1086,7 +1086,7 @@ def enroll_device(request):
                 license.save()
                 return render(request, 'license/enroll_device.html', {
                     'license': license,
-                    'compleasy_url': lynis_api_url,
+                    'trikusec_url': lynis_api_url,
                     'enrollment_complete': True
                 })
         elif action == 'use_existing':
@@ -1105,12 +1105,12 @@ def enroll_device(request):
                     return render(request, 'license/enroll_device.html', {
                         'form': form,
                         'available_licenses': available_licenses,
-                        'compleasy_url': lynis_api_url,
+                        'trikusec_url': lynis_api_url,
                         'error': 'Selected license has reached maximum device limit'
                     })
                 return render(request, 'license/enroll_device.html', {
                     'license': license,
-                    'compleasy_url': lynis_api_url,
+                    'trikusec_url': lynis_api_url,
                     'enrollment_complete': True
                 })
             except LicenseKey.DoesNotExist:
@@ -1119,7 +1119,7 @@ def enroll_device(request):
                 return render(request, 'license/enroll_device.html', {
                     'form': form,
                     'available_licenses': available_licenses,
-                    'compleasy_url': lynis_api_url,
+                    'trikusec_url': lynis_api_url,
                     'error': 'License not found'
                 })
     else:
@@ -1134,7 +1134,7 @@ def enroll_device(request):
                 if license.has_capacity():
                     return render(request, 'license/enroll_device.html', {
                         'license': license,
-                        'compleasy_url': lynis_api_url,
+                        'trikusec_url': lynis_api_url,
                         'enrollment_complete': True
                     })
                 # If license doesn't have capacity, show form with selected license (disabled)
@@ -1150,7 +1150,7 @@ def enroll_device(request):
                         'form': form,
                         'available_licenses': available_licenses,
                         'selected_license': license,  # License without capacity
-                        'compleasy_url': lynis_api_url,
+                        'trikusec_url': lynis_api_url,
                         'error': 'Selected license has reached maximum device limit'
                     })
             except LicenseKey.DoesNotExist:
@@ -1169,5 +1169,5 @@ def enroll_device(request):
         return render(request, 'license/enroll_device.html', {
             'form': form,
             'available_licenses': available_licenses,
-            'compleasy_url': lynis_api_url
+            'trikusec_url': lynis_api_url
         })

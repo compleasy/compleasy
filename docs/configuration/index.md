@@ -1,6 +1,6 @@
 # Configuration
 
-This section covers all configuration options for Compleasy.
+This section covers all configuration options for TrikuSec.
 
 ## Configuration Areas
 
@@ -25,8 +25,8 @@ DJANGO_ALLOWED_HOSTS=yourdomain.com
 
 ```bash
 # Admin credentials
-COMPLEASY_ADMIN_USERNAME=admin
-COMPLEASY_ADMIN_PASSWORD=secure-password
+TRIKUSEC_ADMIN_USERNAME=admin
+TRIKUSEC_ADMIN_PASSWORD=secure-password
 
 # Database (optional, defaults to SQLite)
 DATABASE_URL=postgresql://user:pass@host:5432/dbname
@@ -38,7 +38,7 @@ SECURE_HSTS_SECONDS=31536000
 
 ## Configuration Files
 
-Compleasy uses environment variables for configuration. These can be set via:
+TrikuSec uses environment variables for configuration. These can be set via:
 
 1. `.env` file (recommended for local development)
 2. Docker Compose environment variables

@@ -1,6 +1,6 @@
 # Development
 
-Guide for developers contributing to Compleasy.
+Guide for developers contributing to TrikuSec.
 
 ## Development Areas
 
@@ -11,7 +11,7 @@ Guide for developers contributing to Compleasy.
 
 ## Development Environment
 
-Compleasy development happens entirely in Docker containers - no local Python installation required.
+TrikuSec development happens entirely in Docker containers - no local Python installation required.
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ Compleasy development happens entirely in Docker containers - no local Python in
 
 - `src/api/` - API application
 - `src/frontend/` - Frontend application
-- `src/compleasy/` - Django project settings
+- `src/trikusec/` - Django project settings
 - `src/conftest.py` - Pytest fixtures
 - `tests/` - Test files
 

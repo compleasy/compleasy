@@ -1,5 +1,5 @@
 """
-WSGI config for compleasy project.
+WSGI config for trikusec project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'compleasy.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikusec.settings')
 
 application = get_wsgi_application()

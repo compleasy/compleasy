@@ -65,25 +65,25 @@ jobs:
     - name: Generate test license key
       id: license-key
       run: |
-        echo "COMPLEASY_LICENSE_KEY=test-license-key-$(date +%s)" >> $GITHUB_ENV
+        echo "TRIKUSEC_LICENSE_KEY=test-license-key-$(date +%s)" >> $GITHUB_ENV
     
     - name: Build Docker images
       run: |
         docker compose -f docker-compose.dev.yml build
     
-    - name: Start Compleasy service
+    - name: Start TrikuSec service
       run: |
-        docker compose -f docker-compose.dev.yml up -d compleasy
+        docker compose -f docker-compose.dev.yml up -d trikusec
       env:
         SECRET_KEY: ${{ env.SECRET_KEY }}
     
     - name: Wait for service to be ready
       run: |
-        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs compleasy && exit 1)
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs trikusec && exit 1)
     
     - name: Create test license key in database
       run: |
-        docker compose -f docker-compose.dev.yml exec -T compleasy python manage.py shell <<EOF
+        docker compose -f docker-compose.dev.yml exec -T trikusec python manage.py shell <<EOF
         from django.contrib.auth.models import User
         from api.models import LicenseKey, Organization
         user = User.objects.first()
@@ -91,9 +91,9 @@ jobs:
             slug='default',
             defaults={'name': 'Default Organization', 'is_active': True}
         )
-        if not LicenseKey.objects.filter(licensekey='${{ env.COMPLEASY_LICENSE_KEY }}').exists():
+        if not LicenseKey.objects.filter(licensekey='${{ env.TRIKUSEC_LICENSE_KEY }}').exists():
             LicenseKey.objects.create(
-                licensekey='${{ env.COMPLEASY_LICENSE_KEY }}',
+                licensekey='${{ env.TRIKUSEC_LICENSE_KEY }}',
                 name='Integration Test License',
                 created_by=user,
                 organization=org,
@@ -106,7 +106,7 @@ jobs:
       run: |
         docker compose -f docker-compose.dev.yml up --abort-on-container-exit lynis-client
       env:
-        COMPLEASY_LICENSE_KEY: ${{ env.COMPLEASY_LICENSE_KEY }}
+        TRIKUSEC_LICENSE_KEY: ${{ env.TRIKUSEC_LICENSE_KEY }}
     
     - name: Check integration test results
       run: |
@@ -149,15 +149,15 @@ jobs:
       run: |
         docker compose -f docker-compose.dev.yml --profile test build test-e2e
     
-    - name: Start Compleasy service
+    - name: Start TrikuSec service
       run: |
-        docker compose -f docker-compose.dev.yml up -d compleasy
+        docker compose -f docker-compose.dev.yml up -d trikusec
       env:
         SECRET_KEY: ${{ env.SECRET_KEY }}
     
     - name: Wait for service to be ready
       run: |
-        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs compleasy && exit 1)
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs trikusec && exit 1)
     
     - name: Run E2E tests
       run: |

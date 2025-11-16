@@ -230,7 +230,7 @@ ntp_daemon=
 ntp_daemon_running=0
 certificate[]=/etc/ssl/certs/ca-certificates.crt|0|cn:subject=CN = ACCVRAIZ1, OU = PKIACCV, O = ACCV, C = ES;notafter:Dec 31 09:37:37 2030 GMT;|
 certificate[]=/etc/ssl/certs/ssl-cert-snakeoil.pem|0|cn:subject=CN = 9b3ecd4cf6d9;notafter:Nov 11 16:59:49 2035 GMT;|
-certificate[]=/usr/local/share/ca-certificates/compleasy.crt|0|cn:subject=C = US, ST = State, L = City, O = Organization, OU = Unit, CN = nginx-dev;notafter:Nov 11 09:55:34 2026 GMT;|
+certificate[]=/usr/local/share/ca-certificates/trikusec.crt|0|cn:subject=C = US, ST = State, L = City, O = Organization, OU = Unit, CN = nginx-dev;notafter:Nov 11 09:55:34 2026 GMT;|
 certificates=149
 kernel_entropy=256
 rng_found=0

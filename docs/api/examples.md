@@ -1,6 +1,6 @@
 # API Examples
 
-Code examples and integration patterns for Compleasy API.
+Code examples and integration patterns for TrikuSec API.
 
 ## Python Examples
 
@@ -14,7 +14,7 @@ import base64
 with open('/var/log/lynis-report.dat', 'rb') as f:
     report_data = base64.b64encode(f.read()).decode('utf-8')
 
-# Upload to Compleasy
+# Upload to TrikuSec
 response = requests.post(
     'https://yourserver:3000/api/lynis/upload/',
     data={

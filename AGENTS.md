@@ -1,6 +1,6 @@
-# Agent Guidelines for Compleasy
+# Agent Guidelines for TrikuSec
 
-This document contains critical guidelines and hints for AI agents working on the Compleasy project.
+This document contains critical guidelines and hints for AI agents working on the TrikuSec project.
 
 ## Critical Commands
 
@@ -138,13 +138,13 @@ The license system supports both **per-device licenses** and **shared licenses**
 - `src/` - Main application source code
   - `src/api/` - API application (models, views, forms, tests)
   - `src/frontend/` - Frontend application (views, templates, static files)
-  - `src/compleasy/` - Django project settings
+  - `src/trikusec/` - Django project settings
   - `src/utils/` - Shared utilities (will be moved to proper app structure)
   - `src/conftest.py` - Pytest fixtures
 - `lynis/` - Lynis integration files
   - `lynis/Dockerfile` - Docker image for Lynis client testing
   - `lynis/run-lynis-test.sh` - Integration test script
-- `compleasy-lynis-plugin/` - Lynis custom plugin
+- `trikusec-lynis-plugin/` - Lynis custom plugin
 - `.github/workflows/` - CI/CD workflows
 
 ### Key Files
@@ -169,11 +169,11 @@ The license system supports both **per-device licenses** and **shared licenses**
    - Never hardcode passwords in version control
    - Use environment variables with `.env.example` for defaults
 
-3. **ALLOWED_HOSTS** - `src/compleasy/settings.py` line 54
+3. **ALLOWED_HOSTS** - `src/trikusec/settings.py` line 54
    - Never use `ALLOWED_HOSTS = ['*']` in production
    - Require explicit configuration via environment variable
 
-4. **DEBUG Logging** - `src/compleasy/settings.py` lines 17-29
+4. **DEBUG Logging** - `src/trikusec/settings.py` lines 17-29
    - Root logger set to `DEBUG` exposes sensitive information
    - Make logging level configurable via environment variable
 
@@ -279,7 +279,7 @@ See [Policy Documentation](docs/usage/policies.md) for complete syntax guide and
 
 ### Collapsible Sidebar Pattern
 
-Compleasy uses a **consistent UX pattern** for CRUD operations:
+TrikuSec uses a **consistent UX pattern** for CRUD operations:
 
 - **List views**: Full-window display (e.g., license list, device list)
 - **Detail views**: Full-window with related data (e.g., license details with devices)
@@ -409,16 +409,16 @@ def item_create(request):
 ### Optional
 
 - `DJANGO_ALLOWED_HOSTS` - Allowed hosts (default: `['*']` for development)
-- `COMPLEASY_URL` - Compleasy admin UI server URL (default: `https://localhost:443`)
-- `COMPLEASY_LYNIS_API_URL` - Compleasy Lynis API server URL for device enrollment and report uploads (default: `https://localhost:8443`, falls back to `COMPLEASY_URL` if not set)
-- `COMPLEASY_ADMIN_USERNAME` - Admin username (default: `admin`)
-- `COMPLEASY_ADMIN_PASSWORD` - Admin password (default: `compleasy`)
+- `TRIKUSEC_URL` - TrikuSec admin UI server URL (default: `https://localhost:443`)
+- `TRIKUSEC_LYNIS_API_URL` - TrikuSec Lynis API server URL for device enrollment and report uploads (default: `https://localhost:8443`, falls back to `TRIKUSEC_URL` if not set)
+- `TRIKUSEC_ADMIN_USERNAME` - Admin username (default: `admin`)
+- `TRIKUSEC_ADMIN_PASSWORD` - Admin password (default: `trikusec`)
 
 #### Dual-Endpoint Architecture
 
-Compleasy uses separate endpoints for admin UI and Lynis API to improve security:
-- **Admin UI** (`COMPLEASY_URL`): Web interface for sysadmins, requires authentication
-- **Lynis API** (`COMPLEASY_LYNIS_API_URL`): API endpoints for device enrollment and report uploads
+TrikuSec uses separate endpoints for admin UI and Lynis API to improve security:
+- **Admin UI** (`TRIKUSEC_URL`): Web interface for sysadmins, requires authentication
+- **Lynis API** (`TRIKUSEC_LYNIS_API_URL`): API endpoints for device enrollment and report uploads
 
 This separation allows different firewall rules for each endpoint, preventing compromised servers from accessing the admin interface. See [Security Documentation](../docs/configuration/security.md#api-endpoint-separation-architecture) for details.
 
@@ -440,7 +440,7 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test
 ### Running Development Server
 
 ```bash
-docker compose -f docker-compose.dev.yml up compleasy
+docker compose -f docker-compose.dev.yml up trikusec
 ```
 
 ### Running Integration Tests with Lynis
@@ -448,10 +448,10 @@ docker compose -f docker-compose.dev.yml up compleasy
 ```bash
 # Set environment variables
 export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')
-export COMPLEASY_LICENSE_KEY=test-license-key-$(date +%s)
+export TRIKUSEC_LICENSE_KEY=test-license-key-$(date +%s)
 
 # Start services
-docker compose -f docker-compose.dev.yml up -d compleasy
+docker compose -f docker-compose.dev.yml up -d trikusec
 
 # Wait for health check, then run Lynis client
 docker compose -f docker-compose.dev.yml up --abort-on-container-exit lynis-client

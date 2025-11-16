@@ -1,6 +1,6 @@
 # Development Setup
 
-Set up your development environment for Compleasy.
+Set up your development environment for TrikuSec.
 
 ## Prerequisites
 
@@ -15,8 +15,8 @@ No local Python installation required!
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/compleasy/compleasy.git
-cd compleasy
+git clone https://github.com/trikusec/trikusec.git
+cd trikusec
 ```
 
 ### 2. Set Up Environment Variables
@@ -45,7 +45,7 @@ docker compose -f docker-compose.dev.yml up
 ```
 
 This starts:
-- Compleasy development server
+- TrikuSec development server
 - Database
 - (Optional) Test services
 
@@ -76,7 +76,7 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test pytest --c
 
 ```bash
 # Django shell
-docker compose -f docker-compose.dev.yml exec compleasy python manage.py shell
+docker compose -f docker-compose.dev.yml exec trikusec python manage.py shell
 
 # Test container shell
 docker compose -f docker-compose.dev.yml --profile test run --rm test /bin/bash
@@ -86,10 +86,10 @@ docker compose -f docker-compose.dev.yml --profile test run --rm test /bin/bash
 
 ```bash
 # Create migration
-docker compose -f docker-compose.dev.yml exec compleasy python manage.py makemigrations
+docker compose -f docker-compose.dev.yml exec trikusec python manage.py makemigrations
 
 # Apply migrations
-docker compose -f docker-compose.dev.yml exec compleasy python manage.py migrate
+docker compose -f docker-compose.dev.yml exec trikusec python manage.py migrate
 ```
 
 ## Code Organization
@@ -98,10 +98,10 @@ docker compose -f docker-compose.dev.yml exec compleasy python manage.py migrate
 
 Settings are organized by environment:
 
-- `src/compleasy/settings/base.py` - Common settings
-- `src/compleasy/settings/development.py` - Development settings
-- `src/compleasy/settings/production.py` - Production settings
-- `src/compleasy/settings/testing.py` - Testing settings
+- `src/trikusec/settings/base.py` - Common settings
+- `src/trikusec/settings/development.py` - Development settings
+- `src/trikusec/settings/production.py` - Production settings
+- `src/trikusec/settings/testing.py` - Testing settings
 
 ### Apps
 
@@ -118,7 +118,7 @@ Settings are organized by environment:
 - **Hot Reload** - Django development server auto-reloads on code changes
 - **Debug Mode** - Enable `DJANGO_DEBUG=True` for detailed error pages
 - **Database** - SQLite is used by default for development
-- **Logs** - Check container logs: `docker compose logs compleasy`
+- **Logs** - Check container logs: `docker compose logs trikusec`
 
 ## Next Steps
 

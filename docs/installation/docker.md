@@ -1,6 +1,6 @@
 # Docker Installation
 
-Docker is the recommended way to install Compleasy. This guide will walk you through the setup process.
+Docker is the recommended way to install TrikuSec. This guide will walk you through the setup process.
 
 ## Prerequisites
 
@@ -44,11 +44,11 @@ DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/compleasy/compleasy.git
-cd compleasy
+git clone https://github.com/trikusec/trikusec.git
+cd trikusec
 ```
 
-### 2. Start Compleasy
+### 2. Start TrikuSec
 
 ```bash
 docker compose up
@@ -56,14 +56,14 @@ docker compose up
 
 This will:
 
-- Build the Compleasy Docker image
+- Build the TrikuSec Docker image
 - Start the web server
 - Initialize the database
 - Create default admin user
 
-### 3. Access Compleasy
+### 3. Access TrikuSec
 
-Once started, access Compleasy at:
+Once started, access TrikuSec at:
 
 ```
 http://localhost:3000
@@ -71,10 +71,10 @@ http://localhost:3000
 
 Default credentials:
 - **Username:** `admin`
-- **Password:** `compleasy`
+- **Password:** `trikusec`
 
 !!! warning "Change Default Password"
-    Never use default admin credentials in production. Set `COMPLEASY_ADMIN_PASSWORD` in your `.env` file.
+    Never use default admin credentials in production. Set `TRIKUSEC_ADMIN_PASSWORD` in your `.env` file.
 
 ## Production Deployment
 
@@ -83,7 +83,7 @@ Default credentials:
 Before deploying to production, collect static files:
 
 ```bash
-docker compose -f docker-compose.yml run --rm compleasy python manage.py collectstatic --no-input
+docker compose -f docker-compose.yml run --rm trikusec python manage.py collectstatic --no-input
 ```
 
 ### Enable HTTPS Security Headers

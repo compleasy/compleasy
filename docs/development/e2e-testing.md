@@ -1,6 +1,6 @@
 # E2E Testing with Playwright
 
-This document describes how to run and maintain end-to-end (E2E) tests for the Compleasy frontend using Playwright.
+This document describes how to run and maintain end-to-end (E2E) tests for the TrikuSec frontend using Playwright.
 
 ## Overview
 
@@ -18,7 +18,7 @@ E2E tests verify the complete user experience by testing the frontend in a real 
 ### Prerequisites
 
 - Docker and Docker Compose installed
-- Compleasy service running (for E2E tests that need the live server)
+- TrikuSec service running (for E2E tests that need the live server)
 
 ### Running All E2E Tests
 
@@ -192,7 +192,7 @@ For advanced debugging, you can run tests locally:
 E2E tests run automatically in GitHub Actions after integration tests pass. The workflow:
 
 1. Builds the test image with Playwright
-2. Starts the Compleasy service
+2. Starts the TrikuSec service
 3. Waits for the service to be ready
 4. Runs E2E tests
 5. Uploads HTML test report as an artifact
@@ -239,7 +239,7 @@ docker compose -f docker-compose.dev.yml --profile test build test-e2e
 
 If tests fail because the service isn't ready:
 
-- Check service logs: `docker compose -f docker-compose.dev.yml logs compleasy`
+- Check service logs: `docker compose -f docker-compose.dev.yml logs trikusec`
 - Increase wait timeout in CI/CD workflow
 - Check health endpoint: `curl http://localhost:8000/health/`
 

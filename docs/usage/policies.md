@@ -1,10 +1,10 @@
 # Policy Management
 
-Learn how to create and manage compliance policies in Compleasy.
+Learn how to create and manage compliance policies in TrikuSec.
 
 ## Overview
 
-Policies in Compleasy allow you to:
+Policies in TrikuSec allow you to:
 
 - Define security and operational requirements
 - Apply rules to devices

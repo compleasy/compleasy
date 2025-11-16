@@ -17,7 +17,7 @@ class Command(BaseCommand):
             return
         
         # Get new password from environment variable
-        new_password = os.environ.get('COMPLEASY_ADMIN_PASSWORD')
+        new_password = os.environ.get('TRIKUSEC_ADMIN_PASSWORD')
 
         # Get the new password from the command line
         if options['password']:

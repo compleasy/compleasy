@@ -1,10 +1,10 @@
 # API Reference
 
-Complete API reference for Compleasy.
+Complete API reference for TrikuSec.
 
 ## Overview
 
-Compleasy provides REST API endpoints for:
+TrikuSec provides REST API endpoints for:
 
 - Uploading audit reports
 - License key validation
@@ -20,7 +20,7 @@ https://yourserver:3000/api
 
 ## API Versioning
 
-Compleasy supports API versioning:
+TrikuSec supports API versioning:
 
 - **Versioned API**: `/api/v1/lynis/...`
 - **Legacy API**: `/api/lynis/...` (for backward compatibility)

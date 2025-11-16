@@ -1,19 +1,19 @@
 services:
-  compleasy:
+  trikusec:
     build: .
-    container_name: compleasy
+    container_name: trikusec
     volumes:
       - ./src:/app
     environment:
       - SECRET_KEY=${SECRET_KEY:-"CHANGE_ME_IN_PRODUCTION"}
       - DJANGO_ENV=production
       - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
-      - COMPLEASY_URL=${COMPLEASY_URL:-https://localhost:8000}
-      - COMPLEASY_LYNIS_API_URL=${COMPLEASY_LYNIS_API_URL:-https://localhost:8000}
-      - COMPLEASY_ADMIN_USERNAME=admin
+      - TRIKUSEC_URL=${TRIKUSEC_URL:-https://localhost:8000}
+      - TRIKUSEC_LYNIS_API_URL=${TRIKUSEC_LYNIS_API_URL:-https://localhost:8000}
+      - TRIKUSEC_ADMIN_USERNAME=admin
       # SECURITY WARNING: Change admin credentials in production!
-      # Set COMPLEASY_ADMIN_PASSWORD in .env file
-      - COMPLEASY_ADMIN_PASSWORD=${COMPLEASY_ADMIN_PASSWORD:-compleasy}
+      # Set TRIKUSEC_ADMIN_PASSWORD in .env file
+      - TRIKUSEC_ADMIN_PASSWORD=${TRIKUSEC_ADMIN_PASSWORD:-trikusec}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8000/health/"]
@@ -34,5 +34,5 @@ services:
     environment:
       - NGINX_CERT_CN=${NGINX_CERT_CN:-nginx}
     depends_on:
-      compleasy:
+      trikusec:
         condition: service_healthy

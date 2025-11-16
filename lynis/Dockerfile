@@ -16,9 +16,9 @@ RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&
 # Create directory for Lynis plugin
 RUN mkdir -p /usr/local/lynis/plugins
 
-# Copy Compleasy plugin
-COPY compleasy-lynis-plugin/plugin_compleasy_phase1 /usr/local/lynis/plugins/plugin_compleasy_phase1
-RUN chmod +x /usr/local/lynis/plugins/plugin_compleasy_phase1
+# Copy TrikuSec plugin
+COPY trikusec-lynis-plugin/plugin_trikusec_phase1 /usr/local/lynis/plugins/plugin_trikusec_phase1
+RUN chmod +x /usr/local/lynis/plugins/plugin_trikusec_phase1
 
 # Create test directory
 RUN mkdir -p /test

@@ -1,6 +1,6 @@
 # API Authentication
 
-Authentication methods for Compleasy API.
+Authentication methods for TrikuSec API.
 
 ## License Key Authentication
 
@@ -52,7 +52,7 @@ API key authentication (coming soon) for programmatic access.
 If you get `401 Unauthorized`:
 
 1. Verify the license key is correct
-2. Check that the license key exists in Compleasy
+2. Check that the license key exists in TrikuSec
 3. Ensure the license key hasn't been revoked
 
 ### Connection Issues

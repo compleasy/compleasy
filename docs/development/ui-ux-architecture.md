@@ -1,12 +1,12 @@
 # UI/UX Architecture
 
-Compleasy follows a consistent UI/UX pattern for CRUD operations to provide a modern, efficient user experience.
+TrikuSec follows a consistent UI/UX pattern for CRUD operations to provide a modern, efficient user experience.
 
 ## Overview
 
 ### The Three-Layer Pattern
 
-Compleasy uses a **consistent three-layer approach** for data management:
+TrikuSec uses a **consistent three-layer approach** for data management:
 
 1. **List Views**: Full-window display showing all items
 2. **Detail Views**: Full-window view with related data and relationships

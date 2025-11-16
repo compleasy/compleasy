@@ -1,38 +1,124 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Server Configuration and Auditing Manager</title>
+    <title>Login - TrikuSec</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen flex items-center justify-center">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Log in to Compleasy
+<body class="bg-gray-100 h-screen flex items-center justify-center px-4">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden fade-in">
+        <!-- Header section matching dashboard nav -->
+        <div class="bg-gray-800 px-8 py-8 flex flex-col items-center">
+            <img class="h-14 w-auto mb-4" src="{% static 'img/trikusec_logo.svg' %}" alt="TrikuSec" title="TrikuSec" />
+            <h2 class="text-xl font-semibold text-white">
+                Sign in to your account
             </h2>
         </div>
-        <form class="mt-8 space-y-6" action="#" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="remember" value="true">
-            <div class="rounded-md shadow-sm -space-y-px">
-                <div>
-                    <label for="username" class="sr-only">Username</label>
-                    <input id="username" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Username">
-                </div>
-                <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password">
+        
+        <!-- Form section -->
+        <div class="px-8 py-8">
+            <!-- Error messages -->
+            {% if form.errors %}
+            <div class="mb-6 rounded-md bg-red-50 border border-red-200 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Please correct the following errors:
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                                {% if form.username.errors %}
+                                <li>Username: {{ form.username.errors|first }}</li>
+                                {% endif %}
+                                {% if form.password.errors %}
+                                <li>Password: {{ form.password.errors|first }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endif %}
 
-            <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Sign in
-                </button>
-            </div>
-        </form>
+            <form class="space-y-6" action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                {% if next %}
+                <input type="hidden" name="next" value="{{ next }}" />
+                {% endif %}
+                
+                <div class="space-y-5">
+                    <div>
+                        <label for="id_username" class="block text-sm font-medium text-gray-700 mb-2">
+                            Username
+                        </label>
+                        <input id="id_username" name="username" type="text" required autofocus
+                               class="input-focus appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 sm:text-sm transition-all duration-200 bg-white"
+                               placeholder="Enter your username"
+                               value="{% if form.username.value %}{{ form.username.value }}{% endif %}">
+                    </div>
+                    <div>
+                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <input id="id_password" name="password" type="password" required
+                               class="input-focus appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 sm:text-sm transition-all duration-200 bg-white"
+                               placeholder="Enter your password">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" id="submit-btn"
+                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="submit-text">Sign in</span>
+                        <svg id="submit-spinner" class="hidden ml-2 h-4 w-4 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+
+    <script>
+        // Add loading state to submit button
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const submitSpinner = document.getElementById('submit-spinner');
+            
+            submitBtn.disabled = true;
+            submitText.textContent = 'Signing in...';
+            submitSpinner.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>

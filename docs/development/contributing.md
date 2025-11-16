@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to Compleasy!
+Thank you for your interest in contributing to TrikuSec!
 
 ## How to Contribute
 
@@ -101,5 +101,5 @@ Always use `docker compose` (with space), never `docker-compose` (with hyphen).
 - Check existing documentation
 - Review code comments
 
-Thank you for contributing to Compleasy!
+Thank you for contributing to TrikuSec!
 

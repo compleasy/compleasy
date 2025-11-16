@@ -1,5 +1,5 @@
 """
-Settings module for Compleasy.
+Settings module for TrikuSec.
 Loads appropriate settings based on DJANGO_ENV environment variable.
 """
 import os

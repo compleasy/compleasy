@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-COMPLEASY_URL={{ compleasy_url }}
-COMPLEASY_CERT_URL=${COMPLEASY_URL}/download/server.crt
-COMPLEASY_CERT_TMP=/tmp/compleasy.crt
-COMPLEASY_PRF_URL=${COMPLEASY_URL}/download/lynis_custom_profile
-COMPLEASY_LICENSEKEY={{ licensekey }}
+TRIKUSEC_URL={{ trikusec_url }}
+TRIKUSEC_CERT_URL=${TRIKUSEC_URL}/download/server.crt
+TRIKUSEC_CERT_TMP=/tmp/trikusec.crt
+TRIKUSEC_PRF_URL=${TRIKUSEC_URL}/download/lynis_custom_profile
+TRIKUSEC_LICENSEKEY={{ licensekey }}
 
 if [ ! -f /etc/debian_version ]; then
     echo "This script is only compatible with Debian-based systems."
@@ -22,7 +22,7 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 # Check if the server is reachable and has a valid certificate
-curl -s "${COMPLEASY_URL}" -o /dev/null
+curl -s "${TRIKUSEC_URL}" -o /dev/null
 if [ $? -ne 0 ]; then
     echo "Server certificate is self-signed. Adding it to the trusted certificates."
     # Check if openssl and ca-certificates are installed
@@ -30,17 +30,17 @@ if [ $? -ne 0 ]; then
         echo "openssl or ca-certificates are not installed. Installing them..."
         ${SUDO} apt-get update && ${SUDO} apt-get install -y openssl ca-certificates
     fi
-    # Derive host:port from COMPLEASY_URL, defaulting to 443 when no port provided
-    HOSTPORTPATH=${COMPLEASY_URL#https://}
+    # Derive host:port from TRIKUSEC_URL, defaulting to 443 when no port provided
+    HOSTPORTPATH=${TRIKUSEC_URL#https://}
     HOSTPORT=${HOSTPORTPATH%%/*}
     case "$HOSTPORT" in
         *:*) OPENSSL_CONNECT="$HOSTPORT" ;;
         *) OPENSSL_CONNECT="$HOSTPORT:443" ;;
     esac
-    openssl s_client -showcerts -connect "${OPENSSL_CONNECT}" </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p' > ${COMPLEASY_CERT_TMP}
-    ${SUDO} cp ${COMPLEASY_CERT_TMP} /usr/local/share/ca-certificates/compleasy.crt
+    openssl s_client -showcerts -connect "${OPENSSL_CONNECT}" </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p' > ${TRIKUSEC_CERT_TMP}
+    ${SUDO} cp ${TRIKUSEC_CERT_TMP} /usr/local/share/ca-certificates/trikusec.crt
     ${SUDO} update-ca-certificates
-    rm -f ${COMPLEASY_CERT_TMP}
+    rm -f ${TRIKUSEC_CERT_TMP}
 else
     echo "Server certificate is valid."
 fi
@@ -53,10 +53,10 @@ ${SUDO} apt-get install -y curl lynis rkhunter auditd
 LYNIS_VERSION=$(lynis --version)
 
 # Configure Lynis agent
-${SUDO} curl -s "${COMPLEASY_PRF_URL}?licensekey=${COMPLEASY_LICENSEKEY}&lynis_version=${LYNIS_VERSION}" -o /etc/lynis/custom.prf
+${SUDO} curl -s "${TRIKUSEC_PRF_URL}?licensekey=${TRIKUSEC_LICENSEKEY}&lynis_version=${LYNIS_VERSION}" -o /etc/lynis/custom.prf
 
 # Run Lynis
-${SUDO} lynis audit system --upload --quick --cronjob --auditor "Compleasy agent"
+${SUDO} lynis audit system --upload --quick --cronjob --auditor "TrikuSec agent"
 
 # Enable systemd timer for daily audit
 ${SUDO} systemctl enable lynis.timer

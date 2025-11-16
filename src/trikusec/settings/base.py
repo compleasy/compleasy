@@ -1,5 +1,5 @@
 """
-Base Django settings for compleasy project.
+Base Django settings for trikusec project.
 
 This file contains all common settings shared across all environments.
 Environment-specific settings should be in development.py, production.py, or testing.py.
@@ -83,7 +83,7 @@ MIDDLEWARE = [
     'api.middleware.AuditLoggingMiddleware',  # Add audit logging
 ]
 
-ROOT_URLCONF = 'compleasy.urls'
+ROOT_URLCONF = 'trikusec.urls'
 
 TEMPLATES = [
     {
@@ -105,7 +105,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'compleasy.wsgi.application'
+WSGI_APPLICATION = 'trikusec.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -139,7 +139,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'compleasy.sqlite3',
+            'NAME': BASE_DIR / 'trikusec.sqlite3',
         }
     }
 
@@ -245,8 +245,8 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 RATELIMIT_ENABLE = os.environ.get('RATELIMIT_ENABLE', 'True').lower() in ('true', '1', 'yes')
 RATELIMIT_USE_CACHE = 'default'
 
-# Compleasy configuration
-COMPLEASY_URL = os.environ.get('COMPLEASY_URL', 'https://localhost:443')
-# Lynis API URL - falls back to COMPLEASY_URL if not set
-COMPLEASY_LYNIS_API_URL = os.environ.get('COMPLEASY_LYNIS_API_URL', COMPLEASY_URL)
+# TrikuSec configuration
+TRIKUSEC_URL = os.environ.get('TRIKUSEC_URL', 'https://localhost:443')
+# Lynis API URL - falls back to TRIKUSEC_URL if not set
+TRIKUSEC_LYNIS_API_URL = os.environ.get('TRIKUSEC_LYNIS_API_URL', TRIKUSEC_URL)
 

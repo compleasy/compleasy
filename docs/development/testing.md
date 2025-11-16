@@ -1,6 +1,6 @@
 # Testing Guide
 
-Complete guide to testing in Compleasy.
+Complete guide to testing in TrikuSec.
 
 ## Test Structure
 

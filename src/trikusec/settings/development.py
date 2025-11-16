@@ -1,5 +1,5 @@
 """
-Development-specific settings for Compleasy.
+Development-specific settings for TrikuSec.
 
 These settings are used when DJANGO_ENV=development (default).
 """
@@ -24,12 +24,12 @@ LOGGING['root']['level'] = 'DEBUG'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Custom SQLite database filename for development
-# Override the default 'compleasy.sqlite3' to keep dev and production databases separate
+# Override the default 'trikusec.sqlite3' to keep dev and production databases separate
 if not os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'compleasy-dev.sqlite3',
+            'NAME': BASE_DIR / 'trikusec-dev.sqlite3',
         }
     }
 

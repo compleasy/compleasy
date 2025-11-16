@@ -1,5 +1,5 @@
 """
-Testing-specific settings for Compleasy.
+Testing-specific settings for TrikuSec.
 
 These settings are used when DJANGO_ENV=testing.
 """

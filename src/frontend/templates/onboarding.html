@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compleasy</title>
+    <title>TrikuSec</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .copy-button {
@@ -14,22 +14,22 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-6"><a href="{% url 'index' %}">Compleasy</a></h1>
+        <h1 class="text-3xl font-bold mb-6"><a href="{% url 'index' %}">TrikuSec</a></h1>
         
         <!-- Onboarding Window -->
         <div id="onboardingWindow" class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-8">
-            <h2 class="text-2xl font-bold mb-4">Welcome to Compleasy!</h2>
+            <h2 class="text-2xl font-bold mb-4">Welcome to TrikuSec!</h2>
             <p class="mb-4">It looks like you haven't enrolled any devices yet. Let's get you started with your first one!</p>
             
             <h3 class="text-xl font-semibold mb-2">Quick Install</h3>
             <p class="mb-2">Run this command on your server to enroll it:</p>
             <div class="bg-gray-100 p-4 rounded-md mb-4 relative">
-                <pre class="text-sm overflow-x-auto"><code>wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash</code></pre>
+                <pre class="text-sm overflow-x-auto"><code>wget -qO- --no-check-certificate {{ trikusec_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash</code></pre>
                 <button onclick="copyToClipboard(this)" class="copy-button absolute top-2 right-2 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">Copy</button>
             </div>
             
             <h3 class="text-xl font-semibold mb-2">Alternative Installation</h3>
-            <p class="mb-4">If you prefer a manual installation or need more control over the process, check out our <a href="https://github.com/compleasy/compleasy/blob/main/README.md" class="text-blue-500 hover:underline">comprehensive documentation</a> for step-by-step instructions and advanced configuration options.</p>
+            <p class="mb-4">If you prefer a manual installation or need more control over the process, check out our <a href="https://github.com/trikusec/trikusec/blob/main/README.md" class="text-blue-500 hover:underline">comprehensive documentation</a> for step-by-step instructions and advanced configuration options.</p>
             
             <div class="mt-4 flex gap-2">
                 <!-- "Enroll Device" button -->
@@ -57,7 +57,7 @@
     <script>
         function copyToClipboard(button) {
             const el = document.createElement('textarea');
-            el.value = 'wget -qO- --no-check-certificate {{ compleasy_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash';
+            el.value = 'wget -qO- --no-check-certificate {{ trikusec_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash';
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');

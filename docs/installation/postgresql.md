@@ -1,6 +1,6 @@
 # PostgreSQL Setup
 
-Compleasy uses SQLite by default for easy installation, but PostgreSQL is **strongly recommended** for production deployments.
+TrikuSec uses SQLite by default for easy installation, but PostgreSQL is **strongly recommended** for production deployments.
 
 ## Why PostgreSQL?
 
@@ -22,13 +22,13 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: compleasy
-      POSTGRES_USER: compleasy_user
+      POSTGRES_DB: trikusec
+      POSTGRES_USER: trikusec_user
       POSTGRES_PASSWORD: your_secure_password_here
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U compleasy_user"]
+      test: ["CMD-SHELL", "pg_isready -U trikusec_user"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,25 +39,25 @@ volumes:
 
 ### 2. Configure DATABASE_URL
 
-Set the `DATABASE_URL` environment variable in your Compleasy service:
+Set the `DATABASE_URL` environment variable in your TrikuSec service:
 
 ```yaml
 services:
-  compleasy:
+  trikusec:
     environment:
-      DATABASE_URL: postgresql://compleasy_user:your_secure_password_here@postgres:5432/compleasy
+      DATABASE_URL: postgresql://trikusec_user:your_secure_password_here@postgres:5432/trikusec
 ```
 
 Or add it to your `.env` file:
 
 ```bash
-DATABASE_URL=postgresql://compleasy_user:your_secure_password_here@postgres:5432/compleasy
+DATABASE_URL=postgresql://trikusec_user:your_secure_password_here@postgres:5432/trikusec
 ```
 
 ### 3. Run Migrations
 
 ```bash
-docker compose exec compleasy python manage.py migrate
+docker compose exec trikusec python manage.py migrate
 ```
 
 ## Manual PostgreSQL Setup
@@ -80,19 +80,19 @@ brew services start postgresql
 sudo -u postgres psql
 
 # Create database and user
-CREATE DATABASE compleasy;
-CREATE USER compleasy_user WITH PASSWORD 'your_secure_password_here';
-ALTER ROLE compleasy_user SET client_encoding TO 'utf8';
-ALTER ROLE compleasy_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE compleasy_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE compleasy TO compleasy_user;
+CREATE DATABASE trikusec;
+CREATE USER trikusec_user WITH PASSWORD 'your_secure_password_here';
+ALTER ROLE trikusec_user SET client_encoding TO 'utf8';
+ALTER ROLE trikusec_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE trikusec_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE trikusec TO trikusec_user;
 \q
 ```
 
 ### 3. Set DATABASE_URL
 
 ```bash
-export DATABASE_URL=postgresql://compleasy_user:your_secure_password_here@localhost:5432/compleasy
+export DATABASE_URL=postgresql://trikusec_user:your_secure_password_here@localhost:5432/trikusec
 ```
 
 Or add it to your `.env` file.
@@ -102,11 +102,11 @@ Or add it to your `.env` file.
 After setting up PostgreSQL, verify the connection:
 
 ```bash
-# Check if Compleasy can connect
-docker compose exec compleasy python manage.py dbshell
+# Check if TrikuSec can connect
+docker compose exec trikusec python manage.py dbshell
 
 # Or test the connection
-docker compose exec compleasy python manage.py shell
+docker compose exec trikusec python manage.py shell
 ```
 
 ```python
@@ -121,14 +121,14 @@ If you're already running with SQLite and want to migrate to PostgreSQL:
 
 1. **Backup your SQLite database**:
    ```bash
-   docker compose exec compleasy python manage.py dumpdata > backup.json
+   docker compose exec trikusec python manage.py dumpdata > backup.json
    ```
 
 2. **Set up PostgreSQL** (as described above)
 
 3. **Load data into PostgreSQL**:
    ```bash
-   docker compose exec compleasy python manage.py loaddata backup.json
+   docker compose exec trikusec python manage.py loaddata backup.json
    ```
 
 !!! note "SQLite for Development"

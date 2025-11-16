@@ -25,9 +25,9 @@ class TestLynisIntegration:
 
     @pytest.fixture
     def server_url(self):
-        """Get the Compleasy server URL from environment or use default."""
+        """Get the TrikuSec server URL from environment or use default."""
         import os
-        return os.environ.get('COMPLEASY_SERVER_URL', 'http://localhost:8000')
+        return os.environ.get('TRIKUSEC_SERVER_URL', 'http://localhost:8000')
 
     @pytest.fixture
     def test_license_key(self, db, test_user):

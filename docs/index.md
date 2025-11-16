@@ -1,12 +1,12 @@
-# Compleasy Documentation
+# TrikuSec Documentation
 
-Welcome to the Compleasy documentation!
+Welcome to the TrikuSec documentation!
 
-**Compleasy** is a centralized Linux server auditing and compliance management platform built on [Lynis](https://cisofy.com/lynis/). It collects, stores, and analyzes security audit reports from multiple Linux servers in one place, enabling centralized monitoring and policy compliance management across your infrastructure.
+**TrikuSec** is a centralized Linux server auditing and compliance management platform built on [Lynis](https://cisofy.com/lynis/). It collects, stores, and analyzes security audit reports from multiple Linux servers in one place, enabling centralized monitoring and policy compliance management across your infrastructure.
 
 ## Use Cases
 
-Compleasy is ideal for:
+TrikuSec is ideal for:
 
 - **Security Compliance Monitoring**: Ensure servers meet security policies and regulatory requirements
 - **Infrastructure Auditing**: Track security posture across multiple servers from a single dashboard
@@ -16,13 +16,13 @@ Compleasy is ideal for:
 
 ## Security Philosophy
 
-Compleasy is designed with security as the top priority. We believe that security monitoring tools should never compromise the security of the systems they monitor.
+TrikuSec is designed with security as the top priority. We believe that security monitoring tools should never compromise the security of the systems they monitor.
 
 **Key Principles:**
 
-- **Read-Only:** Compleasy only receives data—no commands are sent or run on your servers.
+- **Read-Only:** TrikuSec only receives data—no commands are sent or run on your servers.
 - **No Agents:** Only [Lynis](https://cisofy.com/lynis/) is needed on servers; no extra daemons or proprietary software.
-- **Server Independence:** Compleasy does not control or alter your systems.
+- **Server Independence:** TrikuSec does not control or alter your systems.
 
 This approach improves monitoring without added risk.
 
@@ -39,7 +39,7 @@ This approach improves monitoring without added risk.
 
 ## Quick Start
 
-1. **[Install Compleasy](installation/index.md)** - Get started with Docker installation
+1. **[Install TrikuSec](installation/index.md)** - Get started with Docker installation
 2. **[Configure Client](installation/client-setup.md)** - Set up Lynis clients to send reports
 3. **[Start Using](usage/getting-started.md)** - Learn how to use the dashboard and manage your servers
 
@@ -59,17 +59,17 @@ This approach improves monitoring without added risk.
 
 ## Acknowledgments
 
-Compleasy is built on [Lynis](https://cisofy.com/lynis/), an excellent open-source security auditing tool. We are grateful to the Lynis project and its community for providing such a robust foundation.
+TrikuSec is built on [Lynis](https://cisofy.com/lynis/), an excellent open-source security auditing tool. We are grateful to the Lynis project and its community for providing such a robust foundation.
 
 ### Important Note
 
-**Compleasy is not a professional product.** This is an open-source project in active development. If you are looking for a robust, production-ready security solution with professional support, service level agreements, and enterprise features, we recommend considering [Lynis Enterprise](https://cisofy.com/pricing/) by CISOfy.
+**TrikuSec is not a professional product.** This is an open-source project in active development. If you are looking for a robust, production-ready security solution with professional support, service level agreements, and enterprise features, we recommend considering [Lynis Enterprise](https://cisofy.com/pricing/) by CISOfy.
 
 !!! note "No Affiliation"
     We have no relationship, affiliation, or partnership with CISOfy. This recommendation is made solely to help users find appropriate solutions for their needs.
 
 ## Getting Help
 
-- **Issues:** [GitHub Issues](https://github.com/compleasy/compleasy/issues)
-- **Repository:** [GitHub Repository](https://github.com/compleasy/compleasy)
+- **Issues:** [GitHub Issues](https://github.com/trikusec/trikusec/issues)
+- **Repository:** [GitHub Repository](https://github.com/trikusec/trikusec)
 

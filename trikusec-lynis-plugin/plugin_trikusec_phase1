@@ -5,9 +5,9 @@
 #    * DO NOT REMOVE *
 #-----------------------------------------------------
 # PLUGIN_AUTHOR=Xabi Ezpeleta <xezpeleta@gmail.com>
-# PLUGIN_CATEGORY=Compleasy
-# PLUGIN_DESC=Compleasy tests
-# PLUGIN_NAME=compleasy
+# PLUGIN_CATEGORY=TrikuSec
+# PLUGIN_DESC=TrikuSec tests
+# PLUGIN_NAME=trikusec
 # PLUGIN_VERSION=0.0.1
 # PLUGIN_REQUIRED_TESTS=
 #-----------------------------------------------------
@@ -16,36 +16,36 @@
 #
 
 ###################################################################################
-# This custom test file is part of the Compleasy Lynis tests
+# This custom test file is part of the TrikuSec Lynis tests
 #
 # It will contain custom tests, which can be used to extend the functionality
 # of Lynis.
 #
 # The following tests are included:
-# - CUST-COMPLEASY-0000: Compleasy Lynis custom test ping. Just to know that the Compleasy
+# - CUST-TRIKUSEC-0000: TrikuSec Lynis custom test ping. Just to know that the TrikuSec
 #              		 Lynis custom tests are enabled.
-# - CUST-COMPLEASY-0010: Lynis systemd timer info. It will gather information about the Lynis
+# - CUST-TRIKUSEC-0010: Lynis systemd timer info. It will gather information about the Lynis
 #              		 systemd timer.
-# - CUST-COMPLEASY-0020: Antivirus version check. It will check the version of the installed
+# - CUST-TRIKUSEC-0020: Antivirus version check. It will check the version of the installed
 #              		 antivirus software and the last update.
-# - CUST-COMPLEASY-0030: Custom test to check the status of the firewall.
+# - CUST-TRIKUSEC-0030: Custom test to check the status of the firewall.
 #
 ###################################################################################
 
     # Add a new section to the screen output
-    InsertSection "Compleasy custom tests"
+    InsertSection "TrikuSec custom tests"
 
 #################################################################################
 #
-    # Test        : CUST-COMPLEASY-0010
-    # Description : Compleasy Lynis custom test ping. Just to know that the Compleasy Lynis custom tests are enabled.
+    # Test        : CUST-TRIKUSEC-0000
+    # Description : TrikuSec Lynis custom test ping. Just to know that the TrikuSec Lynis custom tests are enabled.
 
     # Register our first custom test
     # We consider it to be a lightweight test (no heavy IO, or long searches), no network connection needed
     # --test-no   unique ID
     # --weight    L/M/H
     # --category  category (e.g. performance, privacy, security)
-    Register --test-no CUST-COMPLEASY-0000 --weight L --network NO --category security --description "Compleasy custom tests status"
+    Register --test-no CUST-TRIKUSEC-0000 --weight L --network NO --category security --description "TrikuSec custom tests status"
     if [ ${SKIPTEST} -eq 0 ]; then
         # The Display function makes it easy to show something on screen, with colors.
         # --indent  defines amount of spaces
@@ -53,16 +53,16 @@
         # --result  text at end of line
         # --color   color of result text
         Display --indent 2 --text "- Checking if everything is OK..." --result "${STATUS_OK}" --color GREEN
-        Report "compleasy_custom_tests=1"
+        Report "trikusec_custom_tests=1"
         #Display --indent 4 --text "This shows one level deeper " --result "${STATUS_NO}" --color YELLOW
         #Display --indent 6 --text "And even deeper" --result "${STATUS_WARNING}" --color RED
     fi
 #
 #################################################################################
 #
-    # Test        : CUST-COMPLEASY-0010
+    # Test        : CUST-TRIKUSEC-0010
     # Description : Lynis systemd timer info. It will gather information about the Lynis systemd timer.
-    Register --test-no CUST-COMPLEASY-0010 --weight L --network NO --category security --description "Compleasy Lynis systemd timer info"
+    Register --test-no CUST-TRIKUSEC-0010 --weight L --network NO --category security --description "TrikuSec Lynis systemd timer info"
 
     LYNIS_TIMER="/etc/systemd/system/timers.target.wants/lynis.timer"
 
@@ -140,14 +140,14 @@
 #
 #################################################################################
 #
-    # Test        : CUST-COMPLEASY-0020
+    # Test        : CUST-TRIKUSEC-0020
     # Description : Anti-virus version and last update check
 
     # First check if ClamAV is installed as a prerequisite for this test
 
     CLAMAVBINARY=$(command -v clamscan)
     if [ ! "${CLAMAVBINARY}" = "" ]; then PREQS_MET="YES"; else PREQS_MET="NO"; SKIPREASON="No ClamAV binary found"; fi
-    Register --test-no CUST-COMPLEASY-0020 --preqs-met ${PREQS_MET} --skip-reason "${SKIPREASON}" --weight M --network NO --category security --description "Compleasy check anti-virus version and last update"
+    Register --test-no CUST-TRIKUSEC-0020 --preqs-met ${PREQS_MET} --skip-reason "${SKIPREASON}" --weight M --network NO --category security --description "TrikuSec check anti-virus version and last update"
     if [ ${SKIPTEST} -eq 0 ]; then
         # Set variable to zero, to indicate that we have no problems found (yet)
         FOUNDPROBLEM=0
@@ -197,5 +197,5 @@ WaitForKeyPress
 
 #
 #================================================================================
-# Compleasy - Linux Server auditing solution https://github.com/compleasy/compleasy
+# TrikuSec - Linux Server auditing solution https://github.com/trikusec/trikusec
 # Lynis - Security Auditing and System Hardening for Linux and UNIX - https://cisofy.com

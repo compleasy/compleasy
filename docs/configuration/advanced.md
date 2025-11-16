@@ -1,6 +1,6 @@
 # Advanced Configuration
 
-Advanced configuration options and customization for Compleasy.
+Advanced configuration options and customization for TrikuSec.
 
 ## Custom Settings
 
@@ -14,7 +14,7 @@ Configure static file serving:
 
 ```bash
 # Collect static files
-docker compose run --rm compleasy python manage.py collectstatic --no-input
+docker compose run --rm trikusec python manage.py collectstatic --no-input
 ```
 
 ### Media Files
@@ -25,7 +25,7 @@ Configure media file storage and serving.
 
 ### API Versioning
 
-Compleasy supports API versioning:
+TrikuSec supports API versioning:
 
 - **Versioned API**: `/api/v1/lynis/upload/`, `/api/v1/lynis/license/`
 - **Legacy API**: `/api/lynis/upload/`, `/api/lynis/license/`
@@ -52,7 +52,7 @@ DATABASES = {
 
 ### Indexes
 
-Compleasy includes performance indexes on frequently queried fields. See migrations for details.
+TrikuSec includes performance indexes on frequently queried fields. See migrations for details.
 
 ## Custom Policies
 
@@ -72,7 +72,7 @@ Configure webhooks for events (coming soon).
 
 ### API Integration
 
-Integrate Compleasy with other tools using the REST API.
+Integrate TrikuSec with other tools using the REST API.
 
 ## Performance Tuning
 
@@ -126,7 +126,7 @@ DJANGO_DEBUG=True
 Access database directly:
 
 ```bash
-docker compose exec compleasy python manage.py dbshell
+docker compose exec trikusec python manage.py dbshell
 ```
 
 ### Django Shell
@@ -134,7 +134,7 @@ docker compose exec compleasy python manage.py dbshell
 Interactive Python shell:
 
 ```bash
-docker compose exec compleasy python manage.py shell
+docker compose exec trikusec python manage.py shell
 ```
 
 ## Additional Resources

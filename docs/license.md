@@ -1,6 +1,6 @@
 # License
 
-Compleasy is licensed under the **GNU General Public License v3.0** (GPL-3.0).
+TrikuSec is licensed under the **GNU General Public License v3.0** (GPL-3.0).
 
 ## GPL-3.0 License
 
@@ -16,7 +16,7 @@ The complete GPL-3.0 license text is available in the [LICENSE](../LICENSE) file
 
 ## Third-Party Licenses
 
-Compleasy uses the following open-source projects:
+TrikuSec uses the following open-source projects:
 
 - **Django** - BSD License
 - **Lynis** - GPL v3
@@ -26,5 +26,5 @@ See individual project licenses for details.
 
 ## Contributing
 
-By contributing to Compleasy, you agree that your contributions will be licensed under the same license as the project (GPL-3.0).
+By contributing to TrikuSec, you agree that your contributions will be licensed under the same license as the project (GPL-3.0).
 

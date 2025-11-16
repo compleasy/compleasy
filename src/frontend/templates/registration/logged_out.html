@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged out - TrikuSec</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center px-4">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden fade-in">
+        <!-- Header section matching dashboard nav -->
+        <div class="bg-gray-800 px-8 py-8 flex flex-col items-center">
+            <img class="h-14 w-auto mb-4" src="{% static 'img/trikusec_logo.svg' %}" alt="TrikuSec" title="TrikuSec" />
+            <h2 class="text-xl font-semibold text-white">
+                Logged out
+            </h2>
+        </div>
+        
+        <!-- Content section -->
+        <div class="px-8 py-8">
+            <div class="text-center space-y-6">
+                <!-- Success icon -->
+                <div class="flex justify-center">
+                    <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gray-100">
+                        <svg class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Message -->
+                <div class="space-y-2">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        You have been logged out
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        Thanks for spending some quality time with TrikuSec today.
+                    </p>
+                </div>
+                
+                <!-- Login button -->
+                <div class="pt-4">
+                    <a href="{% url 'login' %}" 
+                       class="inline-flex justify-center items-center w-full py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                        Log in again
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

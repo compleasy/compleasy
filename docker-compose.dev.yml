@@ -1,20 +1,20 @@
 services:
-  compleasy:
+  trikusec:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: compleasy-dev
+    container_name: trikusec-dev
     volumes:
       - ./src:/app
     environment:
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
       - DJANGO_ENV=development
       - DJANGO_DEBUG=True
-      - COMPLEASY_URL=${COMPLEASY_URL:-http://compleasy:8000}
-      - COMPLEASY_LYNIS_API_URL=${COMPLEASY_LYNIS_API_URL:-https://nginx-dev:443}
-      - COMPLEASY_ADMIN_USERNAME=admin
-      - COMPLEASY_ADMIN_PASSWORD=compleasy
-      - COMPLEASY_LICENSE_KEY=${COMPLEASY_LICENSE_KEY:-aaaaaaaa-bbbbbbbb-cccccccc}
+      - TRIKUSEC_URL=${TRIKUSEC_URL:-http://trikusec:8000}
+      - TRIKUSEC_LYNIS_API_URL=${TRIKUSEC_LYNIS_API_URL:-https://nginx-dev:443}
+      - TRIKUSEC_ADMIN_USERNAME=admin
+      - TRIKUSEC_ADMIN_PASSWORD=trikusec
+      - TRIKUSEC_LICENSE_KEY=${TRIKUSEC_LICENSE_KEY:-aaaaaaaa-bbbbbbbb-cccccccc}
       - DJANGO_ALLOWED_HOSTS=*
     ports:
       - 8000:8000
@@ -38,7 +38,7 @@ services:
     environment:
       - NGINX_CERT_CN=${NGINX_CERT_CN:-nginx-dev}
     depends_on:
-      compleasy:
+      trikusec:
         condition: service_healthy
     networks:
       - default
@@ -47,7 +47,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test
-    container_name: compleasy-test
+    container_name: trikusec-test
     volumes:
       - ./src:/app
       - ./pytest.ini:/app/pytest.ini
@@ -65,7 +65,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test
-    container_name: compleasy-test-e2e
+    container_name: trikusec-test-e2e
     volumes:
       - ./src:/app
       - ./pytest.ini:/app/pytest.ini
@@ -81,7 +81,7 @@ services:
     profiles:
       - test
     depends_on:
-      - compleasy
+      - trikusec
 
   lynis-client:
     build:
@@ -89,8 +89,8 @@ services:
       dockerfile: lynis/Dockerfile
     container_name: lynis-client
     environment:
-      - COMPLEASY_SERVER_URL=https://nginx-dev:443
-      - COMPLEASY_LICENSE_KEY=${COMPLEASY_LICENSE_KEY:-aaaaaaaa-bbbbbbbb-cccccccc}
+      - TRIKUSEC_SERVER_URL=https://nginx-dev:443
+      - TRIKUSEC_LICENSE_KEY=${TRIKUSEC_LICENSE_KEY:-aaaaaaaa-bbbbbbbb-cccccccc}
       - DEBIAN_FRONTEND=noninteractive
     depends_on:
       nginx:
@@ -101,5 +101,5 @@ services:
 
 networks:
   default:
-    name: compleasy-dev-network
+    name: trikusec-dev-network
 

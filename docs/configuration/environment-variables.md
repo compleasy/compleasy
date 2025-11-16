@@ -1,6 +1,6 @@
 # Environment Variables
 
-Complete reference of all environment variables used by Compleasy.
+Complete reference of all environment variables used by TrikuSec.
 
 ## Required Variables
 
@@ -76,20 +76,20 @@ DATABASE_URL=postgresql://user:password@host:5432/dbname
 
 ## Admin Configuration
 
-### COMPLEASY_ADMIN_USERNAME
+### TRIKUSEC_ADMIN_USERNAME
 
 Default admin username.
 
 ```bash
-COMPLEASY_ADMIN_USERNAME=admin
+TRIKUSEC_ADMIN_USERNAME=admin
 ```
 
-### COMPLEASY_ADMIN_PASSWORD
+### TRIKUSEC_ADMIN_PASSWORD
 
 Default admin password.
 
 ```bash
-COMPLEASY_ADMIN_PASSWORD=secure-password
+TRIKUSEC_ADMIN_PASSWORD=secure-password
 ```
 
 !!! warning "Change Default Password"
@@ -142,22 +142,22 @@ RATELIMIT_ENABLE=False  # Disabled
 
 ## Server Configuration
 
-### COMPLEASY_URL
+### TRIKUSEC_URL
 
-Compleasy admin UI server URL (used for generating admin interface links).
+TrikuSec admin UI server URL (used for generating admin interface links).
 
 ```bash
-COMPLEASY_URL=https://localhost:443
+TRIKUSEC_URL=https://localhost:443
 ```
 
 This is the endpoint used for accessing the web management interface. It should point to your nginx reverse proxy or direct Django server for admin access.
 
-### COMPLEASY_LYNIS_API_URL
+### TRIKUSEC_LYNIS_API_URL
 
-Compleasy Lynis API server URL (used for device enrollment and report uploads).
+TrikuSec Lynis API server URL (used for device enrollment and report uploads).
 
 ```bash
-COMPLEASY_LYNIS_API_URL=https://localhost:8443
+TRIKUSEC_LYNIS_API_URL=https://localhost:8443
 ```
 
 This is the endpoint used by monitored servers for:
@@ -165,7 +165,7 @@ This is the endpoint used by monitored servers for:
 - Uploading audit reports
 - License validation
 
-If not set, falls back to `COMPLEASY_URL` for backward compatibility.
+If not set, falls back to `TRIKUSEC_URL` for backward compatibility.
 
 !!! tip "Security Best Practice"
     Use separate endpoints for admin UI and Lynis API to improve security. This allows you to configure different firewall rules for each endpoint. See [Security Configuration](../configuration/security.md#api-endpoint-separation-architecture) for details.
@@ -182,11 +182,11 @@ DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 DJANGO_ENV=production
 
 # Database
-DATABASE_URL=postgresql://compleasy_user:password@postgres:5432/compleasy
+DATABASE_URL=postgresql://trikusec_user:password@postgres:5432/trikusec
 
 # Admin
-COMPLEASY_ADMIN_USERNAME=admin
-COMPLEASY_ADMIN_PASSWORD=your-secure-password
+TRIKUSEC_ADMIN_USERNAME=admin
+TRIKUSEC_ADMIN_PASSWORD=your-secure-password
 
 # HTTPS
 SECURE_SSL_REDIRECT=True
@@ -198,7 +198,7 @@ CSRF_COOKIE_SECURE=True
 RATELIMIT_ENABLE=True
 
 # Server
-COMPLEASY_URL=https://yourdomain.com:443
-COMPLEASY_LYNIS_API_URL=https://yourdomain.com:8443
+TRIKUSEC_URL=https://yourdomain.com:443
+TRIKUSEC_LYNIS_API_URL=https://yourdomain.com:8443
 ```
 

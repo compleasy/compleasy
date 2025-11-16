@@ -1,16 +1,16 @@
 # Installation
 
-This section covers installing and setting up Compleasy.
+This section covers installing and setting up TrikuSec.
 
 ## Overview
 
-Compleasy consists of two main components:
+TrikuSec consists of two main components:
 
-1. **Compleasy Server** - The central server that receives and manages audit reports
+1. **TrikuSec Server** - The central server that receives and manages audit reports
 2. **Lynis Client** - The auditing tool installed on each server you want to monitor
 
 !!! tip "Security-First Design"
-    Compleasy uses a **read-only architecture** - it only receives data from your servers and never pushes changes or executes commands. The only requirement on monitored servers is [Lynis](https://cisofy.com/lynis/), a well-established open-source tool available in standard Linux repositories.
+    TrikuSec uses a **read-only architecture** - it only receives data from your servers and never pushes changes or executes commands. The only requirement on monitored servers is [Lynis](https://cisofy.com/lynis/), a well-established open-source tool available in standard Linux repositories.
 
 ## Installation Options
 
@@ -21,7 +21,7 @@ Compleasy consists of two main components:
 
 ## Prerequisites
 
-Before installing Compleasy, ensure you have:
+Before installing TrikuSec, ensure you have:
 
 - Docker and Docker Compose installed
 - A secure `SECRET_KEY` generated for Django
@@ -32,5 +32,5 @@ Before installing Compleasy, ensure you have:
 After installation, proceed to:
 
 - [Configuration](../configuration/index.md) - Configure environment variables and security settings
-- [Getting Started](../usage/getting-started.md) - Learn how to use Compleasy
+- [Getting Started](../usage/getting-started.md) - Learn how to use TrikuSec
 

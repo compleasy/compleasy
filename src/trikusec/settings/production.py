@@ -1,5 +1,5 @@
 """
-Production-specific settings for Compleasy.
+Production-specific settings for TrikuSec.
 
 These settings are used when DJANGO_ENV=production.
 """

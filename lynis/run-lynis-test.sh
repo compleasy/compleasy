@@ -6,19 +6,19 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 
 # Configuration
-COMPLEASY_SERVER_URL="${COMPLEASY_SERVER_URL:-http://compleasy-dev:8000}"
-COMPLEASY_LICENSE_KEY="${COMPLEASY_LICENSE_KEY}"
+TRIKUSEC_SERVER_URL="${TRIKUSEC_SERVER_URL:-http://trikusec-dev:8000}"
+TRIKUSEC_LICENSE_KEY="${TRIKUSEC_LICENSE_KEY}"
 MAX_RETRIES=30
 RETRY_DELAY=2
 
-echo "=== Compleasy Lynis Integration Test ==="
-echo "Server URL: ${COMPLEASY_SERVER_URL}"
-echo "License Key: ${COMPLEASY_LICENSE_KEY}"
+echo "=== TrikuSec Lynis Integration Test ==="
+echo "Server URL: ${TRIKUSEC_SERVER_URL}"
+echo "License Key: ${TRIKUSEC_LICENSE_KEY}"
 
-# Wait for Compleasy server to be ready
-echo "Waiting for Compleasy server to be ready..."
+# Wait for TrikuSec server to be ready
+echo "Waiting for TrikuSec server to be ready..."
 for i in $(seq 1 $MAX_RETRIES); do
-    if curl -k -f -s "${COMPLEASY_SERVER_URL}/api/" > /dev/null 2>&1; then
+    if curl -k -f -s "${TRIKUSEC_SERVER_URL}/api/" > /dev/null 2>&1; then
         echo "Server is ready!"
         break
     fi
@@ -33,13 +33,13 @@ done
 # Check license validity
 echo ""
 echo "=== Step 1: Checking license validity ==="
-if [ -z "$COMPLEASY_LICENSE_KEY" ]; then
-    echo "ERROR: COMPLEASY_LICENSE_KEY not set"
+if [ -z "$TRIKUSEC_LICENSE_KEY" ]; then
+    echo "ERROR: TRIKUSEC_LICENSE_KEY not set"
     exit 1
 fi
 
-LICENSE_CHECK=$(curl -k -s -X POST "${COMPLEASY_SERVER_URL}/api/lynis/license/" \
-    -d "licensekey=${COMPLEASY_LICENSE_KEY}&collector_version=1.0.0" || echo "ERROR")
+LICENSE_CHECK=$(curl -k -s -X POST "${TRIKUSEC_SERVER_URL}/api/lynis/license/" \
+    -d "licensekey=${TRIKUSEC_LICENSE_KEY}&collector_version=1.0.0" || echo "ERROR")
 
 if [ "$LICENSE_CHECK" = "Response 100" ]; then
     echo "✓ License key is valid"
@@ -48,13 +48,13 @@ else
     exit 1
 fi
 
-# Configure Lynis using Compleasy enrollment script
+# Configure Lynis using TrikuSec enrollment script
 echo ""
-echo "=== Step 2: Configuring Lynis using Compleasy enrollment script ==="
+echo "=== Step 2: Configuring Lynis using TrikuSec enrollment script ==="
 
 # Run the enrollment script which installs and configures Lynis
 # Note: enrollment may attempt systemctl which can fail in container; that's OK.
-ENROLL_URL="${COMPLEASY_SERVER_URL}/download/enroll.sh?licensekey=${COMPLEASY_LICENSE_KEY}"
+ENROLL_URL="${TRIKUSEC_SERVER_URL}/download/enroll.sh?licensekey=${TRIKUSEC_LICENSE_KEY}"
 echo "Running enrollment script from ${ENROLL_URL} (systemctl failures are acceptable in container environments)..."
 (set +e; wget -qO- --no-check-certificate "${ENROLL_URL}" | bash) || true
 

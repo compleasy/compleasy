@@ -1,14 +1,14 @@
 # Getting Started
 
-This guide will help you get started with Compleasy after installation.
+This guide will help you get started with TrikuSec after installation.
 
 ## First Login
 
-1. **Access Compleasy** - Navigate to `http://yourserver:3000`
+1. **Access TrikuSec** - Navigate to `http://yourserver:3000`
 
 2. **Login** - Use default credentials:
    - Username: `admin`
-   - Password: `compleasy`
+   - Password: `trikusec`
 
 !!! warning "Change Default Password"
     Immediately change the default password after first login.

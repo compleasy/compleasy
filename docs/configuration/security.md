@@ -1,6 +1,6 @@
 # Security Configuration
 
-Security best practices and hardening guide for Compleasy.
+Security best practices and hardening guide for TrikuSec.
 
 ## Production Security Checklist
 
@@ -114,8 +114,8 @@ See [PostgreSQL Setup](../installation/postgresql.md) for details.
 Never use default admin credentials in production:
 
 ```bash
-COMPLEASY_ADMIN_USERNAME=admin
-COMPLEASY_ADMIN_PASSWORD=your-strong-password-here
+TRIKUSEC_ADMIN_USERNAME=admin
+TRIKUSEC_ADMIN_PASSWORD=your-strong-password-here
 ```
 
 ### Password Requirements
@@ -130,15 +130,15 @@ Ensure strong passwords:
 
 ### API Endpoint Separation Architecture
 
-Compleasy uses a **dual-endpoint architecture** to improve security by separating admin UI access from Lynis API access:
+TrikuSec uses a **dual-endpoint architecture** to improve security by separating admin UI access from Lynis API access:
 
-- **Admin UI Endpoint** (`COMPLEASY_URL`, default: `https://localhost:443`): 
+- **Admin UI Endpoint** (`TRIKUSEC_URL`, default: `https://localhost:443`): 
   - Used for accessing the web management interface
   - Requires authentication (login required)
   - Should only be accessible to sysadmins
   - Typically accessed on port 443 via nginx reverse proxy
 
-- **Lynis API Endpoint** (`COMPLEASY_LYNIS_API_URL`, default: `https://localhost:8443`):
+- **Lynis API Endpoint** (`TRIKUSEC_LYNIS_API_URL`, default: `https://localhost:8443`):
   - Used by monitored servers for enrollment and report uploads
   - No authentication UI exposed (API-only endpoints)
   - Should be accessible from your server network
@@ -170,7 +170,7 @@ iptables -A INPUT -p tcp --dport 8443 -j DROP
 
 #### Configuration
 
-Set `COMPLEASY_LYNIS_API_URL` to your Lynis API endpoint. If not set, it falls back to `COMPLEASY_URL` for backward compatibility.
+Set `TRIKUSEC_LYNIS_API_URL` to your Lynis API endpoint. If not set, it falls back to `TRIKUSEC_URL` for backward compatibility.
 
 See [Environment Variables](../configuration/environment-variables.md) for configuration details.
 
@@ -191,7 +191,7 @@ Use a reverse proxy (Nginx, Apache) for:
 
 ## Security Headers
 
-Compleasy includes security headers, but you can add more via reverse proxy:
+TrikuSec includes security headers, but you can add more via reverse proxy:
 
 ```
 X-Content-Type-Options: nosniff

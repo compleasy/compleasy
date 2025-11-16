@@ -158,4 +158,4 @@ def check_license(request):
     return HttpResponse('Invalid request method', status=405)
 
 def index(request):
-    return HttpResponse('Hello, world. You\'re at the Compleasy index.')
+    return HttpResponse('Hello, world. You\'re at the TrikuSec index.')
