@@ -49,10 +49,36 @@
 .md-typeset code {
   background-color: #f3f4f6;
   color: #1f2937;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.md-typeset pre {
+  background-color: #1f2937;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
 }
 
 .md-typeset pre > code {
+  background-color: transparent;
+  color: #f9fafb;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+/* Ensure code blocks are readable */
+.md-typeset .highlight {
   background-color: #1f2937;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.md-typeset .highlight code {
+  background-color: transparent;
   color: #f9fafb;
 }
 
