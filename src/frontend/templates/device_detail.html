@@ -23,7 +23,23 @@
 
             <!-- Overview Section -->
             <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-4">
-                <h3 class="text-xl font-semibold mb-4">Overview</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Overview</h3>
+                    <!-- Actions dropdown -->
+                    <div class="relative">
+                        <button type="button" class="relative flex items-center rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" id="device-actions-button" aria-expanded="false" aria-haspopup="true" onclick="toggleActionsMenu()">
+                            <span class="sr-only">Open actions menu</span>
+                            Actions
+                            <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div id="device-actions-menu" class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="device-actions-button" tabindex="-1">
+                            <a href="{% url 'device_export_pdf' device_id=device.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Export to PDF</a>
+                            <button type="button" onclick="deleteDevice({{ device.id }}, '{{ report.hostname|escapejs }}')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Delete Device</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2">
 
                     <div class="grid grid-cols-2 w-96 space-y-2">
@@ -339,5 +355,6 @@
     <script src="{% static 'js/policies.js' %}"></script>
     <script src="{% static 'js/rules.js' %}"></script>
     <script src="{% static 'js/rule_view.js' %}"></script>
+    <script src="{% static 'js/devices.js' %}"></script>
 {% endblock %}
 

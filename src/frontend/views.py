@@ -15,6 +15,9 @@ import logging
 import re
 from urllib.parse import urlparse
 from django.urls import reverse
+from datetime import datetime
+from weasyprint import HTML
+from django.template.loader import render_to_string
 
 def safe_redirect(request, fallback_url_name='device_list', **kwargs):
     referer = request.META.get('HTTP_REFERER')
@@ -163,6 +166,74 @@ def device_update(request, device_id):
     else:
         # Error
         return HttpResponse('Invalid request method', status=405)
+
+@login_required
+@csrf_protect
+def device_delete(request, device_id):
+    """Delete a device (AJAX + fallback)"""
+    if request.method == 'POST':
+        device = get_object_or_404(Device, id=device_id)
+        device.delete()  # CASCADE will remove associated reports
+        
+        # AJAX request: return JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Device deleted successfully'
+            })
+        
+        # Traditional request: redirect
+        return redirect('device_list')
+    
+    # GET request: return 405 Method Not Allowed
+    return HttpResponse('Method not allowed', status=405)
+
+@login_required
+def device_export_pdf(request, device_id):
+    """Export device report to PDF"""
+    device = get_object_or_404(Device, id=device_id)
+    
+    # Get last report for the device
+    full_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+    
+    # If no report found, error message
+    if not full_report:
+        return HttpResponse('No report found for the device', status=404)
+    
+    report = LynisReport(full_report.full_report)
+    report = report.get_parsed_report()
+    
+    if not report:
+        return HttpResponse('Failed to parse the report', status=500)
+    
+    # Use utility function to check compliance and get detailed ruleset evaluation
+    compliant, evaluated_rulesets = check_device_compliance(device, report)
+    
+    # Update the device compliance status
+    device.compliant = compliant
+    
+    # Render HTML template
+    html_string = render_to_string('device/device_pdf.html', {
+        'device': device,
+        'report': report,
+        'evaluated_rulesets': evaluated_rulesets,
+        'generated_at': datetime.now(),
+    }, request=request)
+    
+    # Generate PDF using WeasyPrint
+    # Use base_url to resolve any relative URLs in the template
+    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+    document = html.render()
+    pdf_bytes = document.write_pdf()
+    
+    # Create filename with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'device-{report["hostname"]}-{timestamp}.pdf'
+    
+    # Return PDF as response
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @login_required
 def device_report(request, device_id):

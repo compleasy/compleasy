@@ -1,8 +1,17 @@
 FROM python:3.12-slim
 
-# Install curl for healthchecks
-RUN apt-get update && apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+# - curl for healthchecks
+# - WeasyPrint dependencies: pango, cairo, gobject, gdk-pixbuf, shared-mime-info
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libcairo2 \
+    libgdk-pixbuf-2.0-0 \
+    shared-mime-info \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
 ENV PYTHONUNBUFFERED 1

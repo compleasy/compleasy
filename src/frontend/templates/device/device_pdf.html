@@ -1,0 +1,317 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Device Report - {{ report.hostname }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+        h1 {
+            font-size: 20pt;
+            margin-bottom: 20pt;
+            color: #1a1a1a;
+        }
+        h2 {
+            font-size: 14pt;
+            margin-top: 20pt;
+            margin-bottom: 10pt;
+            color: #2d2d2d;
+            border-bottom: 2px solid #e5e5e5;
+            padding-bottom: 5pt;
+        }
+        h3 {
+            font-size: 12pt;
+            margin-top: 15pt;
+            margin-bottom: 8pt;
+            color: #3d3d3d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+        }
+        table th {
+            background-color: #f5f5f5;
+            padding: 8pt;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+        table td {
+            padding: 6pt 8pt;
+            border-bottom: 1px solid #eee;
+        }
+        table tr:last-child td {
+            border-bottom: none;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10pt;
+            margin-bottom: 15pt;
+        }
+        .info-item {
+            margin-bottom: 8pt;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            display: inline-block;
+            width: 140pt;
+        }
+        .info-value {
+            color: #000;
+        }
+        .compliant {
+            color: #059669;
+            font-weight: bold;
+        }
+        .non-compliant {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .header {
+            margin-bottom: 20pt;
+        }
+        .timestamp {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Device Report: {{ report.hostname }}</h1>
+        <div class="timestamp">Generated on {{ generated_at|date:"Y-m-d H:i:s" }}</div>
+    </div>
+
+    <!-- Overview Section -->
+    <h2>Overview</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">Device name:</span>
+            <span class="info-value">{{ report.hostname }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Compliance:</span>
+            <span class="info-value {% if device.compliant %}compliant{% else %}non-compliant{% endif %}">
+                {% if device.compliant %}Compliant{% else %}Non-compliant{% endif %}
+            </span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">IP Address:</span>
+            <span class="info-value">{{ report.primary_ipv4_addresses|default_if_none:"-"|format_csv_line:" / " }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Enrolled by:</span>
+            <span class="info-value">{{ device.licensekey.created_by.email }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">MAC Address:</span>
+            <span class="info-value">{{ report.network_mac_address.0|default:"-" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Enrollment Date:</span>
+            <span class="info-value">{{ device.created_at|date:'Y-m-d H:i' }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Hostid:</span>
+            <span class="info-value">{{ report.hostid }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Hostid2:</span>
+            <span class="info-value">{{ report.hostid2 }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Operating System:</span>
+            <span class="info-value">{{ report.os }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Kernel Version:</span>
+            <span class="info-value">{{ report.os_kernel_version_full }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Distribution:</span>
+            <span class="info-value">{{ report.os_fullname }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Uptime:</span>
+            <span class="info-value">{{ report.uptime_in_days }} days</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Last check-in time:</span>
+            <span class="info-value">{{ device.last_update|date:'Y-m-d H:i' }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Compleasy Lynis plugin:</span>
+            <span class="info-value">{{ report.compleasy_custom_tests|yesno:"Yes,No" }}</span>
+        </div>
+    </div>
+
+    <!-- Audit Section -->
+    <h2>Audit</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">Lynis version:</span>
+            <span class="info-value">{{ device.lynis_version }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Audit frequency:</span>
+            <span class="info-value">{{ report.lynis_timer_period|default_if_none:"-" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Last report:</span>
+            <span class="info-value">{{ report.report_datetime_end|date:'Y-m-d H:i' }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Next scheduled audit:</span>
+            <span class="info-value">{{ report.lynis_timer_next_trigger|default_if_none:"-"|date:'Y-m-d H:i' }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Hardening index:</span>
+            <span class="info-value">{{ report.hardening_index }}/100</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Tests performed:</span>
+            <span class="info-value">{{ report.lynis_tests_done }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Failed logins:</span>
+            <span class="info-value">{{ report.auth_failed_logins_logged|yesno:"Yes,No" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Firewall:</span>
+            <span class="info-value">{{ report.firewall_active|yesno:"Active,Inactive" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Antivirus:</span>
+            <span class="info-value">{{ report.clamav_version|default_if_none:"Not installed" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Last AV update:</span>
+            <span class="info-value">{{ report.clamav_last_update|default_if_none:"-" }}</span>
+        </div>
+    </div>
+
+    <!-- Compliance Section -->
+    <div class="page-break"></div>
+    <h2>Compliance</h2>
+    <h3>Policy Rulesets</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Ruleset</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ruleset in evaluated_rulesets %}
+            <tr>
+                <td><strong>{{ ruleset.name }}</strong></td>
+                <td>{{ ruleset.description }}</td>
+                <td class="{% if ruleset.compliant %}compliant{% else %}non-compliant{% endif %}">
+                    {% if ruleset.compliant %}✓ Compliant{% else %}✗ Non-compliant{% endif %}
+                </td>
+            </tr>
+            {% for rule in ruleset.rules %}
+            <tr>
+                <td style="padding-left: 20pt;">→ {{ rule.name }}</td>
+                <td>{{ rule.description }}</td>
+                <td class="{% if rule.compliant %}compliant{% else %}non-compliant{% endif %}">
+                    {% if rule.compliant %}✓ Pass{% else %}✗ Fail{% endif %}
+                    {% if not rule.enabled %} (disabled){% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% empty %}
+            <tr>
+                <td colspan="3">No rulesets assigned.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Security Feedback Section -->
+    <div class="page-break"></div>
+    <h2>Security Feedback</h2>
+    
+    <!-- Warnings -->
+    <h3>Warnings</h3>
+    {% if report.warning %}
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">Test-ID</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for warning in report.warning %}
+            <tr>
+                <td>{{ warning.0 }}</td>
+                <td>
+                    {{ warning.1 }}
+                    {% if warning|length > 2 %}
+                        <br><span style="font-style: italic; color: #666;">
+                        {% for detail in warning|slice:"2:" %}
+                            {{ detail }}<br>
+                        {% endfor %}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No warnings found.</p>
+    {% endif %}
+
+    <!-- Suggestions -->
+    <h3>Suggestions</h3>
+    {% if report.suggestion %}
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">Test-ID</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for suggestion in report.suggestion %}
+            <tr>
+                <td>{{ suggestion.0 }}</td>
+                <td>
+                    {{ suggestion.1 }}
+                    {% if suggestion|length > 2 %}
+                        <br><span style="font-style: italic; color: #666;">
+                        {% for detail in suggestion|slice:"2:" %}
+                            {{ detail }}<br>
+                        {% endfor %}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No suggestions found.</p>
+    {% endif %}
+</body>
+</html>
+
