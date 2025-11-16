@@ -112,8 +112,9 @@ extra:
       link: https://github.com/trikusec/trikusec
   version:
     provider: mike
-  css:
-    - assets/css/extra.css
+
+extra_css:
+  - assets/stylesheets/extra.css
 
 nav:
   - Home: index.md
