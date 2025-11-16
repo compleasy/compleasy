@@ -1,0 +1,112 @@
+/* Custom CSS for TrikuSec documentation to match dashboard color scheme */
+
+/* Override primary color to match gray-800 (#1f2937) */
+:root {
+  --md-primary-fg-color: #1f2937;
+  --md-primary-fg-color--light: #374151;
+  --md-primary-fg-color--dark: #111827;
+  --md-accent-fg-color: #4b5563;
+}
+
+/* Header background to match dashboard */
+.md-header {
+  background-color: #1f2937;
+}
+
+.md-header__button.md-logo {
+  padding: 0.4rem;
+}
+
+.md-header__button.md-logo img {
+  height: 2rem;
+  width: auto;
+}
+
+/* Navigation active state */
+.md-nav__link--active {
+  color: #1f2937;
+}
+
+/* Buttons and links to match gray scheme */
+.md-typeset a {
+  color: #1f2937;
+}
+
+.md-typeset a:hover {
+  color: #374151;
+}
+
+/* Code blocks and inline code */
+.md-typeset code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.md-typeset pre > code {
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+/* Admonitions - adjust colors to match gray scheme */
+.md-typeset .admonition {
+  border-left-color: #1f2937;
+}
+
+.md-typeset .admonition-title {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Tables */
+.md-typeset table:not([class]) th {
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+/* Search highlight */
+.md-search__form {
+  background-color: #374151;
+}
+
+.md-search__input {
+  color: #ffffff;
+}
+
+.md-search__input::placeholder {
+  color: #9ca3af;
+}
+
+/* Footer */
+.md-footer {
+  background-color: #1f2937;
+}
+
+.md-footer__inner {
+  color: #ffffff;
+}
+
+.md-footer__link {
+  color: #d1d5db;
+}
+
+.md-footer__link:hover {
+  color: #ffffff;
+}
+
+/* Tabs */
+.md-tabs {
+  background-color: #1f2937;
+}
+
+.md-tabs__link {
+  color: #d1d5db;
+}
+
+.md-tabs__link--active {
+  color: #ffffff;
+}
+
+.md-tabs__link:hover {
+  color: #ffffff;
+}
+

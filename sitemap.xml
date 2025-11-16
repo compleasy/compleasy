@@ -1,107 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://compleasy.github.io/compleasy/</loc>
+         <loc>https://trikusec.github.io/trikusec/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/license/</loc>
+         <loc>https://trikusec.github.io/trikusec/license/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/api/</loc>
+         <loc>https://trikusec.github.io/trikusec/api/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/api/authentication/</loc>
+         <loc>https://trikusec.github.io/trikusec/api/authentication/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/api/endpoints/</loc>
+         <loc>https://trikusec.github.io/trikusec/api/endpoints/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/api/examples/</loc>
+         <loc>https://trikusec.github.io/trikusec/api/examples/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/configuration/</loc>
+         <loc>https://trikusec.github.io/trikusec/configuration/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/configuration/advanced/</loc>
+         <loc>https://trikusec.github.io/trikusec/configuration/advanced/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/configuration/environment-variables/</loc>
+         <loc>https://trikusec.github.io/trikusec/configuration/environment-variables/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/configuration/security/</loc>
+         <loc>https://trikusec.github.io/trikusec/configuration/security/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/contributing/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/contributing/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/e2e-testing/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/e2e-testing/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/setup/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/setup/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/testing/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/testing/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/development/ui-ux-architecture/</loc>
+         <loc>https://trikusec.github.io/trikusec/development/ui-ux-architecture/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/installation/</loc>
+         <loc>https://trikusec.github.io/trikusec/installation/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/installation/backup-recovery/</loc>
+         <loc>https://trikusec.github.io/trikusec/installation/backup-recovery/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/installation/client-setup/</loc>
+         <loc>https://trikusec.github.io/trikusec/installation/client-setup/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/installation/docker/</loc>
+         <loc>https://trikusec.github.io/trikusec/installation/docker/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/installation/postgresql/</loc>
+         <loc>https://trikusec.github.io/trikusec/installation/postgresql/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/usage/</loc>
+         <loc>https://trikusec.github.io/trikusec/usage/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/usage/dashboard/</loc>
+         <loc>https://trikusec.github.io/trikusec/usage/dashboard/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/usage/getting-started/</loc>
+         <loc>https://trikusec.github.io/trikusec/usage/getting-started/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/usage/policies/</loc>
+         <loc>https://trikusec.github.io/trikusec/usage/policies/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
     <url>
-         <loc>https://compleasy.github.io/compleasy/usage/reports/</loc>
+         <loc>https://trikusec.github.io/trikusec/usage/reports/</loc>
          <lastmod>2025-11-16</lastmod>
     </url>
 </urlset>
