@@ -46,6 +46,7 @@ theme:
     repo: fontawesome/brands/github
     logo: assets/img/trikusec_logo.svg
   language: en
+  custom_dir: docs/assets
 
 plugins:
   - search:

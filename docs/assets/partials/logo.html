@@ -1,0 +1,12 @@
+{% if config.theme.icon.logo %}
+  {% set logo = config.theme.icon.logo %}
+  {% if logo.startswith("http") or logo.startswith("/") %}
+    <img src="{{ logo }}" alt="{{ config.site_name }}" class="md-header__button md-logo" draggable="false" />
+  {% else %}
+    <img src="{{ base_url }}/{{ logo }}" alt="{{ config.site_name }}" class="md-header__button md-logo" draggable="false" />
+  {% endif %}
+{% else %}
+  {% set icon = "material/library" %}
+  {% include ".icons/" ~ icon ~ ".svg" %}
+{% endif %}
+
