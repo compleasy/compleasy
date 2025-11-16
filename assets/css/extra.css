@@ -1,18 +1,25 @@
 /* Custom CSS for TrikuSec documentation to match dashboard color scheme */
 /* Dashboard colors: gray-800 (#1f2937), gray-100 (#f3f4f6), gray-900 (#111827), gray-700 (#374151) */
+/* Following Material for MkDocs guide: https://squidfunk.github.io/mkdocs-material/setup/changing-the-colors/ */
 
-/* Override primary color to match gray-800 (#1f2937) - same as dashboard header */
-:root {
+/* Custom primary color to match gray-800 (#1f2937) - same as dashboard header */
+/* Light mode (default scheme) */
+:root > * {
   --md-primary-fg-color: #1f2937;
   --md-primary-fg-color--light: #374151;
   --md-primary-fg-color--dark: #111827;
   --md-accent-fg-color: #4b5563;
 }
 
-/* Header background - exact match to dashboard header (#1f2937) */
-.md-header {
-  background-color: #1f2937 !important;
+/* Dark mode (slate scheme) - use same colors for consistency */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1f2937;
+  --md-primary-fg-color--light: #374151;
+  --md-primary-fg-color--dark: #111827;
+  --md-accent-fg-color: #4b5563;
 }
+
+/* Header background - uses CSS variable, no need for !important */
 
 .md-header__button.md-logo {
   padding: 0.4rem;
@@ -85,10 +92,7 @@
   color: #9ca3af;
 }
 
-/* Footer - match header color */
-.md-footer {
-  background-color: #1f2937 !important;
-}
+/* Footer - uses CSS variable, no need for !important */
 
 .md-footer__inner {
   color: #ffffff;
@@ -102,10 +106,7 @@
   color: #ffffff;
 }
 
-/* Tabs - match header color */
-.md-tabs {
-  background-color: #1f2937 !important;
-}
+/* Tabs - uses CSS variable, no need for !important */
 
 .md-tabs__link {
   color: #d1d5db;
