@@ -21,7 +21,7 @@ COPY src/requirements-dev.txt /tmp/requirements-dev.txt
 RUN pip install -r /tmp/requirements.txt && \
     pip install -r /tmp/requirements-dev.txt
 
-# Install system dependencies for Playwright (fix font package names)
+# Install system dependencies for Playwright and WeasyPrint
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     fonts-liberation \
@@ -41,7 +41,11 @@ RUN apt-get update && \
     libgbm1 \
     libasound2 \
     libpango-1.0-0 \
+    libpangoft2-1.0-0 \
     libcairo2 \
+    libgdk-pixbuf-2.0-0 \
+    shared-mime-info \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Playwright browsers (without --with-deps since we installed deps manually)
