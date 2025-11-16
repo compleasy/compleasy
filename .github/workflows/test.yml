@@ -3,8 +3,18 @@ name: Tests
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.github/workflows/docs.yml'
 
 jobs:
   unit-tests:
@@ -113,6 +123,53 @@ jobs:
           docker compose -f docker-compose.dev.yml logs lynis-client
           exit 1
         fi
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose -f docker-compose.dev.yml down -v
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Generate test secret key
+      id: secret-key
+      run: |
+        echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" >> $GITHUB_ENV
+    
+    - name: Build test image with Playwright
+      run: |
+        docker compose -f docker-compose.dev.yml --profile test build test-e2e
+    
+    - name: Start Compleasy service
+      run: |
+        docker compose -f docker-compose.dev.yml up -d compleasy
+      env:
+        SECRET_KEY: ${{ env.SECRET_KEY }}
+    
+    - name: Wait for service to be ready
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health/; do sleep 2; done' || (echo "Service failed to start. Showing logs:" && docker compose -f docker-compose.dev.yml logs compleasy && exit 1)
+    
+    - name: Run E2E tests
+      run: |
+        docker compose -f docker-compose.dev.yml --profile test run --rm test-e2e \
+          pytest -v -m e2e --html=e2e-report.html --self-contained-html
+    
+    - name: Upload test report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-test-report
+        path: src/e2e-report.html
     
     - name: Cleanup
       if: always()
