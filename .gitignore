@@ -2,6 +2,8 @@
 __pycache__
 compleasy.sqlite3
 compleasy-dev.sqlite3
+trikusec.sqlite3
+trikusec-dev.sqlite3
 nginx/certs/*
 
 # Environment variables (keep .env.example)
