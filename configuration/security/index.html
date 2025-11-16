@@ -1644,9 +1644,57 @@
 - Not dictionary words
 - Not reused from other services</p>
 <h3 id="network-security">Network Security<a class="headerlink" href="#network-security" title="Permanent link">&para;</a></h3>
+<h4 id="api-endpoint-separation-architecture">API Endpoint Separation Architecture<a class="headerlink" href="#api-endpoint-separation-architecture" title="Permanent link">&para;</a></h4>
+<p>Compleasy uses a <strong>dual-endpoint architecture</strong> to improve security by separating admin UI access from Lynis API access:</p>
+<ul>
+<li><strong>Admin UI Endpoint</strong> (<code>COMPLEASY_URL</code>, default: <code>https://localhost:443</code>): </li>
+<li>Used for accessing the web management interface</li>
+<li>Requires authentication (login required)</li>
+<li>Should only be accessible to sysadmins</li>
+<li>
+<p>Typically accessed on port 443 via nginx reverse proxy</p>
+</li>
+<li>
+<p><strong>Lynis API Endpoint</strong> (<code>COMPLEASY_LYNIS_API_URL</code>, default: <code>https://localhost:8443</code>):</p>
+</li>
+<li>Used by monitored servers for enrollment and report uploads</li>
+<li>No authentication UI exposed (API-only endpoints)</li>
+<li>Should be accessible from your server network</li>
+<li>Typically accessed on a separate port (e.g., 8443) via nginx</li>
+</ul>
+<h5 id="security-benefits">Security Benefits<a class="headerlink" href="#security-benefits" title="Permanent link">&para;</a></h5>
+<p>This separation provides important security advantages:</p>
+<ol>
+<li>
+<p><strong>Compromised Server Isolation</strong>: If a monitored server is compromised, the attacker cannot access the admin UI or authentication forms, even if they can upload reports to the API.</p>
+</li>
+<li>
+<p><strong>Firewall Rule Granularity</strong>: Sysadmins can configure different firewall rules:</p>
+</li>
+<li><strong>Admin UI</strong>: Restrict access to corporate IPs, VPN networks, or specific admin workstations</li>
+<li>
+<p><strong>Lynis API</strong>: Allow access from server networks, data centers, or cloud provider IP ranges</p>
+</li>
+<li>
+<p><strong>Attack Surface Reduction</strong>: The admin interface is not exposed to the same network as monitored servers, reducing the risk of credential theft or session hijacking.</p>
+</li>
+</ol>
+<h5 id="example-firewall-configuration">Example Firewall Configuration<a class="headerlink" href="#example-firewall-configuration" title="Permanent link">&para;</a></h5>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Allow admin UI access only from corporate network</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>iptables<span class="w"> </span>-A<span class="w"> </span>INPUT<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">443</span><span class="w"> </span>-s<span class="w"> </span><span class="m">10</span>.0.0.0/8<span class="w"> </span>-j<span class="w"> </span>ACCEPT
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>iptables<span class="w"> </span>-A<span class="w"> </span>INPUT<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">443</span><span class="w"> </span>-j<span class="w"> </span>DROP
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Allow Lynis API access from server network</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>iptables<span class="w"> </span>-A<span class="w"> </span>INPUT<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">8443</span><span class="w"> </span>-s<span class="w"> </span><span class="m">192</span>.168.1.0/24<span class="w"> </span>-j<span class="w"> </span>ACCEPT
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>iptables<span class="w"> </span>-A<span class="w"> </span>INPUT<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">8443</span><span class="w"> </span>-j<span class="w"> </span>DROP
+</span></code></pre></div>
+<h5 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h5>
+<p>Set <code>COMPLEASY_LYNIS_API_URL</code> to your Lynis API endpoint. If not set, it falls back to <code>COMPLEASY_URL</code> for backward compatibility.</p>
+<p>See <a href="../environment-variables/">Environment Variables</a> for configuration details.</p>
 <h4 id="firewall-configuration">Firewall Configuration<a class="headerlink" href="#firewall-configuration" title="Permanent link">&para;</a></h4>
 <p>Only expose necessary ports:
-- <code>3000</code> (or your configured port) for HTTP/HTTPS
+- <code>443</code> (or your configured port) for Admin UI HTTP/HTTPS
+- <code>8443</code> (or your configured port) for Lynis API HTTP/HTTPS
 - Database port only to application server (if external)</p>
 <h4 id="reverse-proxy">Reverse Proxy<a class="headerlink" href="#reverse-proxy" title="Permanent link">&para;</a></h4>
 <p>Use a reverse proxy (Nginx, Apache) for:
@@ -1656,10 +1704,10 @@
 - DDoS protection</p>
 <h3 id="security-headers">Security Headers<a class="headerlink" href="#security-headers" title="Permanent link">&para;</a></h3>
 <p>Compleasy includes security headers, but you can add more via reverse proxy:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>X-Content-Type-Options: nosniff
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>X-Frame-Options: DENY
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>X-XSS-Protection: 1; mode=block
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Content-Security-Policy: default-src &#39;self&#39;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>X-Content-Type-Options: nosniff
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>X-Frame-Options: DENY
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>X-XSS-Protection: 1; mode=block
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Content-Security-Policy: default-src &#39;self&#39;
 </span></code></pre></div>
 <h3 id="regular-updates">Regular Updates<a class="headerlink" href="#regular-updates" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1723,7 +1771,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 13, 2025 21:24:55 UTC">November 13, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 16, 2025 16:47:15 UTC">November 16, 2025</span>
   </span>
 
     
