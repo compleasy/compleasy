@@ -23,6 +23,7 @@ Compleasy is ideal for:
 - **Device Management**: Tracks all monitored servers with metadata including hostname, OS, distribution, version, and compliance status
 - **Policy & Compliance Management**: Define custom compliance rules using a query language and automatically evaluate devices against assigned policies
 - **Report Analysis**: View complete audit reports, track changes between audits, and analyze historical compliance trends
+- **PDF Export**: Export comprehensive device reports to PDF format for documentation and compliance audits
 - **Web Dashboard**: User-friendly interface for viewing devices, compliance status, policies, and reports
 - **API Integration**: Lynis-compatible API endpoints for seamless integration with existing Lynis installations
 

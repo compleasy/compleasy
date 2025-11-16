@@ -40,6 +40,13 @@ Click on a device to view:
 
 ### Device Actions
 
+From the device detail page, use the **Actions** dropdown menu (located in the top-right corner of the Overview section) to access:
+
+- **Export to PDF** - Generate and download a comprehensive PDF report containing device overview, audit details, compliance status, and security feedback
+- **Delete Device** - Permanently remove a device and all its associated reports (requires confirmation)
+
+Additional actions available on the device detail page:
+
 - **View Compliance** - Detailed compliance breakdown
 - **View Warnings** - Security warnings for this device
 - **View Suggestions** - Recommendations for improvement

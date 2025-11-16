@@ -60,10 +60,22 @@ Compare reports over time to:
 
 ### Export Reports
 
-Export reports for:
-- Documentation
-- Compliance audits
-- Sharing with teams
+Compleasy supports exporting device reports to PDF format for documentation, compliance audits, and sharing with teams.
+
+**To export a device report to PDF:**
+
+1. Navigate to **Devices**
+2. Click on the device you want to export
+3. Click the **Actions** dropdown menu (top-right corner of the Overview section)
+4. Select **Export to PDF**
+
+The PDF report includes:
+- Device overview (hostname, IP address, OS, enrollment details)
+- Audit information (Lynis version, hardening index, test results)
+- Compliance status with detailed ruleset evaluations
+- Security feedback (warnings and suggestions)
+
+The PDF file is automatically named with the device hostname and timestamp (e.g., `device-hostname-20251116_073000.pdf`).
 
 ## Understanding Test Results
 
