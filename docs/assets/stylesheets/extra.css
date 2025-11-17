@@ -108,31 +108,30 @@
   color: var(--md-code-hl-comment-color);
 }
 
-.md-typeset .md-clipboard {
-  background-color: #111827;
-  border: 1px solid #1f2937;
-  color: #e5e7eb;
-  opacity: 0.95;
+.md-typeset .highlight .md-clipboard {
+  background-color: var(--md-code-bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--md-code-fg-color);
+  opacity: 0.9;
   border-radius: 0.4rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-.md-typeset .md-clipboard:hover,
-.md-typeset .md-clipboard:focus {
-  background-color: #1f2937;
-  color: #f9fafb;
+.md-typeset .highlight .md-clipboard:hover,
+.md-typeset .highlight .md-clipboard:focus {
+  background-color: var(--md-code-hl-color);
+  color: #ffffff;
   opacity: 1;
 }
 
-[data-md-color-scheme="slate"] .md-typeset .md-clipboard {
-  background-color: #0f172a;
-  border-color: #1e293b;
-  color: #f3f4f6;
+[data-md-color-scheme="slate"] .md-typeset .highlight .md-clipboard {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.8);
 }
 
-[data-md-color-scheme="slate"] .md-typeset .md-clipboard:hover,
-[data-md-color-scheme="slate"] .md-typeset .md-clipboard:focus {
-  background-color: #1e293b;
-  color: #ffffff;
+[data-md-color-scheme="slate"] .md-typeset .highlight .md-clipboard:hover,
+[data-md-color-scheme="slate"] .md-typeset .highlight .md-clipboard:focus {
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Admonitions - adjust colors to match gray scheme */
