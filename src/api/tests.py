@@ -688,6 +688,34 @@ class TestLicenseValidation:
         assert not LicenseKey.objects.filter(licensekey=key1).exists()
         assert not LicenseKey.objects.filter(licensekey=key2).exists()
 
+    def test_generate_license_key_format_lynis_compatible(self):
+        """Test that generate_license_key creates keys compatible with Lynis format [a-f0-9-]."""
+        import re
+        from api.utils.license_utils import generate_license_key
+        
+        # Generate multiple keys to ensure consistency
+        for _ in range(10):
+            key = generate_license_key()
+            
+            # Verify format: xxxxxxxx-xxxxxxxx-xxxxxxxx
+            assert len(key) == 26, f"Key length should be 26, got {len(key)}: {key}"
+            assert key.count('-') == 2, f"Key should have 2 hyphens, got {key.count('-')}: {key}"
+            
+            # Verify only hexadecimal characters (a-f, 0-9) and hyphens
+            # This matches Lynis's filter: tr -cd '[a-f0-9-]'
+            assert re.match(r'^[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}$', key), \
+                f"Key should only contain hex chars [a-f0-9] and hyphens: {key}"
+            
+            # Verify no uppercase characters
+            assert key.islower() or key.replace('-', '').islower(), \
+                f"Key should be lowercase: {key}"
+            
+            # Verify parts are separated by hyphens
+            parts = key.split('-')
+            assert len(parts) == 3, f"Key should have 3 parts: {key}"
+            assert all(len(part) == 8 for part in parts), \
+                f"Each part should be 8 characters: {key}"
+
 
 @pytest.mark.django_db
 class TestLicenseCapacityEnrollment:

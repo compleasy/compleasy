@@ -34,7 +34,7 @@ class TestLynisIntegration:
         """Create a test license key for integration testing."""
         from api.models import LicenseKey
         license_key = LicenseKey.objects.create(
-            licensekey='integration-test-license-key',
+            licensekey='feedface-deadc0de-baadf00d',  # Lynis-compliant format [a-f0-9-]
             created_by=test_user
         )
         return license_key

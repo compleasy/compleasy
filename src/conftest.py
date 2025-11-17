@@ -69,7 +69,7 @@ def test_license_key(db, test_user):
     )
     return LicenseKeyFactory(
         created_by=test_user,
-        licensekey='test-license-key-123',
+        licensekey='deadbeef-cafebabe-00000123',  # Lynis-compliant format [a-f0-9-]
         name='Test License',
         organization=default_org
     )

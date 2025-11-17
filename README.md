@@ -436,7 +436,8 @@ Integration tests require Docker and test the full Lynis workflow:
 ```bash
 # Set environment variables
 export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')
-export TRIKUSEC_LICENSE_KEY=test-license-key-$(date +%s)
+# Generate Lynis-compliant license key (hex characters only: [a-f0-9-])
+export TRIKUSEC_LICENSE_KEY=$(python3 -c 'import random; print("-".join("".join(random.choices("abcdef0123456789", k=8)) for _ in range(3)))')
 
 # Start services
 docker compose -f docker-compose.dev.yml up -d trikusec
