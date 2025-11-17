@@ -406,9 +406,21 @@ def policy_list(request):
     
     # Pagination for rules (10 per page)
     rule_page = request.GET.get('rule_page', 1)
-    rules = PolicyRule.objects.all().order_by('-updated_at')
+    rules = PolicyRule.objects.prefetch_related('policyruleset_set').all().order_by('-updated_at')
     rule_paginator = Paginator(rules, 10)
     rules_page_obj = rule_paginator.get_page(rule_page)
+    
+    # Calculate which rules are linked to rulesets (for disabling delete button)
+    # Use the through table to efficiently get all rule IDs that are in any ruleset
+    rules_linked_to_rulesets = set(
+        PolicyRuleset.rules.through.objects.values_list('policyrule_id', flat=True).distinct()
+    )
+    
+    # Calculate which rulesets are linked to devices (for disabling delete button)
+    # Use a single query to get all ruleset IDs that have devices
+    rulesets_linked_to_devices = set(
+        PolicyRuleset.objects.filter(devices__isnull=False).values_list('id', flat=True).distinct()
+    )
     
     # Serialize rulesets for JavaScript
     rulesets_data = []
@@ -443,6 +455,8 @@ def policy_list(request):
         'rules': rules_page_obj,  # Paginated rules for the table
         'all_rules': rules,  # All rules for the rule selection sidebar
         'rules_json': json.dumps(rules_data),
+        'rules_linked_to_rulesets': list(rules_linked_to_rulesets),  # List of rule IDs linked to rulesets
+        'rulesets_linked_to_devices': list(rulesets_linked_to_devices),  # List of ruleset IDs linked to devices
     }
     
     return render(request, 'policy/policy_list.html', context)
