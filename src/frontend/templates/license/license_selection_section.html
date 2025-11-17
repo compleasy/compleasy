@@ -30,7 +30,7 @@
     {% endif %}
 </div>
 
-<div class="relative bg-gray-900 text-gray-50 rounded-lg p-4">
+<div class="relative bg-blue-900 text-gray-50 rounded-lg p-4">
     <pre class="text-sm font-mono overflow-x-auto whitespace-pre-wrap" id="enroll-command">wget -qO- --no-check-certificate {{ trikusec_url }}/download/enroll.sh?licensekey={% if selected_license %}{{ selected_license.licensekey }}{% else %}{{ licensekey }}{% endif %} | bash</pre>
     <button id="copy-command-btn" type="button" class="copy-button absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold tracking-wide px-3 py-1 rounded transition">
         Copy
