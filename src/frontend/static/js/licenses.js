@@ -39,7 +39,7 @@ function toggleLicenseEditPanel(licenseId) {
         loadLicenseDetails(licenseId);
     } else {
         console.log('Creating a new license');
-        form.action = '/license/create/';
+        form.action = '/licenses/create/';
         title.textContent = 'Create New License';
         loadLicenseDetails();
     }
