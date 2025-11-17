@@ -254,27 +254,36 @@
 }
 
 [data-md-color-scheme="slate"] .md-content {
-  background-color: #111827;
+  background-color: #1e2129;
 }
 
 [data-md-color-scheme="slate"] .md-nav--primary,
 [data-md-color-scheme="slate"] .md-nav__title,
-[data-md-color-scheme="slate"] .md-nav__item {
-  background-color: #0f172a;
+[data-md-color-scheme="slate"] .md-nav__item,
+[data-md-color-scheme="slate"] .md-sidebar__scrollwrap {
+  background-color: #0b1120;
   color: #e5e7eb;
 }
 
 [data-md-color-scheme="slate"] .md-nav__link,
 [data-md-color-scheme="slate"] .md-nav__item .md-nav__link--active {
-  color: #f3f4f6;
+  color: #f8fafc;
 }
 
-[data-md-color-scheme="slate"] .md-sidebar__scrollwrap {
-  background-color: #0f172a;
+[data-md-color-scheme="slate"] .md-nav__link:hover {
+  color: #cbd5f5;
 }
 
 [data-md-color-scheme="slate"] .md-typeset {
   color: #f3f4f6;
+}
+
+[data-md-color-scheme="slate"] .md-typeset a {
+  color: #a5c6ff;
+}
+
+[data-md-color-scheme="slate"] .md-typeset a:hover {
+  color: #d0e2ff;
 }
 
 /* Buttons */
