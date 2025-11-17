@@ -102,6 +102,28 @@
   color: #f9fafb;
 }
 
+.md-typeset .highlight .md-code__nav {
+  background-color: var(--md-code-bg-color);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.md-typeset .highlight .md-code__button {
+  color: var(--md-code-fg-color);
+  opacity: 0.9;
+}
+
+.md-typeset .highlight .md-code__button:hover,
+.md-typeset .highlight .md-code__button:focus {
+  color: #ffffff;
+  opacity: 1;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .highlight .md-code__nav {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.8);
+}
+
 .md-typeset .highlight .c,
 .md-typeset .highlight .cm,
 .md-typeset .highlight .cp,
