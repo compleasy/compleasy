@@ -16,6 +16,7 @@
       <form id="rule-selection-form" method="post" action="" class="h-full flex flex-col">
         {% csrf_token %}
         <input type="hidden" name="ruleset_id" id="ruleset_id" value="">
+        <div id="rule-selection-errors" class="hidden p-4 bg-red-100 border-l-4 border-red-500 text-red-700"></div>
         <div id="rules" class="p-4 space-y-2 overflow-y-auto flex-grow">
           {% for rule in all_rules %}
           <div class="flex items-center group/rule">

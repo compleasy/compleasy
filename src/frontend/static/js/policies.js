@@ -211,6 +211,15 @@ function toggleRuleSelectionPanel(rulesetId) {
     const wasHidden = panel.classList.contains('hidden');
     panel.classList.toggle('hidden');
     
+    // Clear any error messages when opening the panel
+    if (wasHidden && !panel.classList.contains('hidden')) {
+        const errorContainer = document.getElementById('rule-selection-errors');
+        if (errorContainer) {
+            errorContainer.classList.add('hidden');
+            errorContainer.textContent = '';
+        }
+    }
+    
     // If closing, check if we need to reopen the edit panel
     if (!wasHidden && panel.classList.contains('hidden')) {
         const editPanel = document.getElementById('ruleset-edit-panel');
@@ -422,11 +431,52 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Reload page to refresh data
                         location.reload();
                     } else {
-                        console.error('Error updating rules');
+                        // Try to parse error response
+                        response.json().then(data => {
+                            const errorContainer = document.getElementById('rule-selection-errors');
+                            if (errorContainer) {
+                                let errorMessage = 'Error updating rules';
+                                if (data.errors) {
+                                    // Handle different error formats
+                                    if (data.errors.__all__ && Array.isArray(data.errors.__all__)) {
+                                        errorMessage = data.errors.__all__[0];
+                                    } else if (typeof data.errors === 'string') {
+                                        errorMessage = data.errors;
+                                    } else if (data.message) {
+                                        errorMessage = data.message;
+                                    }
+                                } else if (data.message) {
+                                    errorMessage = data.message;
+                                }
+                                errorContainer.textContent = errorMessage;
+                                errorContainer.classList.remove('hidden');
+                                // Scroll to error
+                                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            } else {
+                                console.error('Error updating rules:', errorMessage);
+                                alert(errorMessage);
+                            }
+                        }).catch(() => {
+                            // If JSON parsing fails, show generic error
+                            const errorContainer = document.getElementById('rule-selection-errors');
+                            if (errorContainer) {
+                                errorContainer.textContent = 'Error updating rules. Please try again.';
+                                errorContainer.classList.remove('hidden');
+                            } else {
+                                alert('Error updating rules. Please try again.');
+                            }
+                        });
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    const errorContainer = document.getElementById('rule-selection-errors');
+                    if (errorContainer) {
+                        errorContainer.textContent = 'Network error. Please check your connection and try again.';
+                        errorContainer.classList.remove('hidden');
+                    } else {
+                        alert('Network error. Please check your connection and try again.');
+                    }
                 });
             } else {
                 // For new ruleset, just close the panel (rules are stored in hidden field)
