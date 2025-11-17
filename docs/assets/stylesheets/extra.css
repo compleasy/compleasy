@@ -9,6 +9,14 @@
   --md-primary-fg-color--light: #374151;
   --md-primary-fg-color--dark: #111827;
   --md-accent-fg-color: #4b5563;
+  --md-code-bg-color: #111827;
+  --md-code-fg-color: #f9fafb;
+  --md-code-hl-color: #374151;
+  --md-code-hl-number-color: #fde047;
+  --md-code-hl-string-color: #34d399;
+  --md-code-hl-keyword-color: #60a5fa;
+  --md-code-hl-function-color: #f472b6;
+  --md-code-hl-variable-color: #facc15;
 }
 
 /* Dark mode (slate scheme) - use same colors for consistency */
@@ -17,6 +25,14 @@
   --md-primary-fg-color--light: #374151;
   --md-primary-fg-color--dark: #111827;
   --md-accent-fg-color: #4b5563;
+  --md-code-bg-color: #0f172a;
+  --md-code-fg-color: #f8fafc;
+  --md-code-hl-color: #1e293b;
+  --md-code-hl-number-color: #fde047;
+  --md-code-hl-string-color: #6ee7b7;
+  --md-code-hl-keyword-color: #93c5fd;
+  --md-code-hl-function-color: #f9a8d4;
+  --md-code-hl-variable-color: #fde68a;
 }
 
 /* Header background - uses CSS variable, no need for !important */
