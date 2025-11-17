@@ -2,23 +2,36 @@
 <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
     <label class="block text-sm font-medium text-gray-700 mb-3">License Key Selection</label>
     <div class="flex flex-col gap-2">
-        <label class="flex items-center cursor-pointer">
-            <input type="radio" name="license-option" value="default" id="license-option-default" class="mr-2" checked>
-            <span class="text-sm text-gray-700">Use default license key <span class="text-gray-500">(default)</span></span>
-        </label>
-        <label class="flex items-center cursor-pointer">
-            <input type="radio" name="license-option" value="generate" id="license-option-generate" class="mr-2">
-            <span class="text-sm text-gray-700">Generate specific license key <span class="text-green-600 font-semibold">(more secure)</span></span>
-        </label>
+        {% if selected_license %}
+            <label class="flex items-center cursor-pointer">
+                <input type="radio" name="license-option" value="selected" id="license-option-selected" class="mr-2" checked>
+                <span class="text-sm text-gray-700">Use selected license key <span class="text-gray-500">({{ selected_license.name }})</span></span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+                <input type="radio" name="license-option" value="default" id="license-option-default" class="mr-2">
+                <span class="text-sm text-gray-700">Use default license key</span>
+            </label>
+        {% else %}
+            <label class="flex items-center cursor-pointer">
+                <input type="radio" name="license-option" value="default" id="license-option-default" class="mr-2" checked>
+                <span class="text-sm text-gray-700">Use default license key <span class="text-gray-500">(default)</span></span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+                <input type="radio" name="license-option" value="generate" id="license-option-generate" class="mr-2">
+                <span class="text-sm text-gray-700">Generate specific license key <span class="text-green-600 font-semibold">(more secure)</span></span>
+            </label>
+        {% endif %}
     </div>
+    {% if not selected_license %}
     <p class="mt-2 text-xs text-gray-500">
         <i class="fas fa-info-circle mr-1"></i>
         Generating a specific license key creates a 1-to-1 license that only works for a single device, improving security.
     </p>
+    {% endif %}
 </div>
 
 <div class="relative bg-gray-900 text-gray-50 rounded-lg p-4">
-    <pre class="text-sm font-mono overflow-x-auto whitespace-pre-wrap" id="enroll-command">wget -qO- --no-check-certificate {{ trikusec_url }}/download/enroll.sh?licensekey={{ licensekey }} | bash</pre>
+    <pre class="text-sm font-mono overflow-x-auto whitespace-pre-wrap" id="enroll-command">wget -qO- --no-check-certificate {{ trikusec_url }}/download/enroll.sh?licensekey={% if selected_license %}{{ selected_license.licensekey }}{% else %}{{ licensekey }}{% endif %} | bash</pre>
     <button id="copy-command-btn" type="button" class="copy-button absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold tracking-wide px-3 py-1 rounded transition">
         Copy
     </button>
