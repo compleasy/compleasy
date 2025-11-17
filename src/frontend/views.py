@@ -90,8 +90,10 @@ def onboarding(request):
     import json
     # Use Lynis API URL for enrollment commands
     lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
-    #TODO: allow license management. By now, we just get the last license key from the user
-    user_license = LicenseKey.objects.filter(created_by=request.user).last()
+    # Get user's default license key: prefer id=1 if exists, otherwise lowest id
+    user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
+    if not user_license:
+        user_license = LicenseKey.objects.filter(created_by=request.user).order_by('id').first()
     if not user_license:
         return HttpResponse('No license key found', status=404)
     
@@ -1161,8 +1163,10 @@ def enroll_device(request):
             # Invalid license_id or license doesn't belong to user - ignore and continue with default
             selected_license = None
     
-    # Get user's default license key (last created license)
-    user_license = LicenseKey.objects.filter(created_by=request.user).last()
+    # Get user's default license key: prefer id=1 if exists, otherwise lowest id
+    user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
+    if not user_license:
+        user_license = LicenseKey.objects.filter(created_by=request.user).order_by('id').first()
     if not user_license:
         return HttpResponse('No license key found', status=404)
     
