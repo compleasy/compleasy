@@ -108,6 +108,33 @@
   color: var(--md-code-hl-comment-color);
 }
 
+.md-typeset .md-clipboard {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+  opacity: 0.95;
+  border-radius: 0.4rem;
+}
+
+.md-typeset .md-clipboard:hover,
+.md-typeset .md-clipboard:focus {
+  background-color: #1f2937;
+  color: #f9fafb;
+  opacity: 1;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-clipboard {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f3f4f6;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-clipboard:hover,
+[data-md-color-scheme="slate"] .md-typeset .md-clipboard:focus {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
 /* Admonitions - adjust colors to match gray scheme */
 .md-typeset .admonition {
   border-left-color: #1f2937;
