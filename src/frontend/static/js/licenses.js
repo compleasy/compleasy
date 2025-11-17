@@ -171,3 +171,43 @@ function hideFormErrors() {
     errorContainer.classList.add('hidden');
 }
 
+// Delete license with confirmation
+// Attach to window to make it globally accessible from inline onclick handlers
+window.deleteLicense = function(licenseId, licenseName) {
+    if (!confirm(`Are you sure you want to delete the license "${licenseName}"?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+    
+    if (!csrftoken) {
+        alert('Error: CSRF token not found. Please refresh the page and try again.');
+        return;
+    }
+    
+    // Send DELETE request via POST (Django doesn't support DELETE method easily)
+    fetch(`/license/${licenseId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload page to show updated list
+            location.reload();
+        } else {
+            alert('Error deleting license: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting license. Please try again.');
+    });
+};
+

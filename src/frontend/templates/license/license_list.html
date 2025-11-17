@@ -75,6 +75,19 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path>
                                     </svg>
                                 </button>
+                                {% if license.device_count > 0 %}
+                                    <span class="text-gray-400 cursor-not-allowed" title="Cannot delete: license has {{ license.device_count }} device(s) linked">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </span>
+                                {% else %}
+                                    <button onclick="deleteLicense({{ license.id }}, '{{ license.name|escapejs }}')" class="text-red-600 hover:text-red-800" title="Delete">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                {% endif %}
                                 {% if license.has_capacity %}
                                     <a href="{% url 'enroll_device' %}?license_id={{ license.id }}" class="text-gray-600 hover:text-gray-800" title="Enroll Device">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +133,46 @@
                 button.textContent = originalText;
                 button.classList.remove('text-green-600');
             }, 2000);
+        }
+
+        // Delete license with confirmation
+        // Defined inline to ensure it's available for onclick handlers
+        function deleteLicense(licenseId, licenseName) {
+            if (!confirm(`Are you sure you want to delete the license "${licenseName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            // Get CSRF token
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                              document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+            
+            if (!csrftoken) {
+                alert('Error: CSRF token not found. Please refresh the page and try again.');
+                return;
+            }
+            
+            // Send DELETE request via POST (Django doesn't support DELETE method easily)
+            fetch(`/license/${licenseId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload page to show updated list
+                    location.reload();
+                } else {
+                    alert('Error deleting license: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting license. Please try again.');
+            });
         }
 
         // Pass license data to JavaScript

@@ -1107,14 +1107,41 @@ def license_edit(request, license_id):
 @login_required
 @csrf_protect
 def license_delete(request, license_id):
-    """Delete/deactivate license"""
-    license = get_object_or_404(LicenseKey, id=license_id)
+    """Delete license (only if no devices are linked)"""
     if request.method == 'POST':
-        # Instead of deleting, deactivate the license
-        license.is_active = False
-        license.save()
+        license = get_object_or_404(LicenseKey, id=license_id)
+        
+        # Check if license has devices
+        device_count = license.device_count()
+        if device_count > 0:
+            error_message = f'Cannot delete license: {device_count} device(s) are linked to this license.'
+            
+            # AJAX request: return JSON error
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message
+                }, status=400)
+            
+            # Traditional request: redirect with error message
+            messages.error(request, error_message)
+            return redirect('license_list')
+        
+        # No devices linked, safe to delete
+        license.delete()
+        
+        # AJAX request: return JSON success
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'License deleted successfully'
+            })
+        
+        # Traditional request: redirect
         return redirect('license_list')
-    return render(request, 'license/license_confirm_delete.html', {'license': license})
+    
+    # GET request: return 405 Method Not Allowed
+    return HttpResponse('Method not allowed', status=405)
 
 
 @login_required
