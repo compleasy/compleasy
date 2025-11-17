@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load custom_filters %}
 
 {% block title %}Policies{% endblock %}
 
@@ -57,7 +58,7 @@
                                 {{ ruleset.devices.count }}
                             </td>
                             <td class="py-3 px-6 text-left w-48">
-                                {{ ruleset.updated_at|timesince }} ago
+                                {{ ruleset.updated_at|timesince_simple }} ago
                             </td>
                             <td class="py-3 px-6 text-left w-32">
                                 <div class="flex items-center space-x-2">
@@ -175,7 +176,7 @@
                                 <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ rule.rule_query|truncatechars:50 }}</code>
                             </td>
                             <td class="py-3 px-6 text-left w-48">
-                                {{ rule.updated_at|timesince }} ago
+                                {{ rule.updated_at|timesince_simple }} ago
                             </td>
                             <td class="py-3 px-6 text-center w-32">
                                 <div class="flex items-center justify-center space-x-2">

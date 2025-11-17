@@ -1,5 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.utils.timesince import timesince
 
 register = template.Library()
 
@@ -92,3 +93,19 @@ def substract(value, arg):
         return int(value) - int(arg)
     except (ValueError, TypeError):
         return value
+
+@register.filter(name='timesince_simple')
+def timesince_simple(value):
+    """
+    Return only the largest time unit from timesince (e.g., "13 hours" instead of "13 hours, 18 minutes")
+    """
+    if not value:
+        return ''
+    
+    try:
+        time_str = timesince(value)
+        # Split by comma and take only the first part
+        # This gives us just the largest unit (e.g., "13 hours" from "13 hours, 18 minutes")
+        return time_str.split(',')[0].strip()
+    except (ValueError, TypeError, AttributeError):
+        return ''
