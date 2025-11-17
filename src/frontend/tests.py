@@ -353,3 +353,100 @@ class TestUserProfileView:
         assert response.status_code == 200
         test_user.refresh_from_db()
         assert test_user.check_password('Alice1234!')
+
+
+@pytest.mark.django_db
+class TestRuleDetailView:
+    """Tests for the rule_detail endpoint."""
+
+    def test_rule_detail_page_renders(self, test_user):
+        """Test that rule detail page renders successfully."""
+        from api.models import PolicyRule
+        
+        # Create a test rule
+        rule = PolicyRule.objects.create(
+            name='Test Rule',
+            description='Test description',
+            rule_query='test_query',
+            enabled=True,
+            created_by=test_user,
+            is_system=False
+        )
+        
+        client = Client()
+        client.force_login(test_user)
+        
+        url = reverse('rule_detail', kwargs={'rule_id': rule.id})
+        response = client.get(url)
+        
+        assert response.status_code == 200
+        assert b'Test Rule' in response.content
+        assert b'Test description' in response.content
+        assert b'test_query' in response.content
+
+    def test_rule_detail_with_system_rule(self, test_user):
+        """Test that system rule detail page renders correctly."""
+        from api.models import PolicyRule
+        from django.contrib.auth.models import User
+        
+        # Get or create system user
+        system_user, _ = User.objects.get_or_create(
+            username='system',
+            defaults={'is_active': False, 'is_staff': False, 'is_superuser': False}
+        )
+        
+        # Create a system rule
+        rule = PolicyRule.objects.create(
+            name='System Rule',
+            description='System rule description',
+            rule_query='system_query',
+            enabled=True,
+            created_by=system_user,
+            is_system=True
+        )
+        
+        client = Client()
+        client.force_login(test_user)
+        
+        url = reverse('rule_detail', kwargs={'rule_id': rule.id})
+        response = client.get(url)
+        
+        assert response.status_code == 200
+        assert b'System Rule' in response.content
+        assert b'System' in response.content  # Should show "System" as creator
+
+    def test_rule_detail_invalid_id(self, test_user):
+        """Test rule detail with invalid ID returns 404."""
+        client = Client()
+        client.force_login(test_user)
+        
+        url = reverse('rule_detail', kwargs={'rule_id': 99999})
+        response = client.get(url)
+        
+        assert response.status_code == 404
+
+    def test_rule_detail_unauthorized(self):
+        """Test unauthenticated user cannot access rule detail."""
+        from api.models import PolicyRule
+        from django.contrib.auth.models import User
+        
+        test_user = User.objects.create_user(
+            username='testuser',
+            password='testpass123'
+        )
+        
+        rule = PolicyRule.objects.create(
+            name='Test Rule',
+            description='Test',
+            rule_query='test',
+            created_by=test_user
+        )
+        
+        client = Client()
+        
+        url = reverse('rule_detail', kwargs={'rule_id': rule.id})
+        response = client.get(url)
+        
+        # Should redirect to login page
+        assert response.status_code == 302
+        assert '/login' in response.url

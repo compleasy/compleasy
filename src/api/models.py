@@ -82,6 +82,8 @@ class PolicyRule(models.Model):
     description = models.TextField()
     enabled = models.BooleanField(default=True)
     alert = models.BooleanField(default=False)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_rules')
+    is_system = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -95,6 +97,8 @@ class PolicyRuleset(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     rules = models.ManyToManyField(PolicyRule)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_rulesets')
+    is_system = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

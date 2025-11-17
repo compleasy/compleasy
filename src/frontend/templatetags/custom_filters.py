@@ -94,6 +94,17 @@ def substract(value, arg):
     except (ValueError, TypeError):
         return value
 
+@register.filter(name='creator_name')
+def creator_name(obj):
+    """Return the creator name, showing 'System' for system-generated items"""
+    if obj.is_system:
+        return 'System'
+    if obj.created_by:
+        if obj.created_by.username == 'system':
+            return 'System'
+        return obj.created_by.username
+    return 'Unknown'
+
 @register.filter(name='timesince_simple')
 def timesince_simple(value):
     """

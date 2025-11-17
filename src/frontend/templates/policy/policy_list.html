@@ -29,6 +29,7 @@
                             <th class="py-3 px-6 text-left">Description</th>
                             <th class="py-3 px-6 text-left">Rules</th>
                             <th class="py-3 px-6 text-left">Devices</th>
+                            <th class="py-3 px-6 text-left">Created By</th>
                             <th class="py-3 px-6 text-left w-48">Last Updated</th>
                             <th class="py-3 px-6 text-left w-32">Actions</th>
                         </tr>
@@ -56,6 +57,15 @@
                             </td>
                             <td class="py-3 px-6 text-left">
                                 {{ ruleset.devices.count }}
+                            </td>
+                            <td class="py-3 px-6 text-left">
+                                {% if ruleset.is_system %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        System
+                                    </span>
+                                {% else %}
+                                    {{ ruleset|creator_name }}
+                                {% endif %}
                             </td>
                             <td class="py-3 px-6 text-left w-48">
                                 {{ ruleset.updated_at|timesince_simple }} ago
@@ -146,6 +156,7 @@
                             <th class="py-3 px-6 text-left">Name</th>
                             <th class="py-3 px-6 text-left">Description</th>
                             <th class="py-3 px-6 text-left">Rule Query</th>
+                            <th class="py-3 px-6 text-left">Created By</th>
                             <th class="py-3 px-6 text-left w-48">Last Updated</th>
                             <th class="py-3 px-6 text-center w-32">Actions</th>
                         </tr>
@@ -174,6 +185,15 @@
                             </td>
                             <td class="py-3 px-6 text-left">
                                 <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ rule.rule_query|truncatechars:50 }}</code>
+                            </td>
+                            <td class="py-3 px-6 text-left">
+                                {% if rule.is_system %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        System
+                                    </span>
+                                {% else %}
+                                    {{ rule|creator_name }}
+                                {% endif %}
                             </td>
                             <td class="py-3 px-6 text-left w-48">
                                 {{ rule.updated_at|timesince_simple }} ago

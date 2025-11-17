@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load custom_filters %}
 
 {% block title %}{{ rule.name }}{% endblock %}
 
@@ -55,6 +56,18 @@
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Created</dt>
                         <dd class="mt-1">{{ rule.created_at|date:"Y-m-d H:i" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Created By</dt>
+                        <dd class="mt-1">
+                            {% if rule.is_system %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    System
+                                </span>
+                            {% else %}
+                                {{ rule|creator_name }}
+                            {% endif %}
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Last Updated</dt>

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, F, Count
 from django.core.paginator import Paginator
@@ -92,10 +93,23 @@ def onboarding(request):
     # Use TRIKUSEC_LYNIS_API_URL for API operations (upload-server)
     trikusec_url = settings.TRIKUSEC_URL
     trikusec_lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
-    # Get user's default license key: prefer id=1 if exists, otherwise lowest id
-    user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
+    # Get user's default license key: prioritize system default license (id=1, created by system)
+    # First, try to find license id=1 created by the system user
+    system_user = User.objects.filter(username='system').first()
+    user_license = None
+    if system_user:
+        user_license = LicenseKey.objects.filter(id=1, created_by=system_user, is_active=True).first()
+    # If system license not found, try user's own licenses (prefer id=1, then lowest id)
+    if not user_license:
+        user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
     if not user_license:
         user_license = LicenseKey.objects.filter(created_by=request.user).order_by('id').first()
+    # If user has no licenses, fall back to any license with id=1 (active)
+    if not user_license:
+        user_license = LicenseKey.objects.filter(id=1, is_active=True).first()
+    # If still no license, try any active license
+    if not user_license:
+        user_license = LicenseKey.objects.filter(is_active=True).order_by('id').first()
     if not user_license:
         return HttpResponse('No license key found', status=404)
     
@@ -449,7 +463,10 @@ def ruleset_create(request):
         if 'rules' in form.fields:
             form.fields.pop('rules')
         if form.is_valid():
-            ruleset = form.save()
+            ruleset = form.save(commit=False)
+            ruleset.created_by = request.user
+            ruleset.is_system = False
+            ruleset.save()
             
             # Handle rules assignment (can be list or comma-separated string)
             selected_rule_ids = []
@@ -556,6 +573,17 @@ def ruleset_update(request, ruleset_id):
     """Update a policy ruleset (AJAX + fallback)"""
     ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
     
+    # Prevent editing system rulesets
+    if ruleset.is_system:
+        error_msg = 'System rulesets cannot be edited'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': {'__all__': [error_msg]}
+            }, status=403)
+        messages.error(request, error_msg)
+        return redirect('policy_list')
+    
     if request.method == 'POST':
         # Check if this is a rule selection form submission (only has rules, no name/description)
         selected_rule_ids = request.POST.getlist('rules')
@@ -581,7 +609,11 @@ def ruleset_update(request, ruleset_id):
         if 'rules' in form.fields:
             form.fields.pop('rules')
         if form.is_valid():
-            form.save()
+            # Preserve created_by (don't overwrite)
+            updated_ruleset = form.save(commit=False)
+            if not updated_ruleset.created_by:
+                updated_ruleset.created_by = request.user
+            updated_ruleset.save()
             
             # Handle rules assignment from edit form (can be list or comma-separated string)
             selected_rule_ids = []
@@ -724,10 +756,25 @@ def rule_update(request, rule_id):
     """Rule update view: update a policy rule (AJAX + fallback)"""
     policy_rule = get_object_or_404(PolicyRule, id=rule_id)
     
+    # Prevent editing system rules
+    if policy_rule.is_system:
+        error_msg = 'System rules cannot be edited'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': {'__all__': [error_msg]}
+            }, status=403)
+        messages.error(request, error_msg)
+        return redirect('policy_list')
+    
     if request.method == 'POST':
         form = PolicyRuleForm(request.POST, instance=policy_rule)
         if form.is_valid():
-            form.save()
+            # Preserve created_by (don't overwrite)
+            rule = form.save(commit=False)
+            if not rule.created_by:
+                rule.created_by = request.user
+            rule.save()
             
             # AJAX request: return JSON
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -757,7 +804,10 @@ def rule_create(request):
     if request.method == 'POST':
         form = PolicyRuleForm(request.POST)
         if form.is_valid():
-            rule = form.save()
+            rule = form.save(commit=False)
+            rule.created_by = request.user
+            rule.is_system = False
+            rule.save()
             
             # AJAX request: return JSON
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -1174,10 +1224,23 @@ def enroll_device(request):
             # Invalid license_id or license doesn't belong to user - ignore and continue with default
             selected_license = None
     
-    # Get user's default license key: prefer id=1 if exists, otherwise lowest id
-    user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
+    # Get user's default license key: prioritize system default license (id=1, created by system)
+    # First, try to find license id=1 created by the system user
+    system_user = User.objects.filter(username='system').first()
+    user_license = None
+    if system_user:
+        user_license = LicenseKey.objects.filter(id=1, created_by=system_user, is_active=True).first()
+    # If system license not found, try user's own licenses (prefer id=1, then lowest id)
+    if not user_license:
+        user_license = LicenseKey.objects.filter(created_by=request.user, id=1).first()
     if not user_license:
         user_license = LicenseKey.objects.filter(created_by=request.user).order_by('id').first()
+    # If user has no licenses, fall back to any license with id=1 (active)
+    if not user_license:
+        user_license = LicenseKey.objects.filter(id=1, is_active=True).first()
+    # If still no license, try any active license
+    if not user_license:
+        user_license = LicenseKey.objects.filter(is_active=True).order_by('id').first()
     if not user_license:
         return HttpResponse('No license key found', status=404)
     

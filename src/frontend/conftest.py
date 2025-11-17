@@ -68,7 +68,9 @@ def test_policy_data(db, test_user):
             name=f"Test Rule {i+1}",
             description=f"Description for test rule {i+1}",
             rule_query=f"test_query_{i+1}",
-            enabled=True
+            enabled=True,
+            created_by=test_user,
+            is_system=False
         )
         rules.append(rule)
     
@@ -78,14 +80,18 @@ def test_policy_data(db, test_user):
     # Ruleset 1: Empty ruleset
     ruleset1 = PolicyRuleset.objects.create(
         name="Empty Ruleset",
-        description="A ruleset with no rules"
+        description="A ruleset with no rules",
+        created_by=test_user,
+        is_system=False
     )
     rulesets.append(ruleset1)
     
     # Ruleset 2: Ruleset with some rules
     ruleset2 = PolicyRuleset.objects.create(
         name="Ruleset with Rules",
-        description="A ruleset with multiple rules"
+        description="A ruleset with multiple rules",
+        created_by=test_user,
+        is_system=False
     )
     ruleset2.rules.add(rules[0], rules[1], rules[2])
     rulesets.append(ruleset2)
@@ -93,7 +99,9 @@ def test_policy_data(db, test_user):
     # Ruleset 3: Another ruleset with different rules
     ruleset3 = PolicyRuleset.objects.create(
         name="Another Ruleset",
-        description="Another ruleset with different rules"
+        description="Another ruleset with different rules",
+        created_by=test_user,
+        is_system=False
     )
     ruleset3.rules.add(rules[2], rules[3], rules[4])
     rulesets.append(ruleset3)

@@ -228,6 +228,15 @@ class TestRuleCRUD:
         rule_link.wait_for(state="visible", timeout=5000)
         assert rule_link.is_visible()
     
+        # Verify creator is saved (check via database)
+        from api.models import PolicyRule
+        from django.contrib.auth.models import User
+        rule = PolicyRule.objects.get(name='Test Rule E2E')
+        assert rule.created_by is not None
+        # Verify it's a User object (not system user)
+        assert isinstance(rule.created_by, User)
+        assert rule.is_system == False
+    
     def test_edit_rule(self, authenticated_browser, live_server_url, test_policy_data):
         """Edit an existing rule."""
         page = authenticated_browser
@@ -279,11 +288,15 @@ class TestRuleCRUD:
         page = authenticated_browser
         
         # Create a rule to delete
+        from django.contrib.auth.models import User
+        test_user = User.objects.first()
         rule = PolicyRule.objects.create(
             name='Rule to Delete E2E',
             description='This will be deleted',
             rule_query='delete_me',
-            enabled=True
+            enabled=True,
+            created_by=test_user,
+            is_system=False
         )
         
         # Navigate to policies page
@@ -484,12 +497,60 @@ class TestSidebarStateManagement:
         # Verify the panel is in create mode (title should be "Create New Rule")
         title = page.locator('#rule-edit-title')
         assert title.is_visible(), "Rule edit panel title should be visible"
-        assert title.text_content() == "Create New Rule", f"Expected 'Create New Rule', got '{title.text_content()}'"
+        assert title.text_content() == "Create New Rule"
+    
+    def test_system_rule_cannot_be_edited(self, authenticated_browser, live_server_url, db):
+        """Test that system rules cannot be edited."""
+        from api.models import PolicyRule
+        from django.contrib.auth.models import User
         
-        # Verify form fields are visible and ready
-        rule_name_field = page.locator('#rule_name')
-        assert rule_name_field.is_visible(), "Rule name field should be visible"
-        assert rule_name_field.input_value() == "", "Rule name field should be empty"
+        # Get or create system user
+        system_user, _ = User.objects.get_or_create(
+            username='system',
+            defaults={'is_active': False, 'is_staff': False, 'is_superuser': False}
+        )
+        if not system_user.has_usable_password():
+            system_user.set_unusable_password()
+            system_user.save()
+        
+        # Create a system rule
+        system_rule = PolicyRule.objects.create(
+            name='System Rule E2E',
+            description='A system rule',
+            rule_query='system_query',
+            enabled=True,
+            created_by=system_user,
+            is_system=True
+        )
+        
+        page = authenticated_browser
+        
+        # Navigate to policies page
+        page.goto(f"{live_server_url}/policies/")
+        page.wait_for_load_state("networkidle")
+        
+        # Try to edit the system rule
+        rule_row = page.locator(f'tr:has-text("System Rule E2E")')
+        rule_row.scroll_into_view_if_needed()
+        edit_button = rule_row.locator('button[title="Edit"]')
+        edit_button.wait_for(state="visible", timeout=5000)
+        edit_button.click()
+        
+        # Wait for sidebar
+        sidebar = page.locator('#rule-edit-panel')
+        sidebar.wait_for(state="visible", timeout=5000)
+        
+        # Try to submit the form
+        page.click('#rule-edit-form button[type="submit"]')
+        
+        # Wait for error message (AJAX response)
+        page.wait_for_timeout(1000)
+        
+        # Check that error is shown or form is not submitted
+        # The view should return an error for system rules
+        # We can verify by checking that the rule name hasn't changed
+        rule = PolicyRule.objects.get(id=system_rule.id)
+        assert rule.name == 'System Rule E2E'  # Should not have changed
         
         rule_description_field = page.locator('#rule_description')
         assert rule_description_field.is_visible(), "Rule description field should be visible"

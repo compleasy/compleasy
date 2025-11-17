@@ -100,10 +100,10 @@ class DiffReportAdmin(admin.ModelAdmin):
 
 @admin.register(PolicyRule)
 class PolicyRuleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'rule_query', 'enabled', 'alert', 'rule_status', 'created_at', 'updated_at')
-    list_filter = ('enabled', 'alert', 'created_at', 'updated_at')
-    search_fields = ('name', 'description', 'rule_query')
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ('name', 'rule_query', 'enabled', 'alert', 'rule_status', 'created_by', 'is_system', 'created_at', 'updated_at')
+    list_filter = ('enabled', 'alert', 'is_system', 'created_by', 'created_at', 'updated_at')
+    search_fields = ('name', 'description', 'rule_query', 'created_by__username')
+    readonly_fields = ('created_at', 'updated_at', 'created_by', 'is_system')
     date_hierarchy = 'created_at'
     
     fieldsets = (
@@ -112,6 +112,9 @@ class PolicyRuleAdmin(admin.ModelAdmin):
         }),
         ('Rule Configuration', {
             'fields': ('rule_query', 'enabled', 'alert')
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'is_system')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -130,10 +133,10 @@ class PolicyRuleAdmin(admin.ModelAdmin):
 
 @admin.register(PolicyRuleset)
 class PolicyRulesetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'rule_count', 'device_count', 'created_at', 'updated_at')
-    list_filter = ('created_at', 'updated_at')
-    search_fields = ('name', 'description')
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ('name', 'rule_count', 'device_count', 'created_by', 'is_system', 'created_at', 'updated_at')
+    list_filter = ('is_system', 'created_by', 'created_at', 'updated_at')
+    search_fields = ('name', 'description', 'created_by__username')
+    readonly_fields = ('created_at', 'updated_at', 'created_by', 'is_system')
     filter_horizontal = ('rules',)
     date_hierarchy = 'created_at'
     
@@ -143,6 +146,9 @@ class PolicyRulesetAdmin(admin.ModelAdmin):
         }),
         ('Rules', {
             'fields': ('rules',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'is_system')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
