@@ -2,110 +2,114 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://trikusec.github.io/trikusec/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/license/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/api/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/api/authentication/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/api/endpoints/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/api/examples/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/configuration/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/configuration/advanced/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/configuration/environment-variables/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/configuration/security/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/contributing/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/e2e-testing/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/lynis-license-format/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://trikusec.github.io/trikusec/development/lynis-report-custom-variables/</loc>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/setup/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/testing/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/development/ui-ux-architecture/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/installation/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/installation/backup-recovery/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/installation/client-setup/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/installation/docker/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/installation/postgresql/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/usage/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/usage/dashboard/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/usage/getting-started/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/usage/policies/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
     <url>
          <loc>https://trikusec.github.io/trikusec/usage/reports/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-18</lastmod>
     </url>
 </urlset>
