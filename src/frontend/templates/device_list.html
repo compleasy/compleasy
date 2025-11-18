@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load custom_filters %}
 {% load humanize %}
 
@@ -10,7 +11,22 @@
                 <h1 class="text-3xl font-bold"><a href="{% url 'index' %}">Devices</a></h1>
             </div>
             <div class="flex justify-end">
-                <a href="{% url 'enroll_device' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">+ New Device</a>
+                <div class="flex items-center space-x-2">
+                    <button id="device-search-toggle" type="button" class="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                    </button>
+                    <div id="device-search-container" class="flex items-center overflow-hidden transition-all duration-300 ease-out max-w-0 opacity-0">
+                        <input
+                            id="device-search-input"
+                            type="text"
+                            placeholder="Search devices..."
+                            class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                        />
+                    </div>
+                    <a href="{% url 'enroll_device' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">+ New Device</a>
+                </div>
             </div>
         </div>
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -29,7 +45,7 @@
                 <tbody class="text-gray-600 text-sm font-light">
 
                     {% for device in devices %}
-                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                    <tr class="border-b border-gray-200 hover:bg-gray-100" data-device-name="{{ device.hostname|lower }}">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
                             <div class="flex items-center">
                                 <span class="font-medium"><a href="{% url 'device_detail' device_id=device.id %}">{{ device.hostname }}</a></span>
@@ -70,4 +86,9 @@
             </table>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/devices.js' %}"></script>
 {% endblock %}
