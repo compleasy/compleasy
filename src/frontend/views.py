@@ -24,6 +24,8 @@ from datetime import datetime
 from weasyprint import HTML
 from django.template.loader import render_to_string
 
+DEVICE_LIST_PAGE_SIZE = getattr(settings, 'DEVICE_LIST_PAGE_SIZE', 25)
+
 def safe_redirect(request, fallback_url_name='device_list', **kwargs):
     referer = request.META.get('HTTP_REFERER')
     if referer:
@@ -130,11 +132,11 @@ def onboarding(request):
 @login_required
 def device_list(request):
     """Device list view: show all devices"""
-    devices = Device.objects.all()
-    if not devices:
+    devices_qs = Device.objects.all()
+    if not devices_qs.exists():
         return redirect('onboarding')
 
-    for device in devices:
+    for device in devices_qs:
         logging.debug('Checking compliance for device %s', device)
         
         # Get the latest report for the device
@@ -153,9 +155,23 @@ def device_list(request):
         device.save()
     
     # Order devices by last updated (most recent first)
-    devices = devices.order_by('-last_update')
+    devices = Device.objects.all().order_by('-last_update')
 
-    return render(request, 'device_list.html', {'devices': devices})
+    paginator = Paginator(devices, DEVICE_LIST_PAGE_SIZE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    base_query = query_params.urlencode()
+
+    return render(request, 'device_list.html', {
+        'devices': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'is_paginated': page_obj.has_other_pages(),
+        'pagination_query': base_query,
+    })
 
 @login_required
 def device_detail(request, device_id):

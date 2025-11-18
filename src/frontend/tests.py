@@ -3,7 +3,63 @@ import json
 from django.test import Client
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 from api.models import Device, FullReport
+from frontend.views import DEVICE_LIST_PAGE_SIZE
+
+
+@pytest.mark.django_db
+class TestDeviceListPagination:
+    """Tests for paginating the device list view."""
+
+    def _create_devices(self, license_key, count, sample_report):
+        for i in range(count):
+            device = Device.objects.create(
+                licensekey=license_key,
+                hostid=f'test-host-{i}',
+                hostid2=f'test-host2-{i}',
+                hostname=f'device-{i}',
+                os='Linux',
+                distro='Ubuntu',
+                distro_version='22.04',
+                lynis_version='3.0.0',
+                warnings=i,
+                last_update=timezone.now() - timedelta(minutes=i),
+            )
+            FullReport.objects.create(
+                device=device,
+                full_report=sample_report.replace('test-server', f'device-{i}'),
+            )
+
+    def test_device_list_first_page_paginated(self, test_user, test_license_key, sample_lynis_report):
+        client = Client()
+        client.force_login(test_user)
+        total_devices = DEVICE_LIST_PAGE_SIZE + 5
+        self._create_devices(test_license_key, total_devices, sample_lynis_report)
+
+        response = client.get(reverse('device_list'))
+
+        assert response.status_code == 200
+        page_obj = response.context['page_obj']
+        paginator = response.context['paginator']
+        assert paginator.count == total_devices
+        assert page_obj.number == 1
+        assert len(page_obj.object_list) == DEVICE_LIST_PAGE_SIZE
+
+    def test_device_list_second_page_paginated(self, test_user, test_license_key, sample_lynis_report):
+        client = Client()
+        client.force_login(test_user)
+        total_devices = DEVICE_LIST_PAGE_SIZE + 5
+        self._create_devices(test_license_key, total_devices, sample_lynis_report)
+
+        response = client.get(reverse('device_list'), {'page': 2})
+
+        assert response.status_code == 200
+        page_obj = response.context['page_obj']
+        assert page_obj.number == 2
+        assert len(page_obj.object_list) == total_devices - DEVICE_LIST_PAGE_SIZE
+        assert response.context['is_paginated'] is True
 
 
 @pytest.mark.django_db

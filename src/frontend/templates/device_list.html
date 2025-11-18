@@ -43,7 +43,6 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm font-light">
-
                     {% for device in devices %}
                     <tr class="border-b border-gray-200 hover:bg-gray-100" data-device-name="{{ device.hostname|lower }}">
                         <td class="py-3 px-6 text-left whitespace-nowrap">
@@ -80,11 +79,85 @@
                             <span>{{ device.last_update|timesince }}</span>
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-6 px-6 text-center text-gray-500">
+                            No devices found.
+                        </td>
+                    </tr>
                     {% endfor %}
 
                 </tbody>
             </table>
         </div>
+        {% if is_paginated %}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 gap-4">
+            <p class="text-sm text-gray-600">
+                Showing
+                <span class="font-semibold text-gray-900">{{ page_obj.start_index }}</span>
+                -
+                <span class="font-semibold text-gray-900">{{ page_obj.end_index }}</span>
+                of
+                <span class="font-semibold text-gray-900">{{ paginator.count }}</span>
+                devices
+            </p>
+            <nav class="flex justify-center">
+                <ul class="inline-flex items-center space-x-1">
+                    <li>
+                        {% if page_obj.has_previous %}
+                        <a href="{% if pagination_query %}?{{ pagination_query }}&page={{ page_obj.previous_page_number }}{% else %}?page={{ page_obj.previous_page_number }}{% endif %}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100">
+                            Previous
+                        </a>
+                        {% else %}
+                        <span class="px-3 py-1 border border-gray-200 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                            Previous
+                        </span>
+                        {% endif %}
+                    </li>
+                    {% for num in paginator.page_range %}
+                    {% if num == page_obj.number %}
+                    <li>
+                        <span class="px-3 py-1 border border-blue-500 bg-blue-50 text-blue-600 rounded-md text-sm">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <li>
+                        <a href="{% if pagination_query %}?{{ pagination_query }}&page={{ num }}{% else %}?page={{ num }}{% endif %}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% elif num == 1 or num == paginator.num_pages %}
+                    <li>
+                        <a href="{% if pagination_query %}?{{ pagination_query }}&page={{ num }}{% else %}?page={{ num }}{% endif %}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                    <li>
+                        <span class="px-3 py-1 text-gray-500">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    <li>
+                        {% if page_obj.has_next %}
+                        <a href="{% if pagination_query %}?{{ pagination_query }}&page={{ page_obj.next_page_number }}{% else %}?page={{ page_obj.next_page_number }}{% endif %}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100">
+                            Next
+                        </a>
+                        {% else %}
+                        <span class="px-3 py-1 border border-gray-200 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                            Next
+                        </span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
     </div>
 {% endblock %}
 
