@@ -7,6 +7,7 @@ Guide for developers contributing to TrikuSec.
 - **[Setup](setup.md)** - Setting up development environment
 - **[Testing](testing.md)** - Running and writing tests
 - **[UI/UX Architecture](ui-ux-architecture.md)** - Frontend patterns and best practices
+- **[Lynis Report Custom Variables](lynis-report-custom-variables.md)** - Parsing pipeline & derived fields
 - **[Contributing](contributing.md)** - Contribution guidelines
 
 ## Development Environment
