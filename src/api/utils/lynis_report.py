@@ -1,6 +1,9 @@
 import logging
 import difflib
+from datetime import datetime
 from typing import Dict, List, Tuple, Any
+
+from django.utils import timezone
 
 class LynisReport:
     """
@@ -285,6 +288,9 @@ class LynisReport:
         # The one(s) connected to the default gateway(s)
         self.set('primary_ipv4_addresses', self._get_filtered_ipv4_addresses())
 
+        # Generate dynamic audit timing helper
+        self._add_days_since_audit_variable()
+
     def get_parsed_report(self) -> Dict[str, Any]:
         """Return the parsed report."""
         return self.keys
@@ -332,4 +338,55 @@ class LynisReport:
         # Convert list to string
         logging.debug(f'Filtered IPv4 addresses: {filtered_addresses}')
         return filtered_addresses
+
+    def _add_days_since_audit_variable(self) -> None:
+        """Add days_since_audit key calculated from report_datetime_end."""
+        report_end = self.get('report_datetime_end')
+        if not report_end:
+            self.set('days_since_audit', None)
+            return
+
+        parsed_end = self._parse_report_datetime(report_end)
+
+        if not parsed_end:
+            self.set('days_since_audit', None)
+            return
+
+        now = timezone.now()
+
+        # If parsed_end is naive, assume current timezone
+        if timezone.is_naive(parsed_end):
+            parsed_end = timezone.make_aware(parsed_end, timezone.get_current_timezone())
+
+        diff = now - parsed_end
+        # Prevent negative values if report is from the future (clock skew)
+        days = diff.days
+        if diff.total_seconds() < 0:
+            days = 0
+        self.set('days_since_audit', days)
+
+    def _parse_report_datetime(self, value: Any) -> Any:
+        """Parse report datetime strings into datetime objects."""
+        if isinstance(value, datetime):
+            return value
+
+        if isinstance(value, str):
+            candidate = value.strip()
+            if not candidate:
+                return None
+            # Normalize trailing Z to +00:00 to support ISO 8601
+            if candidate.endswith('Z'):
+                candidate = candidate[:-1] + '+00:00'
+            try:
+                return datetime.fromisoformat(candidate)
+            except ValueError:
+                # Fallback to common Lynis format (space separated)
+                try:
+                    return datetime.strptime(candidate, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    logging.debug('Unable to parse report_datetime_end value: %s', value)
+                    return None
+
+        logging.debug('Unsupported report_datetime_end type: %s', type(value))
+        return None
 

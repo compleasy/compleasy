@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 import pytest
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 from api.models import LicenseKey, Device, FullReport, DiffReport
+from api.utils.lynis_report import LynisReport
 
 
 @pytest.mark.django_db
@@ -782,3 +786,35 @@ class TestLicenseCapacityEnrollment:
         # Should succeed
         assert response.status_code == 200
         assert response.content == b'OK'
+
+
+class TestLynisReportCustomVariables:
+    """Tests for dynamically generated fields in LynisReport."""
+
+    def test_days_since_audit_populated_from_space_datetime(self, monkeypatch):
+        fixed_now = timezone.now()
+        monkeypatch.setattr('api.utils.lynis_report.timezone.now', lambda: fixed_now)
+
+        report_end = (fixed_now - timedelta(days=3, hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+        report_data = f"report_datetime_end={report_end}"
+
+        parsed = LynisReport(report_data).get_parsed_report()
+
+        assert parsed['days_since_audit'] == 3
+
+    def test_days_since_audit_populated_from_iso_datetime(self, monkeypatch):
+        fixed_now = timezone.now()
+        monkeypatch.setattr('api.utils.lynis_report.timezone.now', lambda: fixed_now)
+
+        report_end = fixed_now - timedelta(days=1, minutes=30)
+        report_data = f"report_datetime_end={report_end.isoformat()}"
+
+        parsed = LynisReport(report_data).get_parsed_report()
+
+        assert parsed['days_since_audit'] == 1
+
+    def test_days_since_audit_handles_invalid_values(self):
+        report_data = "report_datetime_end=not-a-valid-date"
+        parsed = LynisReport(report_data).get_parsed_report()
+
+        assert parsed['days_since_audit'] is None
