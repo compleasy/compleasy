@@ -32,7 +32,7 @@
                         <th class="py-3 px-6 text-left">Description</th>
                         <th class="py-3 px-6 text-left">Rules</th>
                         <th class="py-3 px-6 text-left">Devices</th>
-                        <th class="py-3 px-6 text-left">Created By</th>
+
                         <th class="py-3 px-6 text-left w-48">Last Updated</th>
                         <th class="py-3 px-6 text-left w-32">Actions</th>
                     </tr>
@@ -41,10 +41,21 @@
                     {% for ruleset in rulesets %}
                     <tr class="border-b border-gray-200 hover:bg-gray-100">
                         <td class="py-3 px-6 text-left">
-                            <a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}"
-                                class="font-medium text-gray-800 hover:text-gray-900">
-                                {{ ruleset.name }}
-                            </a>
+                            <div class="flex items-center">
+                                {% if ruleset.is_system %}
+                                <span title="This ruleset is protected because it is system generated">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                    </svg>
+                                </span>
+                                {% endif %}
+                                <a href="{% url 'ruleset_detail' ruleset_id=ruleset.id %}"
+                                    class="font-medium text-gray-800 hover:text-gray-900">
+                                    {{ ruleset.name }}
+                                </a>
+                            </div>
                         </td>
                         <td class="py-3 px-6 text-left">
                             {{ ruleset.description|truncatewords:15 }}
@@ -67,16 +78,7 @@
                         <td class="py-3 px-6 text-left">
                             {{ ruleset.devices.count }}
                         </td>
-                        <td class="py-3 px-6 text-left">
-                            {% if ruleset.is_system %}
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                System
-                            </span>
-                            {% else %}
-                            {{ ruleset|creator_name }}
-                            {% endif %}
-                        </td>
+
                         <td class="py-3 px-6 text-left w-48">
                             {{ ruleset.updated_at|timesince_simple }} ago
                         </td>
@@ -104,7 +106,17 @@
                                     </svg>
                                 </button>
                                 {% endif %}
-                                {% if ruleset.id in rulesets_linked_to_devices %}
+                                {% if ruleset.is_system %}
+                                <button disabled class="text-gray-400 cursor-not-allowed"
+                                    title="Cannot delete: System ruleset">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                                {% elif ruleset.id in rulesets_linked_to_devices %}
                                 <button disabled class="text-gray-400 cursor-not-allowed"
                                     title="Cannot delete: Ruleset is linked to one or more devices">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -203,7 +215,7 @@
                         <th class="py-3 px-6 text-left">Name</th>
                         <th class="py-3 px-6 text-left">Description</th>
                         <th class="py-3 px-6 text-left">Rule Query</th>
-                        <th class="py-3 px-6 text-left">Created By</th>
+
                         <th class="py-3 px-6 text-left w-48">Last Updated</th>
                         <th class="py-3 px-6 text-center w-32">Actions</th>
                     </tr>
@@ -227,10 +239,21 @@
                             {% endif %}
                         </td>
                         <td class="py-3 px-6 text-left">
-                            <a href="{% url 'rule_detail' rule_id=rule.id %}"
-                                class="font-medium text-gray-800 hover:text-gray-900">
-                                {{ rule.name }}
-                            </a>
+                            <div class="flex items-center">
+                                {% if rule.is_system %}
+                                <span title="This rule is protected because it is system generated">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                    </svg>
+                                </span>
+                                {% endif %}
+                                <a href="{% url 'rule_detail' rule_id=rule.id %}"
+                                    class="font-medium text-gray-800 hover:text-gray-900">
+                                    {{ rule.name }}
+                                </a>
+                            </div>
                         </td>
                         <td class="py-3 px-6 text-left">
                             {{ rule.description|truncatewords:15 }}
@@ -239,16 +262,7 @@
                             <code
                                 class="text-xs bg-gray-100 px-2 py-1 rounded">{{ rule.rule_query|truncatechars:50 }}</code>
                         </td>
-                        <td class="py-3 px-6 text-left">
-                            {% if rule.is_system %}
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                System
-                            </span>
-                            {% else %}
-                            {{ rule|creator_name }}
-                            {% endif %}
-                        </td>
+
                         <td class="py-3 px-6 text-left w-48">
                             {{ rule.updated_at|timesince_simple }} ago
                         </td>
