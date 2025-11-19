@@ -1081,28 +1081,80 @@ def activity(request):
     grouped_activities = []
     if activities:
         from collections import OrderedDict, defaultdict
+        from django.utils import timezone
+        from datetime import timedelta
 
+        def get_time_period_label(timestamp):
+            """Generate a human-readable time period label for grouping."""
+            now = timezone.now()
+            if timestamp.tzinfo is None:
+                timestamp = timezone.make_aware(timestamp)
+            
+            diff = now - timestamp
+            days_diff = diff.days
+            
+            # Same day
+            if days_diff == 0:
+                return 'Today'
+            # Yesterday
+            elif days_diff == 1:
+                return 'Yesterday'
+            # This week (last 7 days)
+            elif days_diff < 7:
+                return 'This week'
+            # Last week (7-14 days ago)
+            elif days_diff < 14:
+                return 'Last week'
+            # Older: show date
+            else:
+                return timestamp.strftime('%B %d, %Y')
+
+        # Group by device+timestamp combination (each becomes a top-level card)
+        # Activities from the same DiffReport share the same timestamp
         grouped_map = OrderedDict()
         for activity in activities:
             device = activity['device']
             change_type = activity.get('type', 'other')
             if change_type not in ['added', 'removed', 'changed']:
                 change_type = 'other'
-
-            device_group = grouped_map.setdefault(device.id, {
+            
+            timestamp = activity['created_at']
+            # Ensure timestamp is timezone-aware for consistent comparison
+            if timestamp.tzinfo is None:
+                timestamp = timezone.make_aware(timestamp)
+            time_label = get_time_period_label(timestamp)
+            
+            # Create unique key for device+timestamp combination
+            # Use exact timestamp to ensure each unique datetime gets its own card
+            # Activities from the same DiffReport will share the same timestamp
+            key = (device.id, timestamp)
+            
+            # Get or create entry for this device+timestamp combination
+            entry = grouped_map.setdefault(key, {
                 'device': device,
                 'hostname': device.hostname,
-                'last_activity': activity['created_at'],
+                'time_label': time_label,
+                'timestamp': timestamp,
                 'activities_by_type': defaultdict(list),
             })
+            
+            # Update timestamp if this activity is more recent (shouldn't happen with same key)
+            if timestamp > entry['timestamp']:
+                entry['timestamp'] = timestamp
+            
+            # Add activity to the appropriate type list
+            entry['activities_by_type'][change_type].append(activity)
 
-            if activity['created_at'] > device_group['last_activity']:
-                device_group['last_activity'] = activity['created_at']
-
-            device_group['activities_by_type'][change_type].append(activity)
-
-        grouped_activities = sorted(grouped_map.values(), key=lambda entry: entry['last_activity'], reverse=True)
+        # Convert to list and sort by timestamp (most recent first)
+        grouped_activities = sorted(
+            grouped_map.values(),
+            key=lambda entry: entry['timestamp'],
+            reverse=True
+        )
+        
+        # Process each device+time entry
         for entry in grouped_activities:
+            # Build type blocks for this entry
             type_blocks = []
             for change_type in ['changed', 'added', 'removed', 'other']:
                 change_list = entry['activities_by_type'].get(change_type, [])
@@ -1113,7 +1165,15 @@ def activity(request):
                         'activities': change_list,
                         'hidden_count': max(len(change_list) - preview_limit, 0),
                     })
+            
             entry['type_blocks'] = type_blocks
+            
+            # Calculate summary badges for header
+            entry['summary_badges'] = [
+                {'type': change_type, 'count': len(entry['activities_by_type'].get(change_type, []))}
+                for change_type in ['changed', 'added', 'removed', 'other']
+                if entry['activities_by_type'].get(change_type)
+            ]
 
     return render(request, 'activity.html', {
         'activities': activities,

@@ -206,9 +206,89 @@ class TestActivityView:
         assert response.status_code == 200
         grouped = response.context['grouped_activities']
         assert grouped
-        first_host = grouped[0]
-        added_block = next(block for block in first_host['type_blocks'] if block['type'] == 'added')
+        first_entry = grouped[0]
+        added_block = next(block for block in first_entry['type_blocks'] if block['type'] == 'added')
         assert added_block['count'] == 4
+
+    def test_activity_view_groups_events_by_time(
+        self, test_user, test_device, monkeypatch
+    ):
+        """Test that activities from different time periods create separate top-level entries."""
+        client = Client()
+        client.force_login(test_user)
+
+        # Create diff reports at different times
+        recent_diff = DiffReport.objects.create(device=test_device, diff_report="recent diff")
+        older_diff = DiffReport.objects.create(device=test_device, diff_report="older diff")
+
+        # Set older diff to 3 days ago
+        DiffReport.objects.filter(id=older_diff.id).update(
+            created_at=timezone.now() - timedelta(days=3)
+        )
+
+        def fake_analyze(self, ignore_keys):
+            return {
+                'added': {
+                    'nft_version': ['1.0.0'],
+                },
+                'removed': {},
+                'changed': []
+            }
+
+        monkeypatch.setattr(LynisReport.Diff, 'analyze', fake_analyze)
+
+        response = client.get(reverse('activity'))
+        assert response.status_code == 200
+
+        grouped = response.context['grouped_activities']
+        # Should have at least 2 entries (one for each time period)
+        assert len(grouped) >= 2
+        # Most recent should be first
+        assert grouped[0]['timestamp'] > grouped[1]['timestamp']
+        # Both should be for the same device
+        assert grouped[0]['device'].id == grouped[1]['device'].id
+        # But different time labels
+        assert grouped[0]['time_label'] != grouped[1]['time_label']
+
+    def test_activity_view_creates_separate_cards_for_same_host_different_timestamps(
+        self, test_user, test_device, monkeypatch
+    ):
+        """Test that activities from same host but different timestamps create separate cards."""
+        client = Client()
+        client.force_login(test_user)
+
+        # Create diff reports at different times on the same day
+        diff1 = DiffReport.objects.create(device=test_device, diff_report="diff1")
+        diff2 = DiffReport.objects.create(device=test_device, diff_report="diff2")
+
+        # Set diff2 to 2 hours after diff1
+        DiffReport.objects.filter(id=diff2.id).update(
+            created_at=diff1.created_at + timedelta(hours=2)
+        )
+
+        def fake_analyze(self, ignore_keys):
+            return {
+                'added': {
+                    'nft_version': ['1.0.0'],
+                },
+                'removed': {},
+                'changed': []
+            }
+
+        monkeypatch.setattr(LynisReport.Diff, 'analyze', fake_analyze)
+
+        response = client.get(reverse('activity'))
+        assert response.status_code == 200
+
+        grouped = response.context['grouped_activities']
+        # Should have 2 separate entries even though same device and same day
+        assert len(grouped) == 2
+        # Most recent should be first
+        assert grouped[0]['timestamp'] > grouped[1]['timestamp']
+        # Both should be for the same device
+        assert grouped[0]['device'].id == grouped[1]['device'].id
+        # But different timestamps
+        assert grouped[0]['timestamp'] != grouped[1]['timestamp']
 
 
 class TestActivityFilters:

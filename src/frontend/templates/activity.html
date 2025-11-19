@@ -200,26 +200,28 @@
         </div>
     {% else %}
     <div id="activity-accordion" class="space-y-4">
-        {% for host in grouped_activities %}
+        {% for entry in grouped_activities %}
         <div class="activity-host-card" data-host-card>
-            <button class="activity-host-header" data-host-toggle="host-panel-{{ host.device.id }}">
+            <button class="activity-host-header" data-host-toggle="host-panel-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}">
                 <div>
-                    <p class="text-lg font-semibold text-gray-900">{{ host.hostname }}</p>
-                    <p class="text-sm text-gray-500">Last update {{ host.last_activity|timesince }} ago</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ entry.hostname }}</p>
+                    <p class="text-sm text-gray-500">{{ entry.time_label }} · {{ entry.timestamp|timesince }} ago</p>
+                    {% if entry.summary_badges %}
                     <div class="flex flex-wrap gap-2 mt-2">
-                        {% for block in host.type_blocks %}
-                        <span class="activity-pill activity-pill--{{ block.type }}">
-                            {{ block.type|capfirst }} · {{ block.count }}
+                        {% for badge in entry.summary_badges %}
+                        <span class="activity-pill activity-pill--{{ badge.type }}">
+                            {{ badge.type|capfirst }} · {{ badge.count }}
                         </span>
                         {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
                 <svg class="w-5 h-5 text-gray-500 transition-transform" data-chevron viewBox="0 0 20 20" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
                 </svg>
             </button>
-            <div class="activity-host-panel hidden" id="host-panel-{{ host.device.id }}">
-                {% for block in host.type_blocks %}
+            <div class="activity-host-panel hidden" id="host-panel-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}">
+                {% for block in entry.type_blocks %}
                 <div class="activity-type-section">
                     <div class="activity-type-header">
                         <div class="activity-type-title">
@@ -229,13 +231,13 @@
                         {% if block.hidden_count > 0 %}
                         <button type="button"
                                 class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-                                data-show-more="type-{{ host.device.id }}-{{ block.type }}"
+                                data-show-more="type-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}-{{ block.type }}"
                                 data-hidden-count="{{ block.hidden_count }}">
                             See {{ block.hidden_count }} more
                         </button>
                         {% endif %}
                     </div>
-                    <div id="type-{{ host.device.id }}-{{ block.type }}">
+                    <div id="type-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}-{{ block.type }}">
                         {% for activity in block.activities %}
                         <div class="activity-entry {% if forloop.counter > preview_limit %}hidden extra-entry{% endif %}">
                             <div class="flex items-center justify-between mb-2">
