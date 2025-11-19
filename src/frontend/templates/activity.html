@@ -193,13 +193,28 @@
             <h1 class="text-3xl font-bold"><a href="{% url 'index' %}">Activity</a></h1>
         </div>
         <div class="flex justify-end">
-            <button onclick="toggleSilenceRulesPanel()" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
-                </svg>
-                Activity Filters
-            </button>
+            <div class="flex items-center space-x-2">
+                <button id="activity-search-toggle" type="button" class="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </button>
+                <div id="activity-search-container" class="flex items-center overflow-hidden transition-all duration-300 ease-out max-w-0 opacity-0">
+                    <input
+                        id="activity-search-input"
+                        type="text"
+                        placeholder="Search activities..."
+                        class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    />
+                </div>
+                <button onclick="toggleSilenceRulesPanel()" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                    </svg>
+                    Activity Filters
+                </button>
+            </div>
         </div>
     </div>
 
@@ -210,7 +225,7 @@
     {% else %}
     <div id="activity-accordion" class="space-y-4">
         {% for entry in grouped_activities %}
-        <div class="activity-host-card" data-host-card>
+        <div class="activity-host-card" data-host-card data-hostname="{{ entry.hostname|lower }}">
             <button class="activity-host-header" data-host-toggle="host-panel-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}">
                 <div>
                     <p class="text-lg font-semibold text-gray-900">{{ entry.hostname }}</p>
@@ -350,6 +365,83 @@
                 }
             });
         });
+
+        // Activity search functionality
+        const activitySearchContainer = document.getElementById('activity-search-container');
+        const activitySearchInput = document.getElementById('activity-search-input');
+        const activityCards = document.querySelectorAll('[data-host-card]');
+
+        function filterActivities(term) {
+            const normalized = term.trim().toLowerCase();
+            
+            if (!normalized) {
+                // Show all cards if search is empty
+                activityCards.forEach(card => {
+                    card.classList.remove('hidden');
+                });
+                return;
+            }
+
+            activityCards.forEach(card => {
+                const hostname = card.getAttribute('data-hostname') || '';
+                let hasMatch = false;
+                
+                // Check if hostname matches
+                if (hostname.includes(normalized)) {
+                    hasMatch = true;
+                }
+                
+                // Get all activity entries within this card
+                const activityEntries = card.querySelectorAll('.activity-entry');
+                
+                // Check each activity entry for matches
+                activityEntries.forEach(entry => {
+                    // Get the key name
+                    const keyElement = entry.querySelector('.font-semibold.text-gray-900');
+                    const key = keyElement ? keyElement.textContent.toLowerCase() : '';
+                    
+                    // Get all text content from the entry (includes values)
+                    const entryText = entry.textContent.toLowerCase();
+                    
+                    // Check if key or any text content contains the search term
+                    if (key.includes(normalized) || entryText.includes(normalized)) {
+                        hasMatch = true;
+                    }
+                });
+                
+                // Show/hide the card based on match
+                card.classList.toggle('hidden', !hasMatch);
+            });
+        }
+
+        // Use event delegation for Firefox compatibility
+        document.addEventListener('click', function(e) {
+            const searchToggle = e.target.closest('#activity-search-toggle');
+
+            if (searchToggle && activitySearchContainer) {
+                const wasOpen = activitySearchContainer.classList.contains('max-w-xs');
+
+                activitySearchContainer.classList.toggle('max-w-xs');
+                activitySearchContainer.classList.toggle('opacity-100');
+
+                if (!wasOpen && activitySearchInput) {
+                    // Wait a bit so the transition starts, then focus
+                    setTimeout(() => activitySearchInput.focus(), 150);
+                } else if (wasOpen) {
+                    // Closing the search panel should clear filters
+                    if (activitySearchInput) {
+                        activitySearchInput.value = '';
+                    }
+                    filterActivities('');
+                }
+            }
+        });
+
+        if (activitySearchInput) {
+            activitySearchInput.addEventListener('input', (event) => {
+                filterActivities(event.target.value);
+            });
+        }
     </script>
     <script src="{% static 'js/silence_rules.js' %}"></script>
 {% endblock %}
