@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 from api.models import Device, FullReport, DiffReport
-from api.utils.lynis_report import LynisReport
 from frontend.templatetags import custom_filters
 from frontend.views import DEVICE_LIST_PAGE_SIZE
 
@@ -188,18 +187,16 @@ class TestActivityView:
         client.force_login(test_user)
 
         # Create at least one diff report to trigger activity generation
-        DiffReport.objects.create(device=test_device, diff_report="dummy diff")
-
-        def fake_analyze(self, ignore_keys):
-            return {
+        DiffReport.objects.create(
+            device=test_device,
+            diff_report={
                 'added': {
                     'nft_version': ['1.0.0', '1.0.1', '1.0.2', '1.0.3']
                 },
                 'removed': {},
                 'changed': []
             }
-
-        monkeypatch.setattr(LynisReport.Diff, 'analyze', fake_analyze)
+        )
 
         response = client.get(reverse('activity'))
 
@@ -218,24 +215,31 @@ class TestActivityView:
         client.force_login(test_user)
 
         # Create diff reports at different times
-        recent_diff = DiffReport.objects.create(device=test_device, diff_report="recent diff")
-        older_diff = DiffReport.objects.create(device=test_device, diff_report="older diff")
-
-        # Set older diff to 3 days ago
-        DiffReport.objects.filter(id=older_diff.id).update(
-            created_at=timezone.now() - timedelta(days=3)
-        )
-
-        def fake_analyze(self, ignore_keys):
-            return {
+        recent_diff = DiffReport.objects.create(
+            device=test_device,
+            diff_report={
                 'added': {
                     'nft_version': ['1.0.0'],
                 },
                 'removed': {},
                 'changed': []
             }
+        )
+        older_diff = DiffReport.objects.create(
+            device=test_device,
+            diff_report={
+                'added': {
+                    'nft_version': ['1.0.0'],
+                },
+                'removed': {},
+                'changed': []
+            }
+        )
 
-        monkeypatch.setattr(LynisReport.Diff, 'analyze', fake_analyze)
+        # Set older diff to 3 days ago
+        DiffReport.objects.filter(id=older_diff.id).update(
+            created_at=timezone.now() - timedelta(days=3)
+        )
 
         response = client.get(reverse('activity'))
         assert response.status_code == 200
@@ -258,24 +262,31 @@ class TestActivityView:
         client.force_login(test_user)
 
         # Create diff reports at different times on the same day
-        diff1 = DiffReport.objects.create(device=test_device, diff_report="diff1")
-        diff2 = DiffReport.objects.create(device=test_device, diff_report="diff2")
-
-        # Set diff2 to 2 hours after diff1
-        DiffReport.objects.filter(id=diff2.id).update(
-            created_at=diff1.created_at + timedelta(hours=2)
-        )
-
-        def fake_analyze(self, ignore_keys):
-            return {
+        diff1 = DiffReport.objects.create(
+            device=test_device,
+            diff_report={
                 'added': {
                     'nft_version': ['1.0.0'],
                 },
                 'removed': {},
                 'changed': []
             }
+        )
+        diff2 = DiffReport.objects.create(
+            device=test_device,
+            diff_report={
+                'added': {
+                    'nft_version': ['1.0.0'],
+                },
+                'removed': {},
+                'changed': []
+            }
+        )
 
-        monkeypatch.setattr(LynisReport.Diff, 'analyze', fake_analyze)
+        # Set diff2 to 2 hours after diff1
+        DiffReport.objects.filter(id=diff2.id).update(
+            created_at=diff1.created_at + timedelta(hours=2)
+        )
 
         response = client.get(reverse('activity'))
         assert response.status_code == 200

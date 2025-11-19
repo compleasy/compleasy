@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django.db import DatabaseError
-from .models import LicenseKey, Device, FullReport, DiffReport
+from .models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern
 from .forms import ReportUploadForm
 from api.utils.lynis_report import LynisReport
 from api.utils.error_responses import internal_error
@@ -79,15 +79,18 @@ def upload_report(request):
             if latest_full_report:
                 # Generate the diff and save it
                 try:
-                    latest_full_report = LynisReport(latest_full_report.full_report)
-                    diff = latest_full_report.diff(report_data)
-                    DiffReport.objects.create(device=device, diff_report=diff)
+                    latest_lynis = LynisReport(latest_full_report.full_report)
+                    # Get ignore patterns for device's organization
+                    org = device.licensekey.organization
+                    ignore_keys = list(ActivityIgnorePattern.objects.filter(
+                        organization=org, is_active=True
+                    ).values_list('pattern', flat=True)) if org else []
+                    
+                    # Generate structured diff
+                    diff_data = latest_lynis.compare_reports(report_data, ignore_keys)
+                    DiffReport.objects.create(device=device, diff_report=diff_data)
                     logging.info(f'Diff created for device {post_hostid}')
-
-                    # Analyze the diff (debugging purposes)
-                    lynis_diff = LynisReport.Diff(diff)
-                    changed_items = lynis_diff.analyze()
-                    logging.debug('Changed items: %s', changed_items)
+                    logging.debug('Changed items: %s', diff_data)
                 except DatabaseError as e:
                     logging.error(f'Database error creating diff report: {e}')
                     return internal_error('Database error while creating diff report')

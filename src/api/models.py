@@ -73,8 +73,24 @@ class FullReport(models.Model):
 
 class DiffReport(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
-    diff_report = models.TextField()
+    diff_report = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class ActivityIgnorePattern(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    pattern = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = [['organization', 'pattern']]
+        indexes = [
+            models.Index(fields=['organization', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.organization.name}: {self.pattern}"
 
 class PolicyRule(models.Model):
     name = models.CharField(max_length=255)

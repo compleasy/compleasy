@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import LicenseKey, Device, FullReport, DiffReport, PolicyRule, PolicyRuleset, Organization
+import json
+from .models import LicenseKey, Device, FullReport, DiffReport, PolicyRule, PolicyRuleset, Organization, ActivityIgnorePattern
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
@@ -94,8 +95,12 @@ class DiffReportAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     
     def diff_preview(self, obj):
-        preview = obj.diff_report[:100] + '...' if len(obj.diff_report) > 100 else obj.diff_report
-        return preview
+        if isinstance(obj.diff_report, dict):
+            preview = json.dumps(obj.diff_report, indent=2)
+            preview = preview[:100] + '...' if len(preview) > 100 else preview
+        else:
+            preview = str(obj.diff_report)[:100] + '...' if len(str(obj.diff_report)) > 100 else str(obj.diff_report)
+        return format_html('<pre style="white-space: pre-wrap;">{}</pre>', preview)
     diff_preview.short_description = 'Preview'
 
 @admin.register(PolicyRule)
@@ -163,3 +168,21 @@ class PolicyRulesetAdmin(admin.ModelAdmin):
     def device_count(self, obj):
         return obj.devices.count()
     device_count.short_description = 'Devices'
+
+@admin.register(ActivityIgnorePattern)
+class ActivityIgnorePatternAdmin(admin.ModelAdmin):
+    list_display = ('pattern', 'organization', 'is_active', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'organization', 'created_at', 'updated_at')
+    search_fields = ('pattern', 'organization__name')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        (None, {
+            'fields': ('organization', 'pattern', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

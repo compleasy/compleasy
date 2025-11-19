@@ -1,5 +1,4 @@
 import logging
-import difflib
 from datetime import datetime
 from typing import Dict, List, Tuple, Any
 
@@ -80,113 +79,6 @@ class LynisReport:
             return self.value.get()
 
 
-    class Diff:
-        '''
-        Class to represent a diff between two Lynis reports
-        '''
-        def __init__(self, diff):
-            self.diff = diff
-            self.added, self.removed = self._parse_diff()
-
-            self.added = self._parse_report(self.added)
-            self.removed = self._parse_report(self.removed)
-
-        def _parse_diff(self) -> Tuple[List[str], List[str]]:
-            '''
-            Parse the diff and return the changes as added and removed
-            :return: dict
-            '''
-            added = []
-            removed = []
-            diff_lines = self.diff.splitlines(keepends=True)
-            for line in diff_lines:
-                if line.startswith('+++') or line.startswith('@@') or line.startswith('---'):
-                    continue
-                if line.startswith('+'):
-                    added.append(line[1:])
-                elif line.startswith('-'):
-                    removed.append(line[1:])
-            return added, removed
-        
-        def _parse_report(self, report: List) -> Dict[str, Any]:
-            """
-            Parse the report. Return a dictionary with the parsed keys
-            :param report: List of lines
-            :return: dict
-            """
-            parsed_keys = {}
-            
-            for line in report:
-                if not line or line.startswith('#') or '=' not in line:
-                    continue
-                
-                key, value = line.split('=', 1)
-                # Parse the value using the LynisData class
-                value = value.strip()
-                value = LynisReport.LynisData(value).get()
-                
-                # Check if the key indicates a list type (contains '[]')
-                if '[]' in key:
-                    base_key = key.replace('[]', '')
-                    if base_key not in parsed_keys:
-                        parsed_keys[base_key] = []
-                    parsed_keys[base_key].append(value)
-                else:
-                    # Convert numeric strings to integers for proper JMESPath comparisons
-                    if isinstance(value, str) and value.isdigit():
-                        value = int(value)
-                    parsed_keys[key] = value
-            
-            return parsed_keys
-        
-        
-        def analyze(self, ignore_keys: List[str] = []) -> Dict[str, Any]:
-            '''
-            This function will analyze the diff and categorize the changes
-            in the following categories: added, removed, changed
-
-            :param ignore_keys: List of keys to ignore
-            :return: dict with changes categorized
-            '''
-            changes = {
-                'added': self.added.copy(),
-                'removed': self.removed.copy(),
-                'changed': [],
-            }
-
-            logging.debug('Analyzing changes...')
-            logging.debug('Added keys: %s', self.added)
-            logging.debug('Removed keys: %s', self.removed)
-
-            # Check if the same key has been added and removed
-            # If so, compare the values and move the key to the changed list
-            for key in self.added:
-                if key in ignore_keys:
-                    del changes['added'][key]
-                    continue
-            
-                if not isinstance(self.added[key], list):
-                    # If the key is not a list, check if the same key has been removed
-                    if key in self.removed:
-                        # Then compare the values
-                        old_value = self.removed[key]
-                        new_value = self.added[key]
-                        if old_value != new_value:
-                            # Move the key to the changed list
-                            changes['changed'].append({key: {'old': old_value, 'new': new_value}})
-                            # And remove it from the added and removed lists
-                            del changes['added'][key]
-                            del changes['removed'][key]
-
-            for key in self.removed:
-                if key in ignore_keys:
-                    del changes['removed'][key]
-                    continue
-                    
-            logging.debug('Analyzed changes: %s', changes)
-            return changes
-
-
     def __init__(self, full_report: str):
         self.report = full_report
         self.keys = {}
@@ -198,21 +90,38 @@ class LynisReport:
         except Exception as e:
             logging.error(f'Error initializing LynisReport: {e}')
     
-    def diff(self, new_full_report: str) -> str:
+    def compare_reports(self, new_report_str: str, ignore_keys: List[str] = []) -> Dict[str, Any]:
         """
-        Generate a diff between two Lynis reports
-        :param new: LynisReport object
-        :return: diff string
+        Compare current report with new report, return structured changes.
+        
+        :param new_report_str: Raw report string to compare against
+        :param ignore_keys: List of keys to ignore in comparison
+        :return: Dict with 'added', 'removed', and 'changed' keys
         """
-        old_report = self.get_full_report()
-        new_report = new_full_report
-
-        diff = difflib.unified_diff(
-            old_report.splitlines(keepends=True), 
-            new_report.splitlines(keepends=True), 
-            lineterm=''
-        )
-        return ''.join(diff)
+        new_report = LynisReport(new_report_str)
+        old_keys = self.keys
+        new_keys = new_report.keys
+        
+        changes = {'added': {}, 'removed': {}, 'changed': []}
+        
+        all_keys = set(old_keys.keys()) | set(new_keys.keys())
+        
+        for key in all_keys:
+            if key in ignore_keys:
+                continue
+                
+            old_val = old_keys.get(key)
+            new_val = new_keys.get(key)
+            
+            if old_val is None and new_val is not None:
+                changes['added'][key] = new_val
+            elif old_val is not None and new_val is None:
+                changes['removed'][key] = old_val
+            elif old_val != new_val:
+                changes['changed'].append({key: {'old': old_val, 'new': new_val}})
+        
+        logging.debug('Compared reports: %s changes found', len(changes['added']) + len(changes['removed']) + len(changes['changed']))
+        return changes
     
     def apply_diff(self, diff: str) -> str:
         """

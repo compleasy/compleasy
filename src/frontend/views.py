@@ -371,7 +371,10 @@ def device_report_changelog(request, device_id):
     changelog = DiffReport.objects.filter(device=device).order_by('-created_at')
     if not changelog:
         return HttpResponse('No changelog found for the device', status=404)
-    return HttpResponse(changelog.values_list('diff_report', flat=True), content_type='text/plain')
+    import json
+    # Return JSON array of diff reports
+    diff_reports = [report.diff_report for report in changelog]
+    return HttpResponse(json.dumps(diff_reports, indent=2), content_type='application/json')
 
 def enroll_sh(request):
     """Enroll view: generate enroll bash script to install the agent on a new device"""
@@ -1013,41 +1016,17 @@ def activity(request):
         if len(activities) >= max_activities:
             break
         
-        diff = diff_report.diff_report
-
-        # Ignore some noisy or irrelevant keys
-        ignore_keys = [
-            'report_datetime_start',
-            'report_datetime_end',
-            'slow_test',
-            'uptime_in_seconds',
-            'uptime_in_days',
-            'deleted_file',
-            'lynis_timer_next_trigger',
-            'clamav_last_update',
-            'tests_executed',
-            'tests_skipped',
-            'installed_packages_array',
-            'vulnerable_package',
-            'suggestion',
-        ]
-
-        lynis_diff = LynisReport.Diff(diff)
-        # Generate a LynisReport object with the diff
-        diff_analysis = lynis_diff.analyze(ignore_keys)
-
-        # Check if 'added' and 'removed' keys are in the diff_analysis
-        if 'added' in diff_analysis and 'removed' in diff_analysis:
+        diff_data = diff_report.diff_report  # Already a dict from JSONField
+        
+        if 'added' in diff_data and 'removed' in diff_data:
             for change_type in ['added', 'removed']:
                 logging.debug('Change type: %s', change_type)
-                for key in diff_analysis[change_type]:
+                for key, values in diff_data[change_type].items():
                     logging.debug('Added/removed Key: %s', key)
-                    values = diff_analysis[change_type][key]
                     # Normalize to list: if it's a string, wrap it in a list
                     if not isinstance(values, list):
                         values = [values]
                     # For every value in the list of values, append a new activity
-
                     for value in values:
                         activities.append({
                             'device': diff_report.device,
@@ -1056,9 +1035,9 @@ def activity(request):
                             'value': value,
                             'type': change_type
                         })
-
-        if 'changed' in diff_analysis:
-            for change in diff_analysis['changed']:
+        
+        if 'changed' in diff_data:
+            for change in diff_data['changed']:
                 # change = {'slow_test': {'old': [['DEB-0001', '17.179738'], ['PKGS-7392', '22.329404'], ['CRYP-7902', '28.998732']], 'new': [['DEB-0001', '19.197790'], ['PKGS-7345', '11.064739'], ['PKGS-7392', '17.606281'], ['CRYP-7902', '31.913178']]}}
                 key = list(change.keys())[0]
                 logging.debug('Changed key: %s', key)
