@@ -1045,15 +1045,52 @@ def activity(request):
                 
                 old_value = change[key]['old']
                 new_value = change[key]['new']
+                
+                # Check if both values are lists/arrays
+                is_array = isinstance(old_value, list) and isinstance(new_value, list)
+                array_added = []
+                array_removed = []
+                
+                if is_array:
+                    # Convert lists to sets for comparison (handling nested lists/strings)
+                    # If items are lists themselves, convert to tuples for hashing
+                    def normalize_for_set(item):
+                        if isinstance(item, list):
+                            return tuple(item)
+                        return item
+                    
+                    def format_item_for_display(item):
+                        """Format an item for display in the template."""
+                        if isinstance(item, list):
+                            # For lists, show the first element (usually the main identifier)
+                            # e.g., ['package-name', 'version'] -> 'package-name'
+                            return str(item[0]) if item else str(item)
+                        return str(item)
+                    
+                    old_set = set(normalize_for_set(item) for item in old_value)
+                    new_set = set(normalize_for_set(item) for item in new_value)
+                    
+                    # Find added and removed items
+                    added_items = sorted(list(new_set - old_set), key=str)
+                    removed_items = sorted(list(old_set - new_set), key=str)
+                    
+                    # Format items for display
+                    array_added = [format_item_for_display(item) for item in added_items]
+                    array_removed = [format_item_for_display(item) for item in removed_items]
 
-                activities.append({
+                activity_data = {
                     'device': diff_report.device,
                     'created_at': diff_report.created_at,
                     'key': key,
                     'old_value': old_value,
                     'new_value': new_value,
-                    'type': 'changed'
-                })
+                    'type': 'changed',
+                    'is_array': is_array,
+                    'array_added': array_added,
+                    'array_removed': array_removed,
+                }
+                
+                activities.append(activity_data)
 
         # Order activities by date (most recent first) and type (added, removed, changed)
         activities = sorted(activities, key=lambda x: (x['created_at'], x['type']), reverse=True)
