@@ -2,6 +2,88 @@
 {% load humanize %}
 {% load custom_filters %}
 
+{% block head %}
+    {{ block.super }}
+    <style>
+        .activity-table .activity-pill {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            text-transform: capitalize;
+        }
+
+        .activity-pill--added {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .activity-pill--removed {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .activity-pill--changed {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .activity-pill--other {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .activity-cell-muted {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .activity-key {
+            font-weight: 600;
+            margin-right: 0.25rem;
+        }
+
+        .activity-value {
+            font-weight: 500;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        .now-cell {
+            transition: background-color 150ms ease;
+        }
+
+        .now-cell--up {
+            background-color: #ecfdf5;
+            color: #065f46;
+        }
+
+        .now-cell--down {
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .now-cell--added {
+            background-color: #e0f2fe;
+        }
+
+        .now-cell--removed {
+            background-color: #fef2f2;
+        }
+
+        .activity-delta {
+            font-weight: 700;
+            margin-right: 0.25rem;
+        }
+
+        .activity-row:hover {
+            background-color: #f9fafb;
+        }
+    </style>
+{% endblock %}
+
 {% block title %}Activity{% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -9,7 +91,7 @@
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
 
         <div class="overflow-x-auto">
-            <table class="min-w-full leading-normal">
+            <table class="min-w-full leading-normal activity-table">
                 <thead>
                     <tr>
                         <th
@@ -32,36 +114,69 @@
                 </thead>
                 <tbody>
                     {% for activity in activities %}
-                    <tr>
+                    {% with activity_type=activity.type|default:'other' %}
+                    <tr class="activity-row">
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <p class="text-gray-900 whitespace-no-wrap">{{ activity.device.hostname }}</p>
+                            <div class="flex items-center space-x-2">
+                                <p class="text-gray-900 whitespace-no-wrap">{{ activity.device.hostname }}</p>
+                                <span class="activity-pill activity-pill--{{ activity_type }}">
+                                    {{ activity_type|capfirst }}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <p class="text-gray-900 whitespace-no-wrap">{{ activity.created_at|timesince }} ago</p>
                         </td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            {% if activity.type == 'changed' %}
-                            <p class="text-gray-900 whitespace-no-wrap"><span class="font-semibold">
-                                    {{ activity.key}}:</span> {{ activity.old_value }}</p>
-                            {% elif activity.type == 'removed' %}
-                            <p class="text-gray-900 whitespace-no-wrap"><span class="font-semibold">
-                                    {{ activity.key}}:</span> {{ activity.value }}</p>
+                            {% if activity_type == 'changed' %}
+                            <p class="text-gray-900 whitespace-no-wrap">
+                                <span class="activity-key">{{ activity.key }}:</span>
+                                <span class="activity-value">{{ activity.old_value }}</span>
+                            </p>
+                            {% elif activity_type == 'removed' %}
+                            <p class="text-gray-900 whitespace-no-wrap">
+                                <span class="activity-key">{{ activity.key }}:</span>
+                                <span class="activity-value">{{ activity.value }}</span>
+                            </p>
                             {% else %}
-                            <p class="text-gray-500 whitespace-no-wrap">-</p>
+                            <p class="activity-cell-muted whitespace-no-wrap">Not previously reported</p>
                             {% endif %}
                         </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            {% if activity.type == 'changed' %}
-                            <p class="text-gray-900 whitespace-no-wrap"><span class="font-semibold">
-                                    {{ activity.key}}:</span> {{ activity.new_value }}</p>
-                            {% elif activity.type == 'added' %}
-                            <p class="text-gray-900 whitespace-no-wrap"><span class="font-semibold">
-                                    {{ activity.key}}:</span> {{ activity.value }}</p>
-                            {% else %}
-                            <p class="text-gray-500 whitespace-no-wrap">-</p>
-                            {% endif %}
-                        </td>
+                        {% if activity_type == 'changed' %}
+                            {% with direction=activity.old_value|value_direction:activity.new_value %}
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm now-cell
+                                {% if direction == 'up' %} now-cell--up{% elif direction == 'down' %} now-cell--down{% endif %}">
+                                <p class="whitespace-normal">
+                                    <span class="activity-key">{{ activity.key }}:</span>
+                                    <span class="activity-value">
+                                        {% if direction == 'up' %}
+                                            <span class="activity-delta">+</span>
+                                        {% elif direction == 'down' %}
+                                            <span class="activity-delta">-</span>
+                                        {% endif %}
+                                        {{ activity.new_value }}
+                                    </span>
+                                </p>
+                            </td>
+                            {% endwith %}
+                        {% elif activity_type == 'added' %}
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm now-cell now-cell--added">
+                                <p class="whitespace-normal">
+                                    <span class="activity-key">{{ activity.key }}:</span>
+                                    <span class="activity-value">{{ activity.value }}</span>
+                                </p>
+                            </td>
+                        {% elif activity_type == 'removed' %}
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm now-cell now-cell--removed">
+                                <p class="activity-cell-muted whitespace-no-wrap">Removed</p>
+                            </td>
+                        {% else %}
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <p class="activity-cell-muted whitespace-no-wrap">No data</p>
+                            </td>
+                        {% endif %}
                     </tr>
+                    {% endwith %}
                     {% endfor %}
                 </tbody>
             </table>

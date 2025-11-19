@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django import template
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
@@ -129,3 +131,33 @@ def timesince_simple(value):
         return time_str.split(',')[0].strip()
     except (ValueError, TypeError, AttributeError):
         return ''
+
+
+@register.filter(name='value_direction')
+def value_direction(old_value, new_value):
+    """
+    Determine whether a numeric value increased, decreased, or stayed the same.
+    Returns 'up', 'down', or 'neutral'.
+    """
+    if old_value in (None, '') or new_value in (None, ''):
+        return 'neutral'
+
+    def _to_decimal(value):
+        string_value = str(value).strip()
+        if not string_value:
+            raise InvalidOperation
+        # Remove common thousand separators
+        string_value = string_value.replace(',', '')
+        return Decimal(string_value)
+
+    try:
+        old_dec = _to_decimal(old_value)
+        new_dec = _to_decimal(new_value)
+    except (InvalidOperation, ValueError):
+        return 'neutral'
+
+    if new_dec > old_dec:
+        return 'up'
+    if new_dec < old_dec:
+        return 'down'
+    return 'neutral'
