@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from api.models import Device, FullReport, DiffReport
 from api.utils.lynis_report import LynisReport
+from frontend.templatetags import custom_filters
 from frontend.views import DEVICE_LIST_PAGE_SIZE
 
 
@@ -208,6 +209,19 @@ class TestActivityView:
         first_host = grouped[0]
         added_block = next(block for block in first_host['type_blocks'] if block['type'] == 'added')
         assert added_block['count'] == 4
+
+
+class TestActivityFilters:
+    """Unit tests for custom template filters used in the activity view."""
+
+    def test_value_delta_returns_signed_difference(self):
+        assert custom_filters.value_delta('10', '25') == '+15'
+
+    def test_value_delta_handles_negative_direction(self):
+        assert custom_filters.value_delta('30', '12') == '-18'
+
+    def test_value_delta_non_numeric_returns_empty_string(self):
+        assert custom_filters.value_delta('foo', 'bar') == ''
 
 
 @pytest.mark.django_db

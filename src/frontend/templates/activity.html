@@ -81,6 +81,31 @@
             margin-right: 0.25rem;
         }
 
+        .activity-change-pill {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 9999px;
+            margin-top: 0.35rem;
+        }
+
+        .activity-change-pill--up {
+            background-color: #ecfdf5;
+            color: #047857;
+        }
+
+        .activity-change-pill--down {
+            background-color: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .activity-change-pill--neutral {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
         .activity-host-card {
             border-radius: 0.75rem;
             border: 1px solid #e5e7eb;
@@ -224,17 +249,15 @@
                                     <p class="activity-entry-label">Before</p>
                                     <p class="activity-value">{{ activity.old_value }}</p>
                                 </div>
-                                {% with direction=activity.old_value|value_direction:activity.new_value %}
+                                {% with direction=activity.old_value|value_direction:activity.new_value delta=activity.old_value|value_delta:activity.new_value %}
                                 <div class="now-card {% if direction == 'up' %}now-card--up{% elif direction == 'down' %}now-card--down{% endif %}">
                                     <p class="activity-entry-label text-gray-600">Now</p>
-                                    <p class="activity-value">
-                                        {% if direction == 'up' %}
-                                        <span class="activity-delta">+</span>
-                                        {% elif direction == 'down' %}
-                                        <span class="activity-delta">-</span>
-                                        {% endif %}
-                                        {{ activity.new_value }}
-                                    </p>
+                                    <p class="activity-value">{{ activity.new_value }}</p>
+                                    {% if delta %}
+                                    <span class="activity-change-pill activity-change-pill--{{ direction }}">
+                                        {{ delta }}
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 {% endwith %}
                             </div>
