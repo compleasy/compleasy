@@ -914,8 +914,8 @@ class TestSilenceRules:
         page.goto(f"{live_server_url}/activity/")
         page.wait_for_load_state("networkidle")
         
-        # Click "Configure Silent Events" button
-        page.click('button:has-text("Configure Silent Events")')
+        # Click "Activity Filters" button
+        page.click('button:has-text("Activity Filters")')
         
         # Wait for sidebar to appear
         sidebar = page.locator('#silence-rules-panel')
@@ -944,8 +944,8 @@ class TestSilenceRules:
         page.goto(f"{live_server_url}/activity/")
         page.wait_for_load_state("networkidle")
         
-        # Click "Configure Silent Events" button
-        page.click('button:has-text("Configure Silent Events")')
+        # Click "Activity Filters" button
+        page.click('button:has-text("Activity Filters")')
         
         # Wait for sidebar
         sidebar = page.locator('#silence-rules-panel')
@@ -1000,8 +1000,8 @@ class TestSilenceRules:
         page.goto(f"{live_server_url}/activity/")
         page.wait_for_load_state("networkidle")
         
-        # Click "Configure Silent Events" button
-        page.click('button:has-text("Configure Silent Events")')
+        # Click "Activity Filters" button
+        page.click('button:has-text("Activity Filters")')
         
         # Wait for sidebar
         sidebar = page.locator('#silence-rules-panel')
@@ -1062,8 +1062,8 @@ class TestSilenceRules:
         page.goto(f"{live_server_url}/activity/")
         page.wait_for_load_state("networkidle")
         
-        # Click "Configure Silent Events" button
-        page.click('button:has-text("Configure Silent Events")')
+        # Click "Activity Filters" button
+        page.click('button:has-text("Activity Filters")')
         
         # Wait for sidebar
         sidebar = page.locator('#silence-rules-panel')
