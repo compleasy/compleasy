@@ -623,17 +623,6 @@ def ruleset_update(request, ruleset_id):
     """Update a policy ruleset (AJAX + fallback)"""
     ruleset = get_object_or_404(PolicyRuleset, id=ruleset_id)
     
-    # Prevent editing system rulesets
-    if ruleset.is_system:
-        error_msg = 'System rulesets cannot be edited'
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': False,
-                'errors': {'__all__': [error_msg]}
-            }, status=403)
-        messages.error(request, error_msg)
-        return redirect('policy_list')
-    
     if request.method == 'POST':
         # Check if this is a rule selection form submission (only has rules, no name/description)
         selected_rule_ids = request.POST.getlist('rules')
@@ -641,11 +630,23 @@ def ruleset_update(request, ruleset_id):
         has_description = 'description' in request.POST
         
         # If it's only rule selection (no name/description), update rules and return
+        # Allow rule selection for system rulesets
         if selected_rule_ids and not has_name and not has_description:
             # Update rules assignment
             selected_rules = PolicyRule.objects.filter(id__in=selected_rule_ids)
             ruleset.rules.set(selected_rules)
             ruleset.save()
+            return redirect('policy_list')
+        
+        # Prevent editing name/description of system rulesets
+        if ruleset.is_system and (has_name or has_description):
+            error_msg = 'System rulesets cannot be edited'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': {'__all__': [error_msg]}
+                }, status=403)
+            messages.error(request, error_msg)
             return redirect('policy_list')
         
         # Otherwise, update ruleset details (from edit sidebar)
