@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django.db import DatabaseError
-from .models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern
+from .models import LicenseKey, Device, FullReport, DiffReport
 from .forms import ReportUploadForm
 from api.utils.lynis_report import LynisReport
 from api.utils.error_responses import internal_error
@@ -80,14 +80,12 @@ def upload_report(request):
                 # Generate the diff and save it
                 try:
                     latest_lynis = LynisReport(latest_full_report.full_report)
-                    # Get ignore patterns for device's organization
-                    org = device.licensekey.organization
-                    ignore_keys = list(ActivityIgnorePattern.objects.filter(
-                        organization=org, is_active=True
-                    ).values_list('key_pattern', flat=True)) if org else []
+                    # Don't filter at diff creation time - filter only at display time
+                    # This ensures all activities are stored and can be shown/hidden based on current rule state
+                    # Filtering happens in the activity view (frontend/views.py) based on active silence rules
                     
-                    # Generate structured diff
-                    diff_data = latest_lynis.compare_reports(report_data, ignore_keys)
+                    # Generate structured diff (without ignore_keys - store all activities)
+                    diff_data = latest_lynis.compare_reports(report_data, [])
                     DiffReport.objects.create(device=device, diff_report=diff_data)
                     logging.info(f'Diff created for device {post_hostid}')
                     logging.debug('Changed items: %s', diff_data)
