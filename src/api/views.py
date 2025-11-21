@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django.db import DatabaseError
 from django.conf import settings
-from .models import LicenseKey, Device, FullReport, DiffReport
+from .models import LicenseKey, Device, FullReport, DiffReport, DeviceEvent
 from .forms import ReportUploadForm
 from api.utils.lynis_report import LynisReport
 from api.utils.error_responses import internal_error
@@ -69,6 +69,7 @@ def upload_report(request):
                     
                     # Create the new device
                     device = Device.objects.create(hostid=post_hostid, hostid2=post_hostid2, licensekey=licensekey)
+                    DeviceEvent.objects.create(device=device, event_type='enrolled')
             except DatabaseError as e:
                 logging.error(f'Database error creating/retrieving device: {e}')
                 return internal_error('Database error while processing device')

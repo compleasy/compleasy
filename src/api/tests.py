@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-from api.models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern, Organization
+from api.models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern, Organization, DeviceEvent
 from api.utils.lynis_report import LynisReport
 import fnmatch
 
@@ -787,6 +787,52 @@ class TestLicenseCapacityEnrollment:
         # Should succeed
         assert response.status_code == 200
         assert response.content == b'OK'
+
+    def test_upload_report_creates_enrollment_event(self, test_license_key, sample_lynis_report):
+        """Ensure a new device upload generates a single enrollment event."""
+        client = Client()
+        url = reverse('upload_report')
+
+        response = client.post(url, {
+            'licensekey': test_license_key.licensekey,
+            'hostid': 'enroll-host-1',
+            'hostid2': 'enroll-host-2',
+            'data': sample_lynis_report
+        })
+
+        assert response.status_code == 200
+
+        device = Device.objects.get(hostid='enroll-host-1', hostid2='enroll-host-2')
+        enrollment_events = DeviceEvent.objects.filter(device=device, event_type='enrolled')
+        assert enrollment_events.count() == 1
+        assert enrollment_events.first().created_at is not None
+
+    def test_upload_report_existing_device_no_duplicate_enrollment(self, test_license_key, sample_lynis_report, sample_lynis_report_updated):
+        """Ensure subsequent uploads for the same device do not create extra enrollment events."""
+        client = Client()
+        url = reverse('upload_report')
+
+        # First upload creates the device and enrollment event
+        first_response = client.post(url, {
+            'licensekey': test_license_key.licensekey,
+            'hostid': 'existing-enroll-host',
+            'hostid2': 'existing-enroll-host-2',
+            'data': sample_lynis_report
+        })
+        assert first_response.status_code == 200
+
+        device = Device.objects.get(hostid='existing-enroll-host', hostid2='existing-enroll-host-2')
+        assert DeviceEvent.objects.filter(device=device, event_type='enrolled').count() == 1
+
+        # Second upload should not create additional enrollment events
+        second_response = client.post(url, {
+            'licensekey': test_license_key.licensekey,
+            'hostid': 'existing-enroll-host',
+            'hostid2': 'existing-enroll-host-2',
+            'data': sample_lynis_report_updated
+        })
+        assert second_response.status_code == 200
+        assert DeviceEvent.objects.filter(device=device, event_type='enrolled').count() == 1
 
 
 class TestLynisReportCustomVariables:

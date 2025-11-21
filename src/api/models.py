@@ -76,6 +76,26 @@ class DiffReport(models.Model):
     diff_report = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class DeviceEvent(models.Model):
+    EVENT_TYPE_CHOICES = [
+        ('enrolled', 'Device Enrolled'),
+    ]
+
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['device', '-created_at']),
+            models.Index(fields=['event_type', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.device.hostname or self.device.hostid} - {self.get_event_type_display()}"
+
 class ActivityIgnorePattern(models.Model):
     EVENT_TYPE_CHOICES = [
         ('all', 'All'),

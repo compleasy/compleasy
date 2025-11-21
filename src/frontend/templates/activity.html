@@ -31,6 +31,11 @@
             color: #92400e;
         }
 
+        .activity-pill--enrollment {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
         .activity-pill--other {
             background-color: #e5e7eb;
             color: #374151;
@@ -250,7 +255,13 @@
                     <div class="activity-type-header">
                         <div class="activity-type-title">
                             <span class="activity-pill activity-pill--{{ block.type }}">{{ block.type|capfirst }}</span>
-                            <small>{{ block.count }} change{% if block.count != 1 %}s{% endif %}</small>
+                            <small>
+                                {% if block.type == 'enrollment' %}
+                                    {{ block.count }} enrollment{% if block.count != 1 %}s{% endif %}
+                                {% else %}
+                                    {{ block.count }} change{% if block.count != 1 %}s{% endif %}
+                                {% endif %}
+                            </small>
                         </div>
                         {% if block.hidden_count > 0 %}
                         <button type="button"
@@ -263,90 +274,105 @@
                     </div>
                     <div id="type-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}-{{ block.type }}">
                         {% for activity in block.activities %}
-                        <div class="activity-entry {% if forloop.counter > preview_limit %}hidden extra-entry{% endif %}">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="font-semibold text-gray-900">{{ activity.key }}</div>
-                                <div class="text-xs text-gray-500">{{ activity.created_at|timesince }} ago</div>
+                        {% if block.type == 'enrollment' %}
+                            <div class="activity-entry {% if forloop.counter > preview_limit %}hidden extra-entry{% endif %}">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span class="font-semibold text-gray-900">Device enrolled</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ activity.created_at|timesince }} ago</div>
+                                </div>
+                                <p class="text-sm text-gray-600">New device registered with TrikuSec</p>
                             </div>
+                        {% else %}
+                            <div class="activity-entry {% if forloop.counter > preview_limit %}hidden extra-entry{% endif %}">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="font-semibold text-gray-900">{{ activity.key }}</div>
+                                    <div class="text-xs text-gray-500">{{ activity.created_at|timesince }} ago</div>
+                                </div>
 
-                            {% if block.type == 'changed' %}
-                            {% if activity.is_array %}
-                            {# Display array differences #}
-                            <div class="space-y-3">
-                                {% if activity.array_removed %}
-                                <div>
-                                    <p class="activity-entry-label">Removed ({{ activity.array_removed|length }})</p>
-                                    <div class="flex flex-wrap gap-1 mt-1">
-                                        {% for item in activity.array_removed %}
-                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-                                            {{ item }}
-                                        </span>
-                                        {% endfor %}
+                                {% if block.type == 'changed' %}
+                                {% if activity.is_array %}
+                                {# Display array differences #}
+                                <div class="space-y-3">
+                                    {% if activity.array_removed %}
+                                    <div>
+                                        <p class="activity-entry-label">Removed ({{ activity.array_removed|length }})</p>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            {% for item in activity.array_removed %}
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                {{ item }}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
                                     </div>
-                                </div>
-                                {% endif %}
-                                {% if activity.array_added %}
-                                <div>
-                                    <p class="activity-entry-label">Added ({{ activity.array_added|length }})</p>
-                                    <div class="flex flex-wrap gap-1 mt-1">
-                                        {% for item in activity.array_added %}
-                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-                                            {{ item }}
-                                        </span>
-                                        {% endfor %}
+                                    {% endif %}
+                                    {% if activity.array_added %}
+                                    <div>
+                                        <p class="activity-entry-label">Added ({{ activity.array_added|length }})</p>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            {% for item in activity.array_added %}
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                {{ item }}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
                                     </div>
-                                </div>
-                                {% endif %}
-                                {% if not activity.array_added and not activity.array_removed %}
-                                <p class="activity-value text-gray-500 italic">No changes detected (items may have been reordered)</p>
-                                {% endif %}
-                            </div>
-                            {% else %}
-                            {# Display regular value change #}
-                            <div class="activity-entry-grid">
-                                <div>
-                                    <p class="activity-entry-label">Before</p>
-                                    <p class="activity-value">{{ activity.old_value }}</p>
-                                </div>
-                                {% with direction=activity.old_value|value_direction:activity.new_value delta=activity.old_value|value_delta:activity.new_value %}
-                                <div class="now-card {% if direction == 'up' %}now-card--up{% elif direction == 'down' %}now-card--down{% endif %}">
-                                    <p class="activity-entry-label text-gray-600">Now</p>
-                                    <p class="activity-value">{{ activity.new_value }}</p>
-                                    {% if delta %}
-                                    <span class="activity-change-pill activity-change-pill--{{ direction }}">
-                                        {{ delta }}
-                                    </span>
+                                    {% endif %}
+                                    {% if not activity.array_added and not activity.array_removed %}
+                                    <p class="activity-value text-gray-500 italic">No changes detected (items may have been reordered)</p>
                                     {% endif %}
                                 </div>
-                                {% endwith %}
+                                {% else %}
+                                {# Display regular value change #}
+                                <div class="activity-entry-grid">
+                                    <div>
+                                        <p class="activity-entry-label">Before</p>
+                                        <p class="activity-value">{{ activity.old_value }}</p>
+                                    </div>
+                                    {% with direction=activity.old_value|value_direction:activity.new_value delta=activity.old_value|value_delta:activity.new_value %}
+                                    <div class="now-card {% if direction == 'up' %}now-card--up{% elif direction == 'down' %}now-card--down{% endif %}">
+                                        <p class="activity-entry-label text-gray-600">Now</p>
+                                        <p class="activity-value">{{ activity.new_value }}</p>
+                                        {% if delta %}
+                                        <span class="activity-change-pill activity-change-pill--{{ direction }}">
+                                            {{ delta }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% endwith %}
+                                </div>
+                                {% endif %}
+                                {% elif block.type == 'added' %}
+                                <div class="activity-entry-grid">
+                                    <div>
+                                        <p class="activity-entry-label">Before</p>
+                                        <p class="activity-cell-muted">Not previously reported</p>
+                                    </div>
+                                    <div class="now-card now-card--added">
+                                        <p class="activity-entry-label">Now</p>
+                                        <p class="activity-value">{{ activity.value }}</p>
+                                    </div>
+                                </div>
+                                {% elif block.type == 'removed' %}
+                                <div class="activity-entry-grid">
+                                    <div>
+                                        <p class="activity-entry-label">Before</p>
+                                        <p class="activity-value">{{ activity.value }}</p>
+                                    </div>
+                                    <div class="now-card now-card--removed">
+                                        <p class="activity-entry-label">Now</p>
+                                        <p class="activity-cell-muted">Removed</p>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <p class="activity-value">{{ activity.value|default:activity.new_value|default:activity.old_value }}</p>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                            {% elif block.type == 'added' %}
-                            <div class="activity-entry-grid">
-                                <div>
-                                    <p class="activity-entry-label">Before</p>
-                                    <p class="activity-cell-muted">Not previously reported</p>
-                                </div>
-                                <div class="now-card now-card--added">
-                                    <p class="activity-entry-label">Now</p>
-                                    <p class="activity-value">{{ activity.value }}</p>
-                                </div>
-                            </div>
-                            {% elif block.type == 'removed' %}
-                            <div class="activity-entry-grid">
-                                <div>
-                                    <p class="activity-entry-label">Before</p>
-                                    <p class="activity-value">{{ activity.value }}</p>
-                                </div>
-                                <div class="now-card now-card--removed">
-                                    <p class="activity-entry-label">Now</p>
-                                    <p class="activity-cell-muted">Removed</p>
-                                </div>
-                            </div>
-                            {% else %}
-                            <p class="activity-value">{{ activity.value|default:activity.new_value|default:activity.old_value }}</p>
-                            {% endif %}
-                        </div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>

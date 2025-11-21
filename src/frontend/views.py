@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, F, Count
 from django.core.paginator import Paginator
 from django.conf import settings
-from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset, Organization, ActivityIgnorePattern
+from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset, Organization, ActivityIgnorePattern, DeviceEvent
 from api.utils.lynis_report import LynisReport
 from api.utils.compliance import check_device_compliance
 from api.utils.license_utils import generate_license_key
@@ -985,9 +985,6 @@ def activity(request):
 
     # Get all diff reports (from most recent to oldest)
     diff_reports = DiffReport.objects.all().order_by('-created_at')
-
-    if not diff_reports:
-        return HttpResponse('No activity found', status=404)
     
     # Let's humanize the diff reports to show them in the template
     for diff_report in diff_reports:
@@ -1113,8 +1110,22 @@ def activity(request):
             
             activities = filtered_activities
     
+    # Merge enrollment events (not affected by silence rules)
+    combined_activities = list(activities)
+    device_events = DeviceEvent.objects.select_related('device').order_by('-created_at')[:max_activities]
+    event_activities = []
+    for event in device_events:
+        event_activities.append({
+            'device': event.device,
+            'created_at': event.created_at,
+            'event_type': event.event_type,
+            'type': 'enrollment',
+            'metadata': event.metadata,
+        })
+    combined_activities.extend(event_activities)
+
     grouped_activities_list = []
-    if activities:
+    if combined_activities:
         from collections import OrderedDict, defaultdict
         from django.utils import timezone
         from datetime import timedelta
@@ -1147,10 +1158,10 @@ def activity(request):
         # Group by device+timestamp combination (each becomes a top-level card)
         # Activities from the same DiffReport share the same timestamp
         grouped_map = OrderedDict()
-        for activity in activities:
+        for activity in combined_activities:
             device = activity['device']
             change_type = activity.get('type', 'other')
-            if change_type not in ['added', 'removed', 'changed']:
+            if change_type not in ['enrollment', 'added', 'removed', 'changed']:
                 change_type = 'other'
             
             timestamp = activity['created_at']
@@ -1191,7 +1202,7 @@ def activity(request):
         for entry in grouped_activities_list:
             # Build type blocks for this entry
             type_blocks = []
-            for change_type in ['changed', 'added', 'removed', 'other']:
+            for change_type in ['enrollment', 'changed', 'added', 'removed', 'other']:
                 change_list = entry['activities_by_type'].get(change_type, [])
                 if change_list:
                     type_blocks.append({
@@ -1206,7 +1217,7 @@ def activity(request):
             # Calculate summary badges for header
             entry['summary_badges'] = [
                 {'type': change_type, 'count': len(entry['activities_by_type'].get(change_type, []))}
-                for change_type in ['changed', 'added', 'removed', 'other']
+                for change_type in ['enrollment', 'changed', 'added', 'removed', 'other']
                 if entry['activities_by_type'].get(change_type)
             ]
         
@@ -1230,7 +1241,7 @@ def activity(request):
         is_paginated = False
 
     return render(request, 'activity.html', {
-        'activities': activities,
+        'activities': combined_activities,
         'grouped_activities': grouped_activities,
         'preview_limit': preview_limit,
         'page_obj': page_obj,
