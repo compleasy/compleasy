@@ -1,7 +1,17 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse
-from api.models import Device, PolicyRuleset, PolicyRule, LicenseKey, ActivityIgnorePattern, EnrollmentSettings, EnrollmentPlugin, EnrollmentSkipTest
+from api.models import (
+    Device,
+    PolicyRuleset,
+    PolicyRule,
+    LicenseKey,
+    ActivityIgnorePattern,
+    EnrollmentSettings,
+    EnrollmentPlugin,
+    EnrollmentPackage,
+    EnrollmentSkipTest,
+)
 from django.forms import inlineformset_factory
 import jmespath
 
@@ -209,17 +219,13 @@ class ActivityIgnorePatternForm(forms.ModelForm):
 class EnrollmentSettingsForm(forms.ModelForm):
     class Meta:
         model = EnrollmentSettings
-        fields = ['ignore_ssl_errors', 'overwrite_lynis_profile', 'additional_packages']
+        fields = ['ignore_ssl_errors', 'overwrite_lynis_profile']
         widgets = {
             'ignore_ssl_errors': forms.CheckboxInput(attrs={
                 'class': 'mt-1 block border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
             }),
             'overwrite_lynis_profile': forms.CheckboxInput(attrs={
-                'class': 'mt-1 block border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
-            }),
-            'additional_packages': forms.TextInput(attrs={
-                'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
-                'placeholder': 'e.g., rkhunter auditd',
+                'class': 'mt-1 block border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus-border-indigo-500 text-gray-800',
             }),
         }
 
@@ -227,7 +233,6 @@ class EnrollmentSettingsForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['ignore_ssl_errors'].help_text = 'Skip downloading and trusting the server certificate. Enable this only if the servers certificate is self-signed and you don\'t want to install the certificate into the system truststore.'
         self.fields['overwrite_lynis_profile'].help_text = 'Allow the installer to replace /etc/lynis/custom.prf even if it already exists.'
-        self.fields['additional_packages'].help_text = 'Space-separated list of packages to install alongside Lynis (leave empty to install only curl and lynis).'
 
 class EnrollmentPluginForm(forms.ModelForm):
     class Meta:
@@ -265,6 +270,36 @@ EnrollmentPluginFormSet = inlineformset_factory(
 )
 
 
+class EnrollmentPackageForm(forms.ModelForm):
+    class Meta:
+        model = EnrollmentPackage
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
+                'placeholder': 'e.g., rkhunter',
+            }),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise forms.ValidationError('Package name cannot be empty.')
+        return name
+
+
+EnrollmentPackageFormSet = inlineformset_factory(
+    parent_model=EnrollmentSettings,
+    model=EnrollmentPackage,
+    form=EnrollmentPackageForm,
+    fields=['name'],
+    extra=1,
+    can_delete=True,
+    validate_min=False,
+    validate_max=False,
+)
+
+
 class EnrollmentSkipTestForm(forms.ModelForm):
     class Meta:
         model = EnrollmentSkipTest
@@ -294,3 +329,4 @@ EnrollmentSkipTestFormSet = inlineformset_factory(
     validate_min=False,
     validate_max=False,
 )
+

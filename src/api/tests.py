@@ -4,7 +4,19 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-from api.models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern, Organization, DeviceEvent, EnrollmentSettings, EnrollmentPlugin, EnrollmentSkipTest
+from api.models import (
+    LicenseKey,
+    Device,
+    FullReport,
+    DiffReport,
+    ActivityIgnorePattern,
+    Organization,
+    DeviceEvent,
+    EnrollmentSettings,
+    EnrollmentPlugin,
+    EnrollmentPackage,
+    EnrollmentSkipTest,
+)
 from api.utils.lynis_report import LynisReport
 import fnmatch
 
@@ -300,9 +312,18 @@ class TestEnrollScript:
         settings = EnrollmentSettings.get_settings()
         settings.plugins.all().delete()
         settings.skip_tests_entries.all().delete()
+        settings.additional_packages_entries.all().delete()
         EnrollmentPlugin.objects.create(
             settings=settings,
             url='https://plugins.example.com/trikusec/plugin_trikusec_phase1'
+        )
+        EnrollmentPackage.objects.create(
+            settings=settings,
+            name='rkhunter'
+        )
+        EnrollmentPackage.objects.create(
+            settings=settings,
+            name='auditd'
         )
         EnrollmentSkipTest.objects.create(
             settings=settings,
@@ -317,6 +338,7 @@ class TestEnrollScript:
         assert 'Installing Lynis plugins configured in TrikuSec' in body
         assert 'https://plugins.example.com/trikusec/plugin_trikusec_phase1' in body
         assert 'PLUGIN_URLS=(' in body
+        assert 'apt-get install -y curl lynis rkhunter auditd' in body
         assert 'Configuring Lynis to skip tests: CRYP-7902' in body
         assert 'test_skip_always=CRYP-7902' in body
         assert response['Content-Type'] == 'text/x-shellscript'

@@ -187,6 +187,20 @@ class EnrollmentSettings(models.Model):
         return [url.strip() for url in self.plugins.order_by('id').values_list('url', flat=True) if url]
 
     @property
+    def additional_package_names(self):
+        packages = [
+            name.strip()
+            for name in self.additional_packages_entries.order_by('id').values_list('name', flat=True)
+            if name
+        ]
+        if packages:
+            return packages
+        fallback = (self.additional_packages or '').strip()
+        if fallback:
+            return [pkg for pkg in fallback.split() if pkg]
+        return []
+
+    @property
     def skip_test_ids(self):
         return [test_id.strip() for test_id in self.skip_tests_entries.order_by('id').values_list('test_id', flat=True) if test_id]
 
@@ -201,6 +215,18 @@ class EnrollmentPlugin(models.Model):
 
     def __str__(self):
         return self.url
+
+
+class EnrollmentPackage(models.Model):
+    settings = models.ForeignKey(EnrollmentSettings, on_delete=models.CASCADE, related_name='additional_packages_entries')
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return self.name
 
 
 class EnrollmentSkipTest(models.Model):

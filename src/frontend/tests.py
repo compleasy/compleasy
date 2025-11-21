@@ -5,10 +5,15 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
-from api.models import Device, FullReport, DiffReport, EnrollmentSettings, EnrollmentPlugin, EnrollmentSkipTest
+from api.models import Device, FullReport, DiffReport, EnrollmentSettings, EnrollmentPlugin, EnrollmentPackage, EnrollmentSkipTest
 from frontend.templatetags import custom_filters
 from frontend.views import DEVICE_LIST_PAGE_SIZE
-from frontend.forms import EnrollmentSettingsForm, EnrollmentPluginFormSet, EnrollmentSkipTestFormSet
+from frontend.forms import (
+    EnrollmentSettingsForm,
+    EnrollmentPluginFormSet,
+    EnrollmentPackageFormSet,
+    EnrollmentSkipTestFormSet,
+)
 
 
 @pytest.mark.django_db
@@ -17,7 +22,6 @@ class TestEnrollmentPluginFormSet:
         return {
             'ignore_ssl_errors': 'on',
             'overwrite_lynis_profile': '',
-            'additional_packages': 'rkhunter auditd',
         }
 
     def _build_formset_data(self, formset, urls, delete_indexes=None):
@@ -87,12 +91,84 @@ class TestEnrollmentPluginFormSet:
 
 
 @pytest.mark.django_db
+class TestEnrollmentPackageFormSet:
+    def _base_form_data(self):
+        return {
+            'ignore_ssl_errors': '',
+            'overwrite_lynis_profile': '',
+        }
+
+    def _build_formset_data(self, formset, packages, delete_indexes=None):
+        data = {}
+        management_initial = dict(formset.management_form.initial)
+        initial_total = int(management_initial.get('TOTAL_FORMS', 0))
+        total_forms = max(len(packages), initial_total)
+        management_initial['TOTAL_FORMS'] = total_forms
+
+        for key, value in management_initial.items():
+            data[f'{formset.prefix}-{key}'] = str(value)
+
+        delete_indexes = delete_indexes or set()
+        for i in range(total_forms):
+            value = packages[i] if i < len(packages) else ''
+            data[f'{formset.prefix}-{i}-name'] = value
+            data[f'{formset.prefix}-{i}-DELETE'] = 'on' if i in delete_indexes else ''
+        return data
+
+    def test_formset_creates_packages(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.additional_packages_entries.all().delete()
+
+        settings_form = EnrollmentSettingsForm(data=self._base_form_data(), instance=settings)
+        assert settings_form.is_valid()
+
+        unbound_formset = EnrollmentPackageFormSet(instance=settings, prefix='package')
+        package_values = ['rkhunter', 'auditd']
+        formset_data = self._build_formset_data(unbound_formset, package_values)
+
+        formset = EnrollmentPackageFormSet(formset_data, instance=settings, prefix='package')
+        assert formset.is_valid()
+
+        settings_form.save()
+        formset.save()
+
+        assert list(settings.additional_packages_entries.order_by('id').values_list('name', flat=True)) == package_values
+
+    def test_formset_validates_required(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.additional_packages_entries.all().delete()
+        package = settings.additional_packages_entries.create(name='rkhunter')
+
+        unbound_formset = EnrollmentPackageFormSet(instance=settings, prefix='package')
+        formset_data = self._build_formset_data(unbound_formset, ['  '])
+        formset_data['package-0-id'] = str(package.id)
+
+        formset = EnrollmentPackageFormSet(formset_data, instance=settings, prefix='package')
+        assert not formset.is_valid()
+        assert 'name' in formset.forms[0].errors
+
+    def test_formset_delete_existing_package(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.additional_packages_entries.all().delete()
+        pkg = settings.additional_packages_entries.create(name='rkhunter')
+
+        unbound_formset = EnrollmentPackageFormSet(instance=settings, prefix='package')
+        formset_data = self._build_formset_data(unbound_formset, ['rkhunter'], delete_indexes={0})
+        formset_data['package-0-id'] = str(pkg.id)
+
+        formset = EnrollmentPackageFormSet(formset_data, instance=settings, prefix='package')
+        assert formset.is_valid()
+        formset.save()
+
+        assert settings.additional_packages_entries.count() == 0
+
+
+@pytest.mark.django_db
 class TestEnrollmentSkipTestFormSet:
     def _base_form_data(self):
         return {
             'ignore_ssl_errors': '',
             'overwrite_lynis_profile': '',
-            'additional_packages': 'rkhunter auditd',
         }
 
     def _build_formset_data(self, formset, test_ids, delete_indexes=None):
