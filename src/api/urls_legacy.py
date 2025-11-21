@@ -10,5 +10,6 @@ urlpatterns = [
     path('', views.index, name='api_index_legacy'),
     path('lynis/upload/', views.upload_report, name='upload_report'),
     path('lynis/license/', views.check_license, name='check_license'),
+    path('lynis/enroll/', views.enroll_sh, name='enroll_sh'),
 ]
 

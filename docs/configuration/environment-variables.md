@@ -152,9 +152,7 @@ TRIKUSEC_URL=https://localhost:443
 
 This is the endpoint used for accessing the web management interface. It should point to your nginx reverse proxy or direct Django server for admin access.
 
-In the enrollment workflow, `TRIKUSEC_URL` is used for:
-- Downloading `enroll.sh` script
-- Downloading lynis custom profile
+In the enrollment workflow, `TRIKUSEC_URL` is only used for authenticated admin interactions (no device traffic).
 
 ### TRIKUSEC_LYNIS_API_URL
 
@@ -165,6 +163,7 @@ TRIKUSEC_LYNIS_API_URL=https://localhost:8443
 ```
 
 This is the endpoint used by monitored servers for:
+- Downloading the enrollment script (`/api/lynis/enroll/`)
 - Downloading self-signed certificate (via openssl)
 - License validation (`/api/lynis/license/`)
 - Uploading audit reports (`/api/lynis/upload/`)

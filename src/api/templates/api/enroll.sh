@@ -102,3 +102,4 @@ fi
 
 # First audit
 lynis audit system --upload --quick
+

@@ -11,7 +11,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('profile/', views.profile, name='profile'),
     path('onboarding/', views.onboarding, name='onboarding'),
-    path('download/enroll.sh', views.enroll_sh, name='enroll_sh'),
     path('devices/', views.device_list, name='device_list'),
     path('device/<int:device_id>/', views.device_detail, name='device_detail'),
     path('device/<int:device_id>/edit/', views.device_update, name='device_update'),

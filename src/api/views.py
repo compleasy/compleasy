@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django.db import DatabaseError
+from django.conf import settings
 from .models import LicenseKey, Device, FullReport, DiffReport
 from .forms import ReportUploadForm
 from api.utils.lynis_report import LynisReport
@@ -11,6 +12,8 @@ from api.utils.license_utils import validate_license, check_license_capacity
 #from utils.diff_utils import generate_diff, analyze_diff
 import os
 import logging
+import re
+from urllib.parse import urlparse
 
 @csrf_exempt
 @ratelimit(key='ip', rate='100/h', method='POST')
@@ -157,6 +160,27 @@ def check_license(request):
             logging.error(f'Database error checking license: {e}')
             return internal_error('Database error while checking license')
     return HttpResponse('Invalid request method', status=405)
+
+@csrf_exempt
+def enroll_sh(request):
+    """Generate enroll bash script to install the agent on a new device."""
+    licensekey = request.GET.get('licensekey', '').strip()
+    if not licensekey:
+        return HttpResponse('No license key provided', status=400)
+    if not re.match(r'^[a-zA-Z0-9_-]+$', licensekey) or len(licensekey) > 255:
+        return HttpResponse('Invalid license key format', status=400)
+    if not LicenseKey.objects.filter(licensekey=licensekey).exists():
+        return HttpResponse('Invalid license key', status=401)
+
+    trikusec_lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
+    parsed_lynis_api_url = urlparse(trikusec_lynis_api_url)
+    trikusec_lynis_upload_server = parsed_lynis_api_url.netloc
+
+    context = {
+        'trikusec_lynis_upload_server': trikusec_lynis_upload_server,
+        'licensekey': licensekey,
+    }
+    return render(request, 'api/enroll.sh', context, content_type='text/x-shellscript')
 
 def index(request):
     return HttpResponse('Hello, world. You\'re at the TrikuSec index.')

@@ -134,13 +134,12 @@ TrikuSec uses a **dual-endpoint architecture** to improve security by separating
 
 - **Admin UI Endpoint** (`TRIKUSEC_URL`, default: `https://localhost:443`): 
   - Used for accessing the web management interface
-  - Used for downloading `enroll.sh` and custom profile during enrollment
   - Requires authentication (login required)
   - Should only be accessible to sysadmins
   - Typically accessed on port 443 via nginx reverse proxy
 
 - **Lynis API Endpoint** (`TRIKUSEC_LYNIS_API_URL`, default: `https://localhost:8443`):
-  - Used by monitored servers for certificate download, license validation, and report uploads
+  - Used by monitored servers for downloading `enroll.sh`, certificate download, license validation, and report uploads
   - No authentication UI exposed (API-only endpoints)
   - Should be accessible from your server network
   - Typically accessed on a separate port (e.g., 8443) via nginx
@@ -156,6 +155,7 @@ This separation provides important security advantages:
    - **Lynis API**: Allow access from server networks, data centers, or cloud provider IP ranges
 
 3. **Attack Surface Reduction**: The admin interface is not exposed to the same network as monitored servers, reducing the risk of credential theft or session hijacking.
+4. **Enrollment Isolation**: Devices download `enroll.sh` directly from the Lynis API endpoint, so production servers never need outbound access to the admin UI.
 
 #### Example Firewall Configuration
 

@@ -55,7 +55,7 @@ echo "=== Step 2: Configuring Lynis using TrikuSec enrollment script ==="
 # Run the enrollment script which installs and configures Lynis
 # Note: enrollment may attempt systemctl which can fail in container; that's OK.
 # The enrollment script now automatically handles host identifier generation
-ENROLL_URL="${TRIKUSEC_SERVER_URL}/download/enroll.sh?licensekey=${TRIKUSEC_LICENSE_KEY}"
+ENROLL_URL="${TRIKUSEC_SERVER_URL}/api/lynis/enroll/?licensekey=${TRIKUSEC_LICENSE_KEY}"
 echo "Running enrollment script from ${ENROLL_URL} (systemctl failures are acceptable in container environments)..."
 (set +e; wget -qO- --no-check-certificate "${ENROLL_URL}" | bash) || true
 

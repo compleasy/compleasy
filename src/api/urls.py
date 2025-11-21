@@ -8,4 +8,5 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('lynis/upload/', views.upload_report, name='upload_report'),
     path('lynis/license/', views.check_license, name='check_license'),
+    path('lynis/enroll/', views.enroll_sh, name='enroll_sh'),
 ]
