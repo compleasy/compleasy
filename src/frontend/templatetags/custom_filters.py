@@ -220,3 +220,23 @@ def is_technical_value(value):
     ]
     
     return any(technical_patterns)
+
+@register.filter(name='replace')
+def replace(value, arg):
+    """
+    Replace occurrences of a substring in a string.
+    Usage: {{ value|replace:"old:new" }}
+    The argument should be in the format "old:new" where old is the string to replace and new is the replacement.
+    """
+    if not value:
+        return value
+    
+    try:
+        # Split by colon, but only split once (in case new string contains colons)
+        parts = arg.split(':', 1)
+        if len(parts) != 2:
+            return value
+        old, new = parts
+        return str(value).replace(old, new)
+    except (ValueError, AttributeError, TypeError):
+        return value

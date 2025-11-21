@@ -36,6 +36,22 @@
             color: #065f46;
         }
 
+        .activity-pill--device-deleted {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .activity-pill--license-changed {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .activity-pill--device-event {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
         .activity-pill--other {
             background-color: #e5e7eb;
             color: #374151;
@@ -124,6 +140,21 @@
             border: 1px solid #e5e7eb;
             background-color: #ffffff;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .activity-host-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+        }
+
+        .activity-host-card--device-event .activity-host-header {
+            background-color: #eff6ff;
+        }
+
+        .activity-host-card--device-event .activity-host-header:hover {
+            background-color: #dbeafe;
         }
 
         .activity-host-header {
@@ -134,10 +165,16 @@
             padding: 1rem 1.25rem;
             cursor: pointer;
             background-color: #ffffff;
+            transition: background-color 0.15s ease;
         }
 
         .activity-host-header:hover {
             background-color: #f9fafb;
+        }
+
+        .activity-host-header:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
         }
 
         .activity-device-link {
@@ -146,12 +183,21 @@
             justify-content: center;
             color: #6b7280;
             cursor: pointer;
-            transition: color 150ms ease;
+            transition: color 150ms ease, transform 150ms ease;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
         }
 
-        .activity-device-link:hover,
+        .activity-device-link:hover {
+            color: #1f2937;
+            background-color: #f3f4f6;
+            transform: scale(1.1);
+        }
+
         .activity-device-link:focus-visible {
             color: #1f2937;
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
         }
 
         .activity-host-panel {
@@ -191,6 +237,12 @@
             background-color: #fdfdfd;
             display: flex;
             flex-direction: column;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .activity-entry:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .activity-entry + .activity-entry {
@@ -213,10 +265,23 @@
         }
 
         .activity-entry-timestamp {
-            font-size: 0.75rem;
-            color: #6b7280;
+            font-size: 0.8125rem;
+            color: #4b5563;
+            font-weight: 500;
             white-space: nowrap;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .activity-entry-timestamp::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #9ca3af;
         }
 
         .activity-entry-content {
@@ -274,6 +339,33 @@
             letter-spacing: 0.05em;
             margin-bottom: 0.25rem;
         }
+
+        .activity-silence-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+        }
+
+        .activity-silence-btn:hover {
+            background-color: #f3f4f6;
+            transform: scale(1.1);
+        }
+
+        .activity-silence-btn:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Keyboard navigation indicators */
+        .activity-host-header:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+            border-radius: 0.75rem;
+        }
+
     </style>
 {% endblock %}
 
@@ -289,6 +381,8 @@
                 <select id="activity-filter-type" name="type" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                     <option value="">All Types</option>
                     <option value="enrollment" {% if request.GET.type == 'enrollment' %}selected{% endif %}>Enrollment</option>
+                    <option value="device_deleted" {% if request.GET.type == 'device_deleted' %}selected{% endif %}>Device Deleted</option>
+                    <option value="license_changed" {% if request.GET.type == 'license_changed' %}selected{% endif %}>License Changed</option>
                     <option value="changed" {% if request.GET.type == 'changed' %}selected{% endif %}>Changed</option>
                     <option value="added" {% if request.GET.type == 'added' %}selected{% endif %}>Added</option>
                     <option value="removed" {% if request.GET.type == 'removed' %}selected{% endif %}>Removed</option>
@@ -337,17 +431,34 @@
     </div>
 
     {% if not grouped_activities %}
-        <div class="bg-white border border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <p class="text-gray-600">No recent activity detected.</p>
+        <div class="bg-white border border-dashed border-gray-300 rounded-lg p-12 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No activity found</h3>
+            <p class="text-gray-600 mb-4">
+                {% if request.GET.type or request.GET.device or request.GET.date %}
+                    No activities match your current filters. Try adjusting your filters or
+                    <a href="{% url 'activity' %}" class="text-blue-600 hover:text-blue-800 underline">clear all filters</a>.
+                {% else %}
+                    No recent activity has been detected. Activity will appear here when devices report changes.
+                {% endif %}
+            </p>
+            {% if request.GET.type or request.GET.device or request.GET.date %}
+            <a href="{% url 'activity' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Clear all filters
+            </a>
+            {% endif %}
         </div>
     {% else %}
     <div id="activity-accordion" class="space-y-4">
         {% for entry in grouped_activities %}
-        <div class="activity-host-card" data-host-card data-hostname="{{ entry.hostname|lower }}">
-            <button type="button" class="activity-host-header" data-host-toggle="host-panel-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}">
+        <div class="activity-host-card{% if entry.has_device_event %} activity-host-card--device-event{% endif %}" data-host-card data-hostname="{{ entry.hostname|lower }}">
+            <button type="button" class="activity-host-header" data-host-toggle="host-panel-{{ entry.device.id|default:'deleted' }}-{{ entry.timestamp|date:'U' }}">
                 <div>
                     <div class="flex items-center gap-2">
                         <p class="text-lg font-semibold text-gray-900">{{ entry.hostname }}</p>
+                        {% if entry.device and entry.device.id %}
                         <span
                             class="activity-device-link"
                             role="link"
@@ -361,14 +472,24 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
                             </svg>
                         </span>
+                        {% endif %}
                     </div>
-                    <p class="text-sm text-gray-500">{{ entry.time_label }} · {{ entry.timestamp|timesince }} ago</p>
+                    <p class="text-sm text-gray-600 font-medium">{{ entry.time_label }} · {{ entry.timestamp|timesince }} ago</p>
                     {% if entry.summary_badges %}
                     <div class="flex flex-wrap gap-2 mt-2">
                         {% for badge in entry.summary_badges %}
-                        <span class="activity-pill activity-pill--{{ badge.type }}">
-                            {{ badge.type|capfirst }} · {{ badge.count }}
+                        {% if badge.type == 'enrollment' or badge.type == 'device_deleted' or badge.type == 'license_changed' %}
+                        <span class="activity-pill activity-pill--device-event activity-pill--{{ badge.type|replace:"_:-" }}">
+                            {% if badge.type == 'enrollment' %}New device enrolled
+                            {% elif badge.type == 'device_deleted' %}Device deleted
+                            {% elif badge.type == 'license_changed' %}License changed
+                            {% else %}{{ badge.type|replace:"_: "|capfirst }}{% endif %}
                         </span>
+                        {% else %}
+                        <span class="activity-pill activity-pill--{{ badge.type|replace:"_:-" }}">
+                            {{ badge.type|replace:"_: "|capfirst }} · {{ badge.count }}
+                        </span>
+                        {% endif %}
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -377,12 +498,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
                 </svg>
             </button>
-            <div class="activity-host-panel hidden" id="host-panel-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}">
+            <div class="activity-host-panel hidden" id="host-panel-{{ entry.device.id|default:'deleted' }}-{{ entry.timestamp|date:'U' }}">
                 {% for block in entry.type_blocks %}
                 <div class="activity-type-section">
                     <div class="activity-type-header">
                         <div class="activity-type-title">
-                            <span class="activity-pill activity-pill--{{ block.type }}">{{ block.type|capfirst }}</span>
+                            <span class="activity-pill activity-pill--{{ block.type|replace:"_:-" }}">{{ block.type|replace:"_: "|capfirst }}</span>
                             <small>
                                 {% if block.type == 'enrollment' %}
                                     {{ block.count }} enrollment{% if block.count != 1 %}s{% endif %}
@@ -392,7 +513,7 @@
                             </small>
                         </div>
                     </div>
-                    <div id="type-{{ entry.device.id }}-{{ entry.timestamp|date:'U' }}-{{ block.type }}">
+                    <div id="type-{{ entry.device.id|default:'deleted' }}-{{ entry.timestamp|date:'U' }}-{{ block.type }}">
                         {% for activity in block.activities %}
                         {% if block.type == 'enrollment' %}
                             <div class="activity-entry">
@@ -401,12 +522,65 @@
                                         <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span class="font-semibold text-gray-900">Device enrolled</span>
+                                        <span class="font-semibold text-gray-900">New device enrolled</span>
                                     </div>
                                     <div class="activity-entry-timestamp">{{ activity.created_at|timesince }} ago</div>
                                 </div>
                                 <div class="activity-entry-content">
                                     <p class="text-sm text-gray-600">New device registered with TrikuSec</p>
+                                </div>
+                            </div>
+                        {% elif block.type == 'device_deleted' %}
+                            <div class="activity-entry">
+                                <div class="activity-entry-header">
+                                    <div class="activity-entry-title">
+                                        <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span class="font-semibold text-gray-900">Device deleted</span>
+                                    </div>
+                                    <div class="activity-entry-timestamp">{{ activity.created_at|timesince }} ago</div>
+                                </div>
+                                <div class="activity-entry-content">
+                                    <p class="text-sm text-gray-600">Device was permanently removed from TrikuSec</p>
+                                    {% if activity.metadata %}
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        {% if activity.metadata.hostname %}
+                                        <p><span class="font-semibold">Hostname:</span> {{ activity.metadata.hostname }}</p>
+                                        {% endif %}
+                                        {% if activity.metadata.license_name %}
+                                        <p><span class="font-semibold">License:</span> {{ activity.metadata.license_name }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% elif block.type == 'license_changed' %}
+                            <div class="activity-entry">
+                                <div class="activity-entry-header">
+                                    <div class="activity-entry-title">
+                                        <svg class="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                        </svg>
+                                        <span class="font-semibold text-gray-900">License changed</span>
+                                    </div>
+                                    <div class="activity-entry-timestamp">{{ activity.created_at|timesince }} ago</div>
+                                </div>
+                                <div class="activity-entry-content">
+                                    {% if activity.metadata %}
+                                    <div class="activity-entry-grid">
+                                        <div class="before-card">
+                                            <p class="activity-entry-label">Previous License</p>
+                                            <p class="activity-value">{{ activity.metadata.old_license_name|default:activity.metadata.old_license|default:"Unknown" }}</p>
+                                        </div>
+                                        <div class="now-card now-card--up">
+                                            <p class="activity-entry-label">New License</p>
+                                            <p class="activity-value">{{ activity.metadata.new_license_name|default:activity.metadata.new_license|default:"Unknown" }}</p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <p class="text-sm text-gray-600">Device license was changed</p>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% else %}
@@ -766,7 +940,31 @@
             filterDate.addEventListener('change', applyFilters);
         }
 
+        // Keyboard navigation
         document.addEventListener('keydown', function(e) {
+            // Allow keyboard navigation with arrow keys when cards are focused
+            const focusedCard = document.activeElement.closest('.activity-host-card');
+            if (focusedCard && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                e.preventDefault();
+                const cards = Array.from(document.querySelectorAll('.activity-host-card'));
+                const currentIndex = cards.indexOf(focusedCard);
+                
+                if (e.key === 'ArrowDown' && currentIndex < cards.length - 1) {
+                    cards[currentIndex + 1].querySelector('.activity-host-header').focus();
+                } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+                    cards[currentIndex - 1].querySelector('.activity-host-header').focus();
+                }
+                return;
+            }
+
+            // Enter/Space to expand/collapse when header is focused
+            if (e.target.classList.contains('activity-host-header') && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                e.target.click();
+                return;
+            }
+
+            // Device link navigation
             const deviceLink = e.target.closest('[data-device-link]');
             if (deviceLink && (e.key === 'Enter' || e.key === ' ')) {
                 e.preventDefault();

@@ -57,8 +57,21 @@ def upload_report(request):
 
             # Check if the device already exists
             try:
-                device = Device.objects.filter(hostid=post_hostid, hostid2=post_hostid2, licensekey=licensekey).first()
+                # First, try to find device by hostid/hostid2 (regardless of license)
+                device = Device.objects.filter(hostid=post_hostid, hostid2=post_hostid2).first()
                 created = device is None
+                license_changed = False
+                
+                if device:
+                    # Device exists - check if license changed
+                    old_license = device.licensekey
+                    if old_license != licensekey:
+                        license_changed = True
+                        # Check license capacity before allowing license change
+                        has_capacity, capacity_error = check_license_capacity(post_licensekey)
+                        if not has_capacity:
+                            logging.error(f'License capacity check failed: {capacity_error}')
+                            return HttpResponse(capacity_error or 'License has reached maximum device limit', status=403)
                 
                 # If device doesn't exist, check license capacity before creating
                 if created:
@@ -70,6 +83,18 @@ def upload_report(request):
                     # Create the new device
                     device = Device.objects.create(hostid=post_hostid, hostid2=post_hostid2, licensekey=licensekey)
                     DeviceEvent.objects.create(device=device, event_type='enrolled')
+                elif license_changed:
+                    # Create license change event
+                    DeviceEvent.objects.create(
+                        device=device,
+                        event_type='license_changed',
+                        metadata={
+                            'old_license': old_license.licensekey if old_license else None,
+                            'old_license_name': old_license.name if old_license else None,
+                            'new_license': licensekey.licensekey,
+                            'new_license_name': licensekey.name,
+                        }
+                    )
             except DatabaseError as e:
                 logging.error(f'Database error creating/retrieving device: {e}')
                 return internal_error('Database error while processing device')
@@ -90,7 +115,9 @@ def upload_report(request):
                     
                     # Generate structured diff (without ignore_keys - store all activities)
                     diff_data = latest_lynis.compare_reports(report_data, [])
-                    DiffReport.objects.create(device=device, diff_report=diff_data)
+                    # Store hostname to preserve it even if device is deleted
+                    hostname = device.hostname or report.get('hostname') or device.hostid
+                    DiffReport.objects.create(device=device, hostname=hostname, diff_report=diff_data)
                     logging.info(f'Diff created for device {post_hostid}')
                     logging.debug('Changed items: %s', diff_data)
                 except DatabaseError as e:

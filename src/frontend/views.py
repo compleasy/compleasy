@@ -345,6 +345,21 @@ def device_delete(request, device_id):
     """Delete a device (AJAX + fallback)"""
     if request.method == 'POST':
         device = get_object_or_404(Device, id=device_id)
+        
+        # Create device deletion event before deleting the device
+        # Store device info in metadata since device will be set to None
+        DeviceEvent.objects.create(
+            device=device,
+            event_type='deleted',
+            metadata={
+                'hostname': device.hostname,
+                'hostid': device.hostid,
+                'hostid2': device.hostid2,
+                'licensekey': device.licensekey.licensekey if device.licensekey else None,
+                'license_name': device.licensekey.name if device.licensekey else None,
+            }
+        )
+        
         device.delete()  # CASCADE will remove associated reports
         
         # AJAX request: return JSON
@@ -1063,6 +1078,10 @@ def activity(request):
         
         diff_data = diff_report.diff_report  # Already a dict from JSONField
         
+        # Get hostname from DiffReport (preserved even if device is deleted)
+        # Fallback to device.hostname if device still exists
+        report_hostname = diff_report.hostname or (diff_report.device.hostname if diff_report.device else None)
+        
         if 'added' in diff_data and 'removed' in diff_data:
             for change_type in ['added', 'removed']:
                 logging.debug('Change type: %s', change_type)
@@ -1124,6 +1143,7 @@ def activity(request):
 
                 activity_data = {
                     'device': diff_report.device,
+                    'hostname': report_hostname,  # Preserved hostname
                     'created_at': diff_report.created_at,
                     'key': key,
                     'old_value': old_value,
@@ -1180,16 +1200,37 @@ def activity(request):
             
             activities = filtered_activities
     
-    # Merge enrollment events (not affected by silence rules)
+    # Merge device events (not affected by silence rules)
     combined_activities = list(activities)
     device_events = DeviceEvent.objects.select_related('device').order_by('-created_at')[:max_activities]
     event_activities = []
     for event in device_events:
+        # Map event types to activity types
+        event_type_map = {
+            'enrolled': 'enrollment',
+            'deleted': 'device_deleted',
+            'license_changed': 'license_changed',
+        }
+        activity_type = event_type_map.get(event.event_type, 'other')
+        
+        # For deleted devices, create a mock device object from metadata
+        device = event.device
+        if not device and event.event_type == 'deleted':
+            # Create a minimal device-like object from metadata
+            class MockDevice:
+                def __init__(self, metadata):
+                    self.id = None
+                    self.hostname = metadata.get('hostname')
+                    self.hostid = metadata.get('hostid')
+                    self.hostid2 = metadata.get('hostid2')
+                    self.licensekey = None
+            device = MockDevice(event.metadata)
+        
         event_activities.append({
-            'device': event.device,
+            'device': device,
             'created_at': event.created_at,
             'event_type': event.event_type,
-            'type': 'enrollment',
+            'type': activity_type,
             'metadata': event.metadata,
         })
     combined_activities.extend(event_activities)
@@ -1231,7 +1272,7 @@ def activity(request):
         for activity in combined_activities:
             device = activity['device']
             change_type = activity.get('type', 'other')
-            if change_type not in ['enrollment', 'added', 'removed', 'changed']:
+            if change_type not in ['enrollment', 'device_deleted', 'license_changed', 'added', 'removed', 'changed']:
                 change_type = 'other'
             
             timestamp = activity['created_at']
@@ -1243,12 +1284,26 @@ def activity(request):
             # Create unique key for device+timestamp combination
             # Use exact timestamp to ensure each unique datetime gets its own card
             # Activities from the same DiffReport will share the same timestamp
-            key = (device.id, timestamp)
+            # For deleted devices, use metadata hostid as fallback
+            device_id = device.id if device and hasattr(device, 'id') and device.id else None
+            if not device_id and activity.get('metadata'):
+                # Use a hash of hostid/hostid2 for deleted devices
+                hostid = activity['metadata'].get('hostid', '')
+                hostid2 = activity['metadata'].get('hostid2', '')
+                device_id = hash(f"{hostid}_{hostid2}")
+            key = (device_id, timestamp)
             
             # Get or create entry for this device+timestamp combination
+            # For deleted devices, get hostname from activity data, metadata, or device
+            hostname = activity.get('hostname')  # From DiffReport (preserved)
+            if not hostname:
+                hostname = device.hostname if device and hasattr(device, 'hostname') else None
+            if not hostname and activity.get('metadata'):
+                hostname = activity['metadata'].get('hostname')
+            
             entry = grouped_map.setdefault(key, {
                 'device': device,
-                'hostname': device.hostname,
+                'hostname': hostname or 'Unknown Device',
                 'time_label': time_label,
                 'timestamp': timestamp,
                 'activities_by_type': defaultdict(list),
@@ -1272,7 +1327,7 @@ def activity(request):
         for entry in grouped_activities_list:
             # Build type blocks for this entry
             type_blocks = []
-            for change_type in ['enrollment', 'changed', 'added', 'removed', 'other']:
+            for change_type in ['enrollment', 'device_deleted', 'license_changed', 'changed', 'added', 'removed', 'other']:
                 change_list = entry['activities_by_type'].get(change_type, [])
                 if change_list:
                     type_blocks.append({
@@ -1287,9 +1342,16 @@ def activity(request):
             # Calculate summary badges for header
             entry['summary_badges'] = [
                 {'type': change_type, 'count': len(entry['activities_by_type'].get(change_type, []))}
-                for change_type in ['enrollment', 'changed', 'added', 'removed', 'other']
+                for change_type in ['enrollment', 'device_deleted', 'license_changed', 'changed', 'added', 'removed', 'other']
                 if entry['activities_by_type'].get(change_type)
             ]
+            
+            # Mark entries that have device events (for highlighting)
+            device_event_types = {'enrollment', 'device_deleted', 'license_changed'}
+            entry['has_device_event'] = any(
+                change_type in device_event_types
+                for change_type in entry['activities_by_type'].keys()
+            )
         
     # Apply filters from query parameters
     filter_type = request.GET.get('type', '').strip()
@@ -1308,9 +1370,10 @@ def activity(request):
             # Filter by device
             if filter_device_id:
                 try:
-                    if entry['device'].id != int(filter_device_id):
+                    device_id = entry['device'].id if entry['device'] and hasattr(entry['device'], 'id') else None
+                    if device_id != int(filter_device_id):
                         continue
-                except (ValueError, TypeError):
+                except (ValueError, TypeError, AttributeError):
                     continue
             
             # Filter by date

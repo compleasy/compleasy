@@ -72,16 +72,19 @@ class FullReport(models.Model):
         super(FullReport, self).save(*args, **kwargs)
 
 class DiffReport(models.Model):
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL, null=True, blank=True)
+    hostname = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     diff_report = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class DeviceEvent(models.Model):
     EVENT_TYPE_CHOICES = [
         ('enrolled', 'Device Enrolled'),
+        ('deleted', 'Device Deleted'),
+        ('license_changed', 'License Changed'),
     ]
 
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL, null=True, blank=True)
     event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(default=dict, blank=True)
@@ -94,7 +97,12 @@ class DeviceEvent(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.device.hostname or self.device.hostid} - {self.get_event_type_display()}"
+        device_name = 'Unknown Device'
+        if self.device:
+            device_name = self.device.hostname or self.device.hostid
+        elif self.metadata.get('hostname') or self.metadata.get('hostid'):
+            device_name = self.metadata.get('hostname') or self.metadata.get('hostid')
+        return f"{device_name} - {self.get_event_type_display()}"
 
 class ActivityIgnorePattern(models.Model):
     EVENT_TYPE_CHOICES = [
