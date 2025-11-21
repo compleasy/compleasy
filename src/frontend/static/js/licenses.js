@@ -199,7 +199,7 @@ function loadLicenseDetails(licenseId) {
         document.getElementById('license_is_active').checked = true;
         document.getElementById('license_is_active_message').textContent = 'ACTIVE';
         document.getElementById('license_name').value = '';
-        document.getElementById('license_max_devices').value = '';
+        document.getElementById('license_max_devices').value = '1';
         document.getElementById('license_expires_at').value = '';
         document.getElementById('license_id').value = '';
         hideFormErrors();
