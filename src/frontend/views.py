@@ -9,11 +9,11 @@ from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, F, Count
 from django.core.paginator import Paginator
 from django.conf import settings
-from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset, Organization, ActivityIgnorePattern, DeviceEvent
+from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, PolicyRuleset, Organization, ActivityIgnorePattern, DeviceEvent, EnrollmentSettings
 from api.utils.lynis_report import LynisReport
 from api.utils.compliance import check_device_compliance
 from api.utils.license_utils import generate_license_key
-from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm, LicenseKeyForm, UserProfileForm, ActivityIgnorePatternForm
+from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm, LicenseKeyForm, UserProfileForm, ActivityIgnorePatternForm, EnrollmentSettingsForm
 import os
 import json
 import logging
@@ -86,6 +86,25 @@ def profile(request):
     return render(request, 'profile/profile.html', {
         'profile_form': profile_form,
         'password_form': password_form,
+    })
+
+
+@login_required
+@csrf_protect
+def settings_view(request):
+    settings_instance = EnrollmentSettings.get_settings()
+    if request.method == 'POST':
+        form = EnrollmentSettingsForm(request.POST, instance=settings_instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Enrollment configuration updated successfully.')
+            return redirect('settings')
+        messages.error(request, 'Please fix the highlighted errors to update the configuration.')
+    else:
+        form = EnrollmentSettingsForm(instance=settings_instance)
+
+    return render(request, 'settings.html', {
+        'settings_form': form,
     })
 
 @login_required

@@ -20,6 +20,7 @@ if [ $(id -u) -ne 0 ]; then
     fi
 fi
 
+{% if not ignore_ssl_errors %}
 # Check if the server is reachable and has a valid certificate
 curl -s "https://${TRIKUSEC_LYNIS_UPLOAD_SERVER}" -o /dev/null
 if [ $? -ne 0 ]; then
@@ -37,18 +38,26 @@ if [ $? -ne 0 ]; then
 else
     echo "Server certificate is valid."
 fi
+{% else %}
+echo "Skipping server certificate validation (configured)."
+{% endif %}
 
 # Update and install necessary packages
 ${SUDO} apt-get update
-${SUDO} apt-get install -y curl lynis rkhunter auditd
+${SUDO} apt-get install -y curl lynis{% if additional_packages %} {{ additional_packages }}{% endif %}
 
 # Get installed Lynis version
 LYNIS_VERSION=$(lynis --version)
 
-# If a custom profile file already exists, tell the user to remove it
+# If a custom profile file already exists, handle per configuration
 if [ -f /etc/lynis/custom.prf ]; then
-    echo "A custom profile file already exists. Please remove it before running this script."
+    {% if overwrite_lynis_profile %}
+    echo "Existing /etc/lynis/custom.prf detected. Overwriting as requested."
+    ${SUDO} rm -f /etc/lynis/custom.prf
+    {% else %}
+    echo "A custom profile file already exists. Please remove it before running this script or enable overwriting in TrikuSec."
     exit 1
+    {% endif %}
 fi
 
 # Create custom profile file if it doesn't exist
@@ -91,6 +100,9 @@ fi
 echo "upload-server=${TRIKUSEC_LYNIS_UPLOAD_SERVER}/api/lynis" >> /etc/lynis/custom.prf
 
 ${SUDO} lynis configure settings upload=yes:license-key=${TRIKUSEC_LICENSEKEY}:upload-server=${TRIKUSEC_LYNIS_UPLOAD_SERVER}/api/lynis auditor=TrikuSec
+{% if ignore_ssl_errors %}
+echo "upload-options=--insecure" >> /etc/lynis/custom.prf
+{% endif %}
 
 # If lynis version is older than 3.0.0, add test_skip_always=CRYP-7902 to the custom profile
 # Extract major version number for comparison
@@ -99,6 +111,11 @@ LYNIS_MAJOR=$(echo "$LYNIS_VERSION" | awk -F. '{print $1}')
 if [ "$LYNIS_MAJOR" -lt 3 ]; then
     ${SUDO} lynis configure settings test_skip_always=CRYP-7902
 fi
+
+{% if skip_tests %}
+echo "Configuring Lynis to skip tests: {{ skip_tests }}"
+${SUDO} lynis configure settings test_skip_always={{ skip_tests }}
+{% endif %}
 
 # First audit
 lynis audit system --upload --quick

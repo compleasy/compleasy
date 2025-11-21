@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django.db import DatabaseError
 from django.conf import settings
-from .models import LicenseKey, Device, FullReport, DiffReport, DeviceEvent
+from .models import LicenseKey, Device, FullReport, DiffReport, DeviceEvent, EnrollmentSettings
 from .forms import ReportUploadForm
 from api.utils.lynis_report import LynisReport
 from api.utils.error_responses import internal_error
@@ -176,10 +176,17 @@ def enroll_sh(request):
     trikusec_lynis_api_url = settings.TRIKUSEC_LYNIS_API_URL
     parsed_lynis_api_url = urlparse(trikusec_lynis_api_url)
     trikusec_lynis_upload_server = parsed_lynis_api_url.netloc
+    enrollment_settings = EnrollmentSettings.get_settings()
+    additional_packages = enrollment_settings.additional_packages.strip()
+    skip_tests = enrollment_settings.skip_tests.replace(' ', '').strip(',')
 
     context = {
         'trikusec_lynis_upload_server': trikusec_lynis_upload_server,
         'licensekey': licensekey,
+        'ignore_ssl_errors': enrollment_settings.ignore_ssl_errors,
+        'overwrite_lynis_profile': enrollment_settings.overwrite_lynis_profile,
+        'additional_packages': additional_packages,
+        'skip_tests': skip_tests,
     }
     return render(request, 'api/enroll.sh', context, content_type='text/x-shellscript')
 

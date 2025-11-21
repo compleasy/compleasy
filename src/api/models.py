@@ -157,3 +157,27 @@ class PolicyRuleset(models.Model):
     
     def __str__(self):
         return self.name
+
+
+class EnrollmentSettings(models.Model):
+    """Singleton model storing global enrollment script configuration."""
+
+    ignore_ssl_errors = models.BooleanField(default=False)
+    overwrite_lynis_profile = models.BooleanField(default=False)
+    additional_packages = models.CharField(max_length=255, default='rkhunter auditd')
+    skip_tests = models.CharField(max_length=255, blank=True, default='')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Enrollment Settings'
+        verbose_name_plural = 'Enrollment Settings'
+
+    def __str__(self):
+        return 'Enrollment Settings'
+
+    @classmethod
+    def get_settings(cls):
+        settings_instance = cls.objects.first()
+        if settings_instance is None:
+            settings_instance = cls.objects.create()
+        return settings_instance
