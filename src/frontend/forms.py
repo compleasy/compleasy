@@ -227,7 +227,7 @@ class EnrollmentSettingsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['ignore_ssl_errors'].help_text = 'Skip downloading and trusting the server certificate. Use only when the server uses a self-signed certificate or during testing.'
+        self.fields['ignore_ssl_errors'].help_text = 'Skip downloading and trusting the server certificate. Enable this only if the servers certificate is self-signed and you don\'t want to install the certificate into the system truststore.'
         self.fields['overwrite_lynis_profile'].help_text = 'Allow the installer to replace /etc/lynis/custom.prf even if it already exists.'
         self.fields['additional_packages'].help_text = 'Space-separated list of packages to install alongside Lynis (leave empty to install only curl and lynis).'
         self.fields['skip_tests'].help_text = 'Comma-separated Lynis test IDs to skip (e.g., CRYP-7902). Leave empty to run all tests.'
