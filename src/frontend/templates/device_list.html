@@ -56,7 +56,28 @@
                         </th>
                         <th class="py-3 px-6 text-left w-4">OS</th>
                         <th class="py-3 px-6 text-left">OS Version</th>
-                        <th class="py-3 px-6 text-left">Agent Version</th>
+                        <th class="py-3 px-6 text-center">
+                            <a href="?sort=hardening_index&order={% if current_sort == 'hardening_index' and current_order == 'asc' %}desc{% else %}asc{% endif %}" 
+                               class="flex items-center justify-center space-x-1 hover:text-gray-900 transition-colors">
+                                <span>HARD INDEX</span>
+                                {% if current_sort == 'hardening_index' %}
+                                    {% if current_order == 'asc' %}
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    {% endif %}
+                                {% else %}
+                                    <svg class="w-4 h-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                                    </svg>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="py-3 px-6 text-left">LYNIS</th>
                         <th class="py-3 px-6 text-left">
                             <a href="?sort=compliant&order={% if current_sort == 'compliant' and current_order == 'asc' %}desc{% else %}asc{% endif %}" 
                                class="flex items-center space-x-1 hover:text-gray-900 transition-colors">
@@ -140,9 +161,14 @@
                                 <span>{{ device.distro }}</span>
                             </div>
                         </td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex items-center justify-center">
+                                <span>{% if device.hardening_index %}{{ device.hardening_index }}{% else %}-{% endif %}</span>
+                            </div>
+                        </td>
                         <td class="py-3 px-6 text-left">
                             <div class="flex items-center">
-                                <span>{{ device.lynis_version }}</span>
+                                <span>{{ device.lynis_version|default:"-" }}</span>
                             </div>
                         </td>
                         <td class="py-3 px-6 text-left">
@@ -161,7 +187,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="py-6 px-6 text-center text-gray-500">
+                        <td colspan="8" class="py-6 px-6 text-center text-gray-500">
                             No devices found.
                         </td>
                     </tr>

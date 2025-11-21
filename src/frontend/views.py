@@ -241,19 +241,55 @@ def device_list(request):
         'compliant': 'compliant',
         'warnings': 'warnings',
         'last_update': 'last_update',
+        'hardening_index': 'hardening_index',
     }
     
     # Default to last_update if invalid sort field
     sort_field = valid_sort_fields.get(sort_field, 'last_update')
     
-    # Determine sort order
-    if sort_order == 'asc':
-        order_by = sort_field
-    else:  # default to desc
-        order_by = f'-{sort_field}'
-    
-    # Order devices by selected field
-    devices = Device.objects.all().order_by(order_by)
+    # If sorting by hardening_index, we need to extract it first and sort in Python
+    if sort_field == 'hardening_index':
+        # Get all devices first
+        devices = list(Device.objects.all())
+        
+        # Extract hardening_index from latest report for each device
+        for device in devices:
+            latest_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+            if latest_report:
+                try:
+                    parsed_report = LynisReport(latest_report.full_report).get_parsed_report()
+                    device.hardening_index = parsed_report.get('hardening_index', None)
+                except Exception:
+                    device.hardening_index = None
+            else:
+                device.hardening_index = None
+        
+        # Sort by hardening_index (treat None as -1 for sorting purposes)
+        reverse_order = sort_order == 'desc'
+        devices.sort(key=lambda d: d.hardening_index if d.hardening_index is not None else -1, reverse=reverse_order)
+    else:
+        # Determine sort order
+        if sort_order == 'asc':
+            order_by = sort_field
+        else:  # default to desc
+            order_by = f'-{sort_field}'
+        
+        # Order devices by selected field
+        devices = Device.objects.all().order_by(order_by)
+        
+        # Extract hardening_index from latest report for each device (for display)
+        devices_list = list(devices)
+        for device in devices_list:
+            latest_report = FullReport.objects.filter(device=device).order_by('-created_at').first()
+            if latest_report:
+                try:
+                    parsed_report = LynisReport(latest_report.full_report).get_parsed_report()
+                    device.hardening_index = parsed_report.get('hardening_index', None)
+                except Exception:
+                    device.hardening_index = None
+            else:
+                device.hardening_index = None
+        devices = devices_list
 
     paginator = Paginator(devices, DEVICE_LIST_PAGE_SIZE)
     page_number = request.GET.get('page')
