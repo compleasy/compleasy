@@ -79,17 +79,23 @@
                 </div>
 
                 <div>
-                    <div class="flex items-center space-x-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Additional packages
-                        </label>
-                        <span class="text-gray-400" title="Add Debian package names (e.g., rkhunter, auditd). Use the plus icon on the last entry to add more, and the minus icon to remove.">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-formset-group="package" data-formset-prefix="{{ package_formset.prefix }}">
+                    <button type="button" class="w-full flex items-center justify-between text-left" data-packages-toggle>
+                        <div class="flex items-center space-x-2">
+                            <label class="block text-sm font-medium text-gray-700 cursor-pointer">
+                                Additional packages
+                            </label>
+                            <span class="text-gray-400" title="Add Debian package names (e.g., rkhunter, auditd). Use the plus icon on the last entry to add more, and the minus icon to remove.">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                </svg>
+                            </span>
+                            <span class="text-sm text-gray-500" id="packages-count">0 packages</span>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform" data-packages-chevron viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
+                        </svg>
+                    </button>
+                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-packages-panel data-formset-group="package" data-formset-prefix="{{ package_formset.prefix }}">
                         {{ package_formset.management_form }}
                         <div data-formset-items="package" class="space-y-2">
                             {% for package_form in package_formset %}
@@ -152,17 +158,23 @@
                 </div>
 
                 <div>
-                    <div class="flex items-center space-x-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Lynis plugins
-                        </label>
-                        <span class="text-gray-400" title="Provide HTTP/HTTPS URLs for Lynis plugins. Use the plus icon on the last entry to add more, and the minus icon to remove.">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-formset-group="plugin" data-formset-prefix="{{ plugin_formset.prefix }}">
+                    <button type="button" class="w-full flex items-center justify-between text-left" data-plugins-toggle>
+                        <div class="flex items-center space-x-2">
+                            <label class="block text-sm font-medium text-gray-700 cursor-pointer">
+                                Lynis plugins
+                            </label>
+                            <span class="text-gray-400" title="Provide HTTP/HTTPS URLs for Lynis plugins. Use the plus icon on the last entry to add more, and the minus icon to remove.">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                </svg>
+                            </span>
+                            <span class="text-sm text-gray-500" id="plugins-count">0 plugins</span>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform" data-plugins-chevron viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
+                        </svg>
+                    </button>
+                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-plugins-panel data-formset-group="plugin" data-formset-prefix="{{ plugin_formset.prefix }}">
                         {{ plugin_formset.management_form }}
                         <div data-formset-items="plugin" class="space-y-2">
                             {% for plugin_form in plugin_formset %}
@@ -225,17 +237,23 @@
                 </div>
 
                 <div>
-                    <div class="flex items-center space-x-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Skip tests
-                        </label>
-                        <span class="text-gray-400" title="List Lynis test IDs to skip (e.g., CRYP-7902). Use the plus icon on the last entry to add more, and the minus icon to remove.">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-formset-group="skiptest" data-formset-prefix="{{ skip_formset.prefix }}">
+                    <button type="button" class="w-full flex items-center justify-between text-left" data-skiptests-toggle>
+                        <div class="flex items-center space-x-2">
+                            <label class="block text-sm font-medium text-gray-700 cursor-pointer">
+                                Skip tests
+                            </label>
+                            <span class="text-gray-400" title="List Lynis test IDs to skip (e.g., CRYP-7902). Use the plus icon on the last entry to add more, and the minus icon to remove.">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                </svg>
+                            </span>
+                            <span class="text-sm text-gray-500" id="skiptests-count">0 tests</span>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform" data-skiptests-chevron viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
+                        </svg>
+                    </button>
+                    <div class="mt-3 space-y-2 border border-gray-200 rounded-md p-4 bg-gray-50" data-skiptests-panel data-formset-group="skiptest" data-formset-prefix="{{ skip_formset.prefix }}">
                         {{ skip_formset.management_form }}
                         <div data-formset-items="skiptest" class="space-y-2">
                             {% for skip_form in skip_formset %}
@@ -350,6 +368,17 @@
             if (forms.length === 0) {
                 renderNewForm();
             }
+            // Update count if this is a tracked formset
+            if (group === 'package') {
+                const event = new CustomEvent('packagesFormsetUpdated');
+                document.dispatchEvent(event);
+            } else if (group === 'plugin') {
+                const event = new CustomEvent('pluginsFormsetUpdated');
+                document.dispatchEvent(event);
+            } else if (group === 'skiptest') {
+                const event = new CustomEvent('skiptestsFormsetUpdated');
+                document.dispatchEvent(event);
+            }
         };
 
         itemsContainer.addEventListener('click', (event) => {
@@ -378,6 +407,177 @@
         refreshAddButtons();
     });
 })();
+
+    // Packages section collapse/expand functionality
+    (function() {
+        const packagesToggle = document.querySelector('[data-packages-toggle]');
+        const packagesPanel = document.querySelector('[data-packages-panel]');
+        const packagesChevron = document.querySelector('[data-packages-chevron]');
+        const packagesCount = document.getElementById('packages-count');
+        const packagesFormset = document.querySelector('[data-formset-group="package"]');
+        
+        if (!packagesToggle || !packagesPanel || !packagesChevron || !packagesCount) {
+            return;
+        }
+
+        // Function to update package count
+        const updatePackageCount = () => {
+            if (!packagesFormset) return;
+            const visibleForms = Array.from(packagesFormset.querySelectorAll('[data-formset-form="package"]'))
+                .filter(form => {
+                    if (form.classList.contains('hidden')) return false;
+                    const deleteInput = form.querySelector('input[name$="-DELETE"]');
+                    if (deleteInput && deleteInput.checked) return false;
+                    const nameInput = form.querySelector('input[name$="-name"]');
+                    // Only count forms that have a value (exclude empty placeholder forms)
+                    return nameInput && nameInput.value.trim().length > 0;
+                });
+            const count = visibleForms.length;
+            packagesCount.textContent = count === 1 ? '1 package' : `${count} packages`;
+        };
+
+        // Toggle panel visibility
+        packagesToggle.addEventListener('click', () => {
+            packagesPanel.classList.toggle('hidden');
+            packagesChevron.classList.toggle('rotate-180');
+        });
+
+        // Update count on form changes
+        const updateCount = () => {
+            updatePackageCount();
+        };
+        
+        if (packagesFormset) {
+            const observer = new MutationObserver(updateCount);
+            
+            observer.observe(packagesFormset, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+
+        // Listen for formset updates
+        document.addEventListener('packagesFormsetUpdated', updateCount);
+
+        // Initial count update
+        updatePackageCount();
+    })();
+
+    // Plugins section collapse/expand functionality
+    (function() {
+        const pluginsToggle = document.querySelector('[data-plugins-toggle]');
+        const pluginsPanel = document.querySelector('[data-plugins-panel]');
+        const pluginsChevron = document.querySelector('[data-plugins-chevron]');
+        const pluginsCount = document.getElementById('plugins-count');
+        const pluginsFormset = document.querySelector('[data-formset-group="plugin"]');
+        
+        if (!pluginsToggle || !pluginsPanel || !pluginsChevron || !pluginsCount) {
+            return;
+        }
+
+        // Function to update plugin count
+        const updatePluginCount = () => {
+            if (!pluginsFormset) return;
+            const visibleForms = Array.from(pluginsFormset.querySelectorAll('[data-formset-form="plugin"]'))
+                .filter(form => {
+                    if (form.classList.contains('hidden')) return false;
+                    const deleteInput = form.querySelector('input[name$="-DELETE"]');
+                    if (deleteInput && deleteInput.checked) return false;
+                    const urlInput = form.querySelector('input[name$="-url"]');
+                    // Only count forms that have a value (exclude empty placeholder forms)
+                    return urlInput && urlInput.value.trim().length > 0;
+                });
+            const count = visibleForms.length;
+            pluginsCount.textContent = count === 1 ? '1 plugin' : `${count} plugins`;
+        };
+
+        // Toggle panel visibility
+        pluginsToggle.addEventListener('click', () => {
+            pluginsPanel.classList.toggle('hidden');
+            pluginsChevron.classList.toggle('rotate-180');
+        });
+
+        // Update count on form changes
+        const updateCount = () => {
+            updatePluginCount();
+        };
+        
+        if (pluginsFormset) {
+            const observer = new MutationObserver(updateCount);
+            
+            observer.observe(pluginsFormset, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+
+        // Listen for formset updates
+        document.addEventListener('pluginsFormsetUpdated', updateCount);
+
+        // Initial count update
+        updatePluginCount();
+    })();
+
+    // Skip tests section collapse/expand functionality
+    (function() {
+        const skiptestsToggle = document.querySelector('[data-skiptests-toggle]');
+        const skiptestsPanel = document.querySelector('[data-skiptests-panel]');
+        const skiptestsChevron = document.querySelector('[data-skiptests-chevron]');
+        const skiptestsCount = document.getElementById('skiptests-count');
+        const skiptestsFormset = document.querySelector('[data-formset-group="skiptest"]');
+        
+        if (!skiptestsToggle || !skiptestsPanel || !skiptestsChevron || !skiptestsCount) {
+            return;
+        }
+
+        // Function to update skip test count
+        const updateSkipTestCount = () => {
+            if (!skiptestsFormset) return;
+            const visibleForms = Array.from(skiptestsFormset.querySelectorAll('[data-formset-form="skiptest"]'))
+                .filter(form => {
+                    if (form.classList.contains('hidden')) return false;
+                    const deleteInput = form.querySelector('input[name$="-DELETE"]');
+                    if (deleteInput && deleteInput.checked) return false;
+                    const testIdInput = form.querySelector('input[name$="-test_id"]');
+                    // Only count forms that have a value (exclude empty placeholder forms)
+                    return testIdInput && testIdInput.value.trim().length > 0;
+                });
+            const count = visibleForms.length;
+            skiptestsCount.textContent = count === 1 ? '1 test' : `${count} tests`;
+        };
+
+        // Toggle panel visibility
+        skiptestsToggle.addEventListener('click', () => {
+            skiptestsPanel.classList.toggle('hidden');
+            skiptestsChevron.classList.toggle('rotate-180');
+        });
+
+        // Update count on form changes
+        const updateCount = () => {
+            updateSkipTestCount();
+        };
+        
+        if (skiptestsFormset) {
+            const observer = new MutationObserver(updateCount);
+            
+            observer.observe(skiptestsFormset, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+
+        // Listen for formset updates
+        document.addEventListener('skiptestsFormsetUpdated', updateCount);
+
+        // Initial count update
+        updateSkipTestCount();
+    })();
 </script>
 {% endblock %}
 
