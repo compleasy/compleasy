@@ -1,17 +1,16 @@
 // Silence Rules Sidebar Management
 
 let silenceRules = [];
-let editingRuleId = null;
 
 // Event delegation for Firefox compatibility
 document.addEventListener('DOMContentLoaded', function() {
-    const panel = document.getElementById('silence-rules-panel');
-    if (!panel) {
+    const listPanel = document.getElementById('silence-rules-panel');
+    if (!listPanel) {
         return;
     }
 
-    // Use event delegation for all buttons in the panel
-    panel.addEventListener('click', function(e) {
+    // Use event delegation for all buttons in the list panel
+    listPanel.addEventListener('click', function(e) {
         const closeBtn = e.target.closest('.silence-rules-panel-button');
         if (closeBtn) {
             e.preventDefault();
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             const ruleId = parseInt(editBtn.getAttribute('data-edit-rule'));
-            editSilenceRule(ruleId);
+            openSilenceRuleEditFromList(ruleId);
             return;
         }
 
@@ -53,10 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cancelBtn) {
             e.preventDefault();
             e.stopPropagation();
-            cancelEditRule();
             return;
         }
     });
+
+    // Event delegation for edit panel buttons
+    const editPanel = document.getElementById('silence-rule-edit-panel');
+    if (editPanel) {
+        editPanel.addEventListener('click', function(e) {
+            const closeBtn = e.target.closest('.silence-rule-edit-panel-button');
+            if (closeBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeSilenceRuleEditPanel();
+            }
+        });
+    }
 
     // Handle form submission
     const form = document.getElementById('silence-rule-form');
@@ -75,9 +86,89 @@ function toggleSilenceRulesPanel() {
     if (!panel.classList.contains('hidden')) {
         loadSilenceRules();
     } else {
-        // Reset form when closing
-        cancelEditRule();
+        closeSilenceRuleEditPanel(true);
     }
+}
+
+function openSilenceRuleEditFromList(ruleId) {
+    const listPanel = document.getElementById('silence-rules-panel');
+    if (listPanel && !listPanel.classList.contains('hidden')) {
+        listPanel.dataset.wasOpen = 'true';
+        listPanel.classList.add('hidden');
+    }
+    toggleSilenceRuleEditPanel(ruleId);
+}
+
+function toggleSilenceRuleEditPanel(ruleId) {
+    const panel = document.getElementById('silence-rule-edit-panel');
+    if (!panel) {
+        console.error('Silence rule edit panel not found in DOM');
+        return;
+    }
+
+    panel.classList.remove('hidden');
+
+    const form = document.getElementById('silence-rule-form');
+    const title = document.getElementById('silence-rule-edit-title');
+
+    if (!form || !title) {
+        console.error('Silence rule edit form or title missing from DOM');
+        return;
+    }
+
+    if (ruleId) {
+        form.action = `/activity/silence/${ruleId}/edit/`;
+        title.textContent = 'Edit Silence Rule';
+        loadSilenceRuleDetails(ruleId);
+    } else {
+        form.action = '/activity/silence/create/';
+        title.textContent = 'Add Silence Rule';
+        loadSilenceRuleDetails();
+    }
+}
+
+function closeSilenceRuleEditPanel(forceOnly = false) {
+    const panel = document.getElementById('silence-rule-edit-panel');
+    if (panel && !panel.classList.contains('hidden')) {
+        panel.classList.add('hidden');
+    }
+
+    if (forceOnly) {
+        return;
+    }
+
+    const listPanel = document.getElementById('silence-rules-panel');
+    if (listPanel && listPanel.dataset.wasOpen === 'true') {
+        listPanel.classList.remove('hidden');
+        listPanel.dataset.wasOpen = 'false';
+        loadSilenceRules();
+    }
+}
+
+function loadSilenceRuleDetails(ruleId) {
+    if (!ruleId) {
+        document.getElementById('silence_key_pattern').value = '';
+        document.getElementById('silence_event_type').value = 'all';
+        document.getElementById('silence_host_pattern').value = '*';
+        document.getElementById('silence_is_active').checked = true;
+        document.getElementById('silence_rule_id').value = '';
+        hideFormErrors();
+        return;
+    }
+
+    ruleId = Number(ruleId);
+    const rule = silenceRules.find(r => r.id === ruleId);
+    if (!rule) {
+        console.error('Rule not found:', ruleId);
+        return;
+    }
+
+    document.getElementById('silence_key_pattern').value = rule.key_pattern;
+    document.getElementById('silence_event_type').value = rule.event_type;
+    document.getElementById('silence_host_pattern').value = rule.host_pattern;
+    document.getElementById('silence_is_active').checked = rule.is_active;
+    document.getElementById('silence_rule_id').value = ruleId;
+    hideFormErrors();
 }
 
 function loadSilenceRules() {
@@ -121,8 +212,8 @@ function renderSilenceRulesList() {
         const statusText = rule.is_active ? 'Active' : 'Inactive';
         
         return `
-            <div class="border border-gray-200 rounded-lg p-3 ${!rule.is_active ? 'opacity-60' : ''}">
-                <div class="flex justify-between items-start mb-2">
+            <div class="border border-gray-200 rounded-lg p-3 group/rule ${!rule.is_active ? 'opacity-60' : ''}">
+                <div class="flex justify-between items-start">
                     <div class="flex-1">
                         <div class="font-semibold text-gray-900">${escapeHtml(rule.key_pattern)}</div>
                         <div class="text-sm text-gray-600 mt-1">
@@ -141,11 +232,12 @@ function renderSilenceRulesList() {
                             </div>
                         </button>
                         <button type="button" data-edit-rule="${rule.id}" 
-                                class="text-gray-600 hover:text-gray-800" title="Edit">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                class="group relative rounded-full p-1 bg-transparent text-gray-600 hover:text-gray-800" title="Edit">
+                            <div class="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black/10 rounded-full"></div>
+                            <svg class="size-4 invisible group-hover/rule:visible relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125">
                                 </path>
                             </svg>
                         </button>
@@ -163,57 +255,6 @@ function renderSilenceRulesList() {
             </div>
         `;
     }).join('');
-}
-
-function editSilenceRule(ruleId) {
-    const rule = silenceRules.find(r => r.id === ruleId);
-    if (!rule) {
-        console.error('Rule not found:', ruleId);
-        return;
-    }
-    
-    editingRuleId = ruleId;
-    
-    // Populate form
-    document.getElementById('silence_key_pattern').value = rule.key_pattern;
-    document.getElementById('silence_event_type').value = rule.event_type;
-    document.getElementById('silence_host_pattern').value = rule.host_pattern;
-    document.getElementById('silence_is_active').checked = rule.is_active;
-    document.getElementById('silence_rule_id').value = ruleId;
-    
-    // Update form title and submit button
-    document.getElementById('silence-rule-form-title').textContent = 'Edit Rule';
-    document.getElementById('silence-rule-submit-text').textContent = 'Update Rule';
-    document.getElementById('silence-rule-cancel-btn').classList.remove('hidden');
-    
-    // Update form action
-    const form = document.getElementById('silence-rule-form');
-    form.action = `/activity/silence/${ruleId}/edit/`;
-    
-    // Scroll to form
-    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function cancelEditRule() {
-    editingRuleId = null;
-    
-    // Reset form
-    document.getElementById('silence_key_pattern').value = '';
-    document.getElementById('silence_event_type').value = 'all';
-    document.getElementById('silence_host_pattern').value = '*';
-    document.getElementById('silence_is_active').checked = true;
-    document.getElementById('silence_rule_id').value = '';
-    
-    // Reset form title and buttons
-    document.getElementById('silence-rule-form-title').textContent = 'Add New Rule';
-    document.getElementById('silence-rule-submit-text').textContent = 'Add Rule';
-    document.getElementById('silence-rule-cancel-btn').classList.add('hidden');
-    
-    // Reset form action
-    const form = document.getElementById('silence-rule-form');
-    form.action = '/activity/silence/create/';
-    
-    hideFormErrors();
 }
 
 function submitSilenceRuleForm() {
@@ -238,10 +279,9 @@ function submitSilenceRuleForm() {
         if (data.success) {
             // Reload rules list
             loadSilenceRules();
-            // Reset form
-            cancelEditRule();
-            // Reload activity page to show filtered results
-            location.reload();
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+            closeSilenceRuleEditPanel();
         } else {
             // Show errors
             showFormErrors(data.errors);

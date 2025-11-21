@@ -1,0 +1,76 @@
+<div id="silence-rule-edit-panel" class="hidden fixed right-0 top-0 h-full w-1/4 bg-white shadow-md z-50 flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b bg-gray-200">
+        <h2 class="text-xl font-bold" id="silence-rule-edit-title">Add Silence Rule</h2>
+        <button class="silence-rule-edit-panel-button text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="flex-1 flex flex-col">
+        <form id="silence-rule-form" method="POST" action="" class="flex-1 flex flex-col">
+            {% csrf_token %}
+            <input type="hidden" name="rule_id" id="silence_rule_id" value="">
+
+            <div class="p-4 space-y-4 overflow-y-auto flex-1">
+                <div>
+                    <label for="silence_key_pattern" class="block text-sm font-medium text-gray-700">
+                        Key Pattern <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="silence_key_pattern" name="key_pattern"
+                           class="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+                           placeholder="e.g., slow_test or test_*" required />
+                    <p class="mt-1 text-xs text-gray-500">Key name pattern (supports wildcards: *, ?)</p>
+                </div>
+
+                <div>
+                    <label for="silence_event_type" class="block text-sm font-medium text-gray-700">
+                        Event Type <span class="text-red-500">*</span>
+                    </label>
+                    <select id="silence_event_type" name="event_type"
+                            class="mt-1 p-2 block w-full border border-gray-300 rounded-md" required>
+                        <option value="all">All</option>
+                        <option value="added">Added</option>
+                        <option value="changed">Changed</option>
+                        <option value="removed">Removed</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Event type to silence</p>
+                </div>
+
+                <div>
+                    <label for="silence_host_pattern" class="block text-sm font-medium text-gray-700">
+                        Host Pattern <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="silence_host_pattern" name="host_pattern"
+                           class="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+                           placeholder="*" value="*" required />
+                    <p class="mt-1 text-xs text-gray-500">Hostname pattern (supports wildcards: *, ?). Use * for all hosts.</p>
+                </div>
+
+                <div>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_active" id="silence_is_active"
+                               class="sr-only peer" checked />
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ms-3 text-sm font-medium text-gray-600">Active</span>
+                    </label>
+                </div>
+
+                <div id="silence-rule-form-errors" class="hidden p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul id="silence-rule-error-list"></ul>
+                </div>
+            </div>
+
+            <div class="flex space-x-2 w-full p-4 border-t bg-gray-200">
+                <button type="submit" class="w-1/2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Save
+                </button>
+                <button type="button" class="silence-rule-edit-panel-button w-1/2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
