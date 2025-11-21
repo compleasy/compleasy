@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from api.models import Device, PolicyRuleset, PolicyRule, LicenseKey, ActivityIgnorePattern, EnrollmentSettings
+from urllib.parse import urlparse
+from api.models import Device, PolicyRuleset, PolicyRule, LicenseKey, ActivityIgnorePattern, EnrollmentSettings, EnrollmentPlugin
+from django.forms import inlineformset_factory
 import jmespath
 
 class DeviceForm(forms.ModelForm):
@@ -231,3 +233,38 @@ class EnrollmentSettingsForm(forms.ModelForm):
         self.fields['overwrite_lynis_profile'].help_text = 'Allow the installer to replace /etc/lynis/custom.prf even if it already exists.'
         self.fields['additional_packages'].help_text = 'Space-separated list of packages to install alongside Lynis (leave empty to install only curl and lynis).'
         self.fields['skip_tests'].help_text = 'Comma-separated Lynis test IDs to skip (e.g., CRYP-7902). Leave empty to run all tests.'
+
+class EnrollmentPluginForm(forms.ModelForm):
+    class Meta:
+        model = EnrollmentPlugin
+        fields = ['url']
+        widgets = {
+            'url': forms.URLInput(attrs={
+                'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
+                'placeholder': 'https://example.com/plugins/trikusec-plugin',
+            }),
+        }
+        help_texts = {
+            'url': 'Provide the HTTPS URL for the plugin file.',
+        }
+
+    def clean_url(self):
+        url = self.cleaned_data.get('url')
+        if not url:
+            return url
+        parsed = urlparse(url)
+        if parsed.scheme not in ('http', 'https'):
+            raise forms.ValidationError('Only HTTP/HTTPS plugin URLs are supported.')
+        return url.strip()
+
+
+EnrollmentPluginFormSet = inlineformset_factory(
+    parent_model=EnrollmentSettings,
+    model=EnrollmentPlugin,
+    form=EnrollmentPluginForm,
+    fields=['url'],
+    extra=1,
+    can_delete=True,
+    validate_min=False,
+    validate_max=False,
+)

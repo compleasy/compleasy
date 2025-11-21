@@ -5,9 +5,86 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
-from api.models import Device, FullReport, DiffReport
+from api.models import Device, FullReport, DiffReport, EnrollmentSettings, EnrollmentPlugin
 from frontend.templatetags import custom_filters
 from frontend.views import DEVICE_LIST_PAGE_SIZE
+from frontend.forms import EnrollmentSettingsForm, EnrollmentPluginFormSet
+
+
+@pytest.mark.django_db
+class TestEnrollmentPluginFormSet:
+    def _base_form_data(self):
+        return {
+            'ignore_ssl_errors': 'on',
+            'overwrite_lynis_profile': '',
+            'additional_packages': 'rkhunter auditd',
+            'skip_tests': '',
+        }
+
+    def _build_formset_data(self, formset, urls, delete_indexes=None):
+        data = {}
+        management_initial = dict(formset.management_form.initial)
+        initial_total = int(management_initial.get('TOTAL_FORMS', 0))
+        total_forms = max(len(urls), initial_total)
+        management_initial['TOTAL_FORMS'] = total_forms
+
+        for key, value in management_initial.items():
+            data[f'{formset.prefix}-{key}'] = str(value)
+
+        delete_indexes = delete_indexes or set()
+        for i in range(total_forms):
+            url_value = urls[i] if i < len(urls) else ''
+            data[f'{formset.prefix}-{i}-url'] = url_value
+            data[f'{formset.prefix}-{i}-DELETE'] = 'on' if i in delete_indexes else ''
+        return data
+
+    def test_formset_creates_plugins(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.plugins.all().delete()
+
+        settings_form = EnrollmentSettingsForm(data=self._base_form_data(), instance=settings)
+        assert settings_form.is_valid()
+
+        unbound_formset = EnrollmentPluginFormSet(instance=settings, prefix='plugin')
+        urls = ['https://example.com/plugins/a', 'https://example.com/plugins/b']
+        formset_data = self._build_formset_data(unbound_formset, urls)
+
+        formset = EnrollmentPluginFormSet(formset_data, instance=settings, prefix='plugin')
+        assert formset.is_valid()
+
+        settings_form.save()
+        formset.save()
+
+        assert settings.plugins.count() == 2
+        assert list(settings.plugins.order_by('id').values_list('url', flat=True)) == urls
+
+    def test_formset_validates_scheme(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.plugins.all().delete()
+
+        unbound_formset = EnrollmentPluginFormSet(instance=settings, prefix='plugin')
+        urls = ['ftp://invalid.example.com/plugin']
+        formset_data = self._build_formset_data(unbound_formset, urls)
+
+        formset = EnrollmentPluginFormSet(formset_data, instance=settings, prefix='plugin')
+        assert not formset.is_valid()
+        assert 'Only HTTP/HTTPS plugin URLs are supported.' in formset.forms[0].errors['url']
+
+    def test_formset_delete_existing_plugin(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.plugins.all().delete()
+        plugin = EnrollmentPlugin.objects.create(settings=settings, url='https://example.com/keep-me')
+
+        unbound_formset = EnrollmentPluginFormSet(instance=settings, prefix='plugin')
+        urls = ['https://example.com/keep-me']
+        formset_data = self._build_formset_data(unbound_formset, urls, delete_indexes={0})
+        formset_data[f'plugin-0-id'] = str(plugin.id)
+
+        formset = EnrollmentPluginFormSet(formset_data, instance=settings, prefix='plugin')
+        assert formset.is_valid()
+        formset.save()
+
+        assert settings.plugins.count() == 0
 
 
 @pytest.mark.django_db

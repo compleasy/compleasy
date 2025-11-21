@@ -46,6 +46,36 @@ echo "Skipping server certificate validation (configured)."
 ${SUDO} apt-get update
 ${SUDO} apt-get install -y curl lynis{% if additional_packages %} {{ additional_packages }}{% endif %}
 
+# Install optional Lynis plugins defined in TrikuSec (https://cisofy.com/documentation/lynis/plugins/)
+{% if plugin_urls %}
+echo "Installing Lynis plugins configured in TrikuSec..."
+PLUGIN_DIR=$(lynis show plugindir 2>/dev/null | grep -Eo '/[^[:space:]]+' | head -n1)
+if [ -z "$PLUGIN_DIR" ]; then
+    PLUGIN_DIR="/var/lib/lynis/plugins"
+    echo "Falling back to default plugin directory: ${PLUGIN_DIR}"
+fi
+${SUDO} mkdir -p "${PLUGIN_DIR}"
+PLUGIN_URLS=(
+{% for plugin_url in plugin_urls %}
+"{{ plugin_url }}"
+{% endfor %}
+)
+for PLUGIN_URL in "${PLUGIN_URLS[@]}"; do
+    echo "Downloading plugin from ${PLUGIN_URL}"
+    TMP_PLUGIN=$(mktemp)
+    if curl -fsSL "${PLUGIN_URL}" -o "${TMP_PLUGIN}"; then
+        PLUGIN_BASENAME=$(basename "${PLUGIN_URL}")
+        ${SUDO} mv "${TMP_PLUGIN}" "${PLUGIN_DIR}/${PLUGIN_BASENAME}"
+        ${SUDO} chmod 755 "${PLUGIN_DIR}/${PLUGIN_BASENAME}"
+        echo "Installed Lynis plugin ${PLUGIN_BASENAME} into ${PLUGIN_DIR}"
+    else
+        echo "Failed to download Lynis plugin from ${PLUGIN_URL}. Aborting."
+        rm -f "${TMP_PLUGIN}"
+        exit 1
+    fi
+done
+{% endif %}
+
 # Get installed Lynis version
 LYNIS_VERSION=$(lynis --version)
 

@@ -103,6 +103,10 @@ These packages enable additional security checks:
 - **auditd**: Linux audit daemon
 - **aide**: File integrity monitoring
 
+## Optional Lynis Plugins
+
+TrikuSec can automatically install additional Lynis plugins during enrollment. Administrators can configure these under **Settings → Enrollment configuration → Lynis plugins** using the inline plugin list. Add one HTTP/HTTPS URL per row (remove rows to delete existing plugins). When the enrollment script runs, it downloads each plugin, places it in the Lynis plugin directory reported by `lynis show plugindir`, and marks it executable following the [CISOfy plugin guidance](https://cisofy.com/documentation/lynis/plugins/). Use this to ship organization-specific tests or vendor plugins without manual intervention on every server.
+
 ## Troubleshooting
 
 ### Connection Issues

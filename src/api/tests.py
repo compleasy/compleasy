@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-from api.models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern, Organization, DeviceEvent
+from api.models import LicenseKey, Device, FullReport, DiffReport, ActivityIgnorePattern, Organization, DeviceEvent, EnrollmentSettings, EnrollmentPlugin
 from api.utils.lynis_report import LynisReport
 import fnmatch
 
@@ -292,6 +292,27 @@ class TestCheckLicense:
         response = client.get(url)
         assert response.status_code == 405
         assert response.content == b'Invalid request method'
+
+
+@pytest.mark.django_db
+class TestEnrollScript:
+    def test_enroll_script_includes_plugin_urls(self, test_license_key):
+        settings = EnrollmentSettings.get_settings()
+        settings.plugins.all().delete()
+        EnrollmentPlugin.objects.create(
+            settings=settings,
+            url='https://plugins.example.com/trikusec/plugin_trikusec_phase1'
+        )
+
+        client = Client()
+        response = client.get(reverse('enroll_sh'), {'licensekey': test_license_key.licensekey})
+
+        assert response.status_code == 200
+        body = response.content.decode()
+        assert 'Installing Lynis plugins configured in TrikuSec' in body
+        assert 'https://plugins.example.com/trikusec/plugin_trikusec_phase1' in body
+        assert 'PLUGIN_URLS=(' in body
+        assert response['Content-Type'] == 'text/x-shellscript'
 
     def test_check_license_invalid_method_put(self):
         """Test PUT method returns 405."""

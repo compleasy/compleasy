@@ -6,6 +6,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
+from django.db import transaction
 from django.db.models import Q, F, Count
 from django.core.paginator import Paginator
 from django.conf import settings
@@ -13,7 +14,16 @@ from api.models import Device, FullReport, DiffReport, LicenseKey, PolicyRule, P
 from api.utils.lynis_report import LynisReport
 from api.utils.compliance import check_device_compliance
 from api.utils.license_utils import generate_license_key
-from .forms import PolicyRulesetForm, PolicyRuleForm, DeviceForm, LicenseKeyForm, UserProfileForm, ActivityIgnorePatternForm, EnrollmentSettingsForm
+from .forms import (
+    PolicyRulesetForm,
+    PolicyRuleForm,
+    DeviceForm,
+    LicenseKeyForm,
+    UserProfileForm,
+    ActivityIgnorePatternForm,
+    EnrollmentSettingsForm,
+    EnrollmentPluginFormSet,
+)
 import os
 import json
 import logging
@@ -95,16 +105,28 @@ def settings_view(request):
     settings_instance = EnrollmentSettings.get_settings()
     if request.method == 'POST':
         form = EnrollmentSettingsForm(request.POST, instance=settings_instance)
-        if form.is_valid():
-            form.save()
+        plugin_formset = EnrollmentPluginFormSet(
+            request.POST,
+            instance=settings_instance,
+            prefix='plugin',
+        )
+        if form.is_valid() and plugin_formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                plugin_formset.save()
             messages.success(request, 'Enrollment configuration updated successfully.')
             return redirect('settings')
         messages.error(request, 'Please fix the highlighted errors to update the configuration.')
     else:
         form = EnrollmentSettingsForm(instance=settings_instance)
+        plugin_formset = EnrollmentPluginFormSet(
+            instance=settings_instance,
+            prefix='plugin',
+        )
 
     return render(request, 'settings.html', {
         'settings_form': form,
+        'plugin_formset': plugin_formset,
     })
 
 @login_required

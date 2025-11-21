@@ -181,3 +181,19 @@ class EnrollmentSettings(models.Model):
         if settings_instance is None:
             settings_instance = cls.objects.create()
         return settings_instance
+
+    @property
+    def plugin_urls(self):
+        return [url.strip() for url in self.plugins.order_by('id').values_list('url', flat=True) if url]
+
+
+class EnrollmentPlugin(models.Model):
+    settings = models.ForeignKey(EnrollmentSettings, on_delete=models.CASCADE, related_name='plugins')
+    url = models.URLField(max_length=1024)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return self.url

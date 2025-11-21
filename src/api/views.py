@@ -179,6 +179,7 @@ def enroll_sh(request):
     enrollment_settings = EnrollmentSettings.get_settings()
     additional_packages = enrollment_settings.additional_packages.strip()
     skip_tests = enrollment_settings.skip_tests.replace(' ', '').strip(',')
+    plugin_urls = [url.strip() for url in enrollment_settings.plugin_urls if url.strip()]
 
     context = {
         'trikusec_lynis_upload_server': trikusec_lynis_upload_server,
@@ -187,6 +188,7 @@ def enroll_sh(request):
         'overwrite_lynis_profile': enrollment_settings.overwrite_lynis_profile,
         'additional_packages': additional_packages,
         'skip_tests': skip_tests,
+        'plugin_urls': plugin_urls,
     }
     return render(request, 'api/enroll.sh', context, content_type='text/x-shellscript')
 
