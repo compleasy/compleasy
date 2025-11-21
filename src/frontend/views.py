@@ -23,6 +23,7 @@ from .forms import (
     ActivityIgnorePatternForm,
     EnrollmentSettingsForm,
     EnrollmentPluginFormSet,
+    EnrollmentSkipTestFormSet,
 )
 import os
 import json
@@ -110,10 +111,16 @@ def settings_view(request):
             instance=settings_instance,
             prefix='plugin',
         )
-        if form.is_valid() and plugin_formset.is_valid():
+        skip_formset = EnrollmentSkipTestFormSet(
+            request.POST,
+            instance=settings_instance,
+            prefix='skiptest',
+        )
+        if form.is_valid() and plugin_formset.is_valid() and skip_formset.is_valid():
             with transaction.atomic():
                 form.save()
                 plugin_formset.save()
+                skip_formset.save()
             messages.success(request, 'Enrollment configuration updated successfully.')
             return redirect('settings')
         messages.error(request, 'Please fix the highlighted errors to update the configuration.')
@@ -123,10 +130,15 @@ def settings_view(request):
             instance=settings_instance,
             prefix='plugin',
         )
+        skip_formset = EnrollmentSkipTestFormSet(
+            instance=settings_instance,
+            prefix='skiptest',
+        )
 
     return render(request, 'settings.html', {
         'settings_form': form,
         'plugin_formset': plugin_formset,
+        'skip_formset': skip_formset,
     })
 
 @login_required

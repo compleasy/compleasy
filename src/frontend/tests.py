@@ -5,10 +5,10 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
-from api.models import Device, FullReport, DiffReport, EnrollmentSettings, EnrollmentPlugin
+from api.models import Device, FullReport, DiffReport, EnrollmentSettings, EnrollmentPlugin, EnrollmentSkipTest
 from frontend.templatetags import custom_filters
 from frontend.views import DEVICE_LIST_PAGE_SIZE
-from frontend.forms import EnrollmentSettingsForm, EnrollmentPluginFormSet
+from frontend.forms import EnrollmentSettingsForm, EnrollmentPluginFormSet, EnrollmentSkipTestFormSet
 
 
 @pytest.mark.django_db
@@ -18,7 +18,6 @@ class TestEnrollmentPluginFormSet:
             'ignore_ssl_errors': 'on',
             'overwrite_lynis_profile': '',
             'additional_packages': 'rkhunter auditd',
-            'skip_tests': '',
         }
 
     def _build_formset_data(self, formset, urls, delete_indexes=None):
@@ -85,6 +84,80 @@ class TestEnrollmentPluginFormSet:
         formset.save()
 
         assert settings.plugins.count() == 0
+
+
+@pytest.mark.django_db
+class TestEnrollmentSkipTestFormSet:
+    def _base_form_data(self):
+        return {
+            'ignore_ssl_errors': '',
+            'overwrite_lynis_profile': '',
+            'additional_packages': 'rkhunter auditd',
+        }
+
+    def _build_formset_data(self, formset, test_ids, delete_indexes=None):
+        data = {}
+        management_initial = dict(formset.management_form.initial)
+        initial_total = int(management_initial.get('TOTAL_FORMS', 0))
+        total_forms = max(len(test_ids), initial_total)
+        management_initial['TOTAL_FORMS'] = total_forms
+
+        for key, value in management_initial.items():
+            data[f'{formset.prefix}-{key}'] = str(value)
+
+        delete_indexes = delete_indexes or set()
+        for i in range(total_forms):
+            value = test_ids[i] if i < len(test_ids) else ''
+            data[f'{formset.prefix}-{i}-test_id'] = value
+            data[f'{formset.prefix}-{i}-DELETE'] = 'on' if i in delete_indexes else ''
+        return data
+
+    def test_formset_creates_skip_tests(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.skip_tests_entries.all().delete()
+
+        settings_form = EnrollmentSettingsForm(data=self._base_form_data(), instance=settings)
+        assert settings_form.is_valid()
+
+        unbound_formset = EnrollmentSkipTestFormSet(instance=settings, prefix='skiptest')
+        test_ids = ['cryp-7902', 'LYNIS-1234']
+        formset_data = self._build_formset_data(unbound_formset, test_ids)
+
+        formset = EnrollmentSkipTestFormSet(formset_data, instance=settings, prefix='skiptest')
+        assert formset.is_valid()
+
+        settings_form.save()
+        formset.save()
+
+        assert list(settings.skip_tests_entries.order_by('id').values_list('test_id', flat=True)) == ['CRYP-7902', 'LYNIS-1234']
+
+    def test_formset_validates_required(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.skip_tests_entries.all().delete()
+        entry = EnrollmentSkipTest.objects.create(settings=settings, test_id='CRYP-7902')
+
+        unbound_formset = EnrollmentSkipTestFormSet(instance=settings, prefix='skiptest')
+        formset_data = self._build_formset_data(unbound_formset, ['   '])
+        formset_data['skiptest-0-id'] = str(entry.id)
+
+        formset = EnrollmentSkipTestFormSet(formset_data, instance=settings, prefix='skiptest')
+        assert not formset.is_valid()
+        assert 'test_id' in formset.forms[0].errors
+
+    def test_formset_delete_existing_skip_test(self):
+        settings = EnrollmentSettings.get_settings()
+        settings.skip_tests_entries.all().delete()
+        entry = EnrollmentSkipTest.objects.create(settings=settings, test_id='CRYP-7902')
+
+        unbound_formset = EnrollmentSkipTestFormSet(instance=settings, prefix='skiptest')
+        formset_data = self._build_formset_data(unbound_formset, ['CRYP-7902'], delete_indexes={0})
+        formset_data['skiptest-0-id'] = str(entry.id)
+
+        formset = EnrollmentSkipTestFormSet(formset_data, instance=settings, prefix='skiptest')
+        assert formset.is_valid()
+        formset.save()
+
+        assert settings.skip_tests_entries.count() == 0
 
 
 @pytest.mark.django_db

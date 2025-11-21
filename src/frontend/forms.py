@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse
-from api.models import Device, PolicyRuleset, PolicyRule, LicenseKey, ActivityIgnorePattern, EnrollmentSettings, EnrollmentPlugin
+from api.models import Device, PolicyRuleset, PolicyRule, LicenseKey, ActivityIgnorePattern, EnrollmentSettings, EnrollmentPlugin, EnrollmentSkipTest
 from django.forms import inlineformset_factory
 import jmespath
 
@@ -209,7 +209,7 @@ class ActivityIgnorePatternForm(forms.ModelForm):
 class EnrollmentSettingsForm(forms.ModelForm):
     class Meta:
         model = EnrollmentSettings
-        fields = ['ignore_ssl_errors', 'overwrite_lynis_profile', 'additional_packages', 'skip_tests']
+        fields = ['ignore_ssl_errors', 'overwrite_lynis_profile', 'additional_packages']
         widgets = {
             'ignore_ssl_errors': forms.CheckboxInput(attrs={
                 'class': 'mt-1 block border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
@@ -221,10 +221,6 @@ class EnrollmentSettingsForm(forms.ModelForm):
                 'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
                 'placeholder': 'e.g., rkhunter auditd',
             }),
-            'skip_tests': forms.TextInput(attrs={
-                'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800',
-                'placeholder': 'e.g., CRYP-7902,LYNIS-1234',
-            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -232,7 +228,6 @@ class EnrollmentSettingsForm(forms.ModelForm):
         self.fields['ignore_ssl_errors'].help_text = 'Skip downloading and trusting the server certificate. Enable this only if the servers certificate is self-signed and you don\'t want to install the certificate into the system truststore.'
         self.fields['overwrite_lynis_profile'].help_text = 'Allow the installer to replace /etc/lynis/custom.prf even if it already exists.'
         self.fields['additional_packages'].help_text = 'Space-separated list of packages to install alongside Lynis (leave empty to install only curl and lynis).'
-        self.fields['skip_tests'].help_text = 'Comma-separated Lynis test IDs to skip (e.g., CRYP-7902). Leave empty to run all tests.'
 
 class EnrollmentPluginForm(forms.ModelForm):
     class Meta:
@@ -263,6 +258,37 @@ EnrollmentPluginFormSet = inlineformset_factory(
     model=EnrollmentPlugin,
     form=EnrollmentPluginForm,
     fields=['url'],
+    extra=1,
+    can_delete=True,
+    validate_min=False,
+    validate_max=False,
+)
+
+
+class EnrollmentSkipTestForm(forms.ModelForm):
+    class Meta:
+        model = EnrollmentSkipTest
+        fields = ['test_id']
+        widgets = {
+            'test_id': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 uppercase tracking-wide',
+                'placeholder': 'e.g., CRYP-7902',
+            }),
+        }
+
+    def clean_test_id(self):
+        test_id = self.cleaned_data.get('test_id', '')
+        test_id = test_id.strip().upper()
+        if not test_id:
+            raise forms.ValidationError('Test ID cannot be empty.')
+        return test_id
+
+
+EnrollmentSkipTestFormSet = inlineformset_factory(
+    parent_model=EnrollmentSettings,
+    model=EnrollmentSkipTest,
+    form=EnrollmentSkipTestForm,
+    fields=['test_id'],
     extra=1,
     can_delete=True,
     validate_min=False,

@@ -186,6 +186,10 @@ class EnrollmentSettings(models.Model):
     def plugin_urls(self):
         return [url.strip() for url in self.plugins.order_by('id').values_list('url', flat=True) if url]
 
+    @property
+    def skip_test_ids(self):
+        return [test_id.strip() for test_id in self.skip_tests_entries.order_by('id').values_list('test_id', flat=True) if test_id]
+
 
 class EnrollmentPlugin(models.Model):
     settings = models.ForeignKey(EnrollmentSettings, on_delete=models.CASCADE, related_name='plugins')
@@ -197,3 +201,15 @@ class EnrollmentPlugin(models.Model):
 
     def __str__(self):
         return self.url
+
+
+class EnrollmentSkipTest(models.Model):
+    settings = models.ForeignKey(EnrollmentSettings, on_delete=models.CASCADE, related_name='skip_tests_entries')
+    test_id = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return self.test_id

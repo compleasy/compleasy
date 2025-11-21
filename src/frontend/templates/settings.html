@@ -92,19 +92,6 @@
                 </div>
 
                 <div>
-                    <label for="{{ settings_form.skip_tests.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        Skip tests
-                    </label>
-                    {{ settings_form.skip_tests }}
-                    <p class="mt-1 text-xs text-gray-500">
-                        {{ settings_form.skip_tests.help_text }}
-                    </p>
-                    {% if settings_form.skip_tests.errors %}
-                        <p class="mt-2 text-sm text-red-600">{{ settings_form.skip_tests.errors|first }}</p>
-                    {% endif %}
-                </div>
-
-                <div>
                     <div class="flex items-center space-x-2">
                         <label class="block text-sm font-medium text-gray-700">
                             Lynis plugins
@@ -115,11 +102,11 @@
                             </svg>
                         </span>
                     </div>
-                    <div class="mt-3 space-y-4 border border-gray-200 rounded-md p-4 bg-gray-50">
+                    <div class="mt-3 space-y-4 border border-gray-200 rounded-md p-4 bg-gray-50" data-formset-group="plugin" data-formset-prefix="{{ plugin_formset.prefix }}">
                         {{ plugin_formset.management_form }}
-                        <div id="plugin-formset-items" class="space-y-4">
+                        <div data-formset-items="plugin" class="space-y-4">
                             {% for plugin_form in plugin_formset %}
-                                <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-plugin-form>
+                                <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-formset-form="plugin">
                                     {% for hidden in plugin_form.hidden_fields %}
                                         {{ hidden }}
                                     {% endfor %}
@@ -130,27 +117,25 @@
                                         {% endif %}
                                     </div>
                                     <div class="flex items-center justify-end space-x-2 text-sm text-gray-700">
-                                        <span class="hidden" data-delete-container>
+                                        <span class="hidden">
                                             {{ plugin_form.DELETE }}
                                         </span>
-                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-remove-plugin title="Remove plugin">
+                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-formset-remove="plugin" title="Remove plugin">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                             </svg>
                                         </button>
-                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none {% if not forloop.last %}hidden{% endif %}" data-add-plugin title="Add plugin">
+                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none {% if not forloop.last %}hidden{% endif %}" data-formset-add="plugin" title="Add plugin">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                             </svg>
                                         </button>
                                     </div>
                                 </div>
-                            {% empty %}
-                                <p class="text-sm text-gray-500">No plugin URLs configured yet.</p>
                             {% endfor %}
                         </div>
-                        <template id="plugin-empty-form-template">
-                            <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-plugin-form data-new-form>
+                        <template data-formset-template="plugin">
+                            <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-formset-form="plugin">
                                 {% with plugin_form=plugin_formset.empty_form %}
                                     {% for hidden in plugin_form.hidden_fields %}
                                         {{ hidden }}
@@ -159,15 +144,88 @@
                                         {{ plugin_form.url }}
                                     </div>
                                     <div class="flex items-center justify-end space-x-2 text-sm text-gray-700">
-                                        <span class="hidden" data-delete-container>
+                                        <span class="hidden">
                                             {{ plugin_form.DELETE }}
                                         </span>
-                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-remove-plugin title="Remove plugin">
+                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-formset-remove="plugin" title="Remove plugin">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                             </svg>
                                         </button>
-                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none hidden" data-add-plugin title="Add plugin">
+                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none hidden" data-formset-add="plugin" title="Add plugin">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {% endwith %}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Skip tests
+                        </label>
+                        <span class="text-gray-400" title="List Lynis test IDs to skip (e.g., CRYP-7902). Use the plus icon on the last entry to add more, and the minus icon to remove.">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="mt-3 space-y-4 border border-gray-200 rounded-md p-4 bg-gray-50" data-formset-group="skiptest" data-formset-prefix="{{ skip_formset.prefix }}">
+                        {{ skip_formset.management_form }}
+                        <div data-formset-items="skiptest" class="space-y-4">
+                            {% for skip_form in skip_formset %}
+                                <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-formset-form="skiptest">
+                                    {% for hidden in skip_form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <div>
+                                        {{ skip_form.test_id }}
+                                        {% if skip_form.test_id.errors %}
+                                            <p class="mt-2 text-sm text-red-600">{{ skip_form.test_id.errors|first }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex items-center justify-end space-x-2 text-sm text-gray-700">
+                                        <span class="hidden">
+                                            {{ skip_form.DELETE }}
+                                        </span>
+                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-formset-remove="skiptest" title="Remove test">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none {% if not forloop.last %}hidden{% endif %}" data-formset-add="skiptest" title="Add test">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <template data-formset-template="skiptest">
+                            <div class="bg-white border border-gray-200 rounded-md p-4 flex flex-col space-y-2" data-formset-form="skiptest">
+                                {% with skip_form=skip_formset.empty_form %}
+                                    {% for hidden in skip_form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <div>
+                                        {{ skip_form.test_id }}
+                                    </div>
+                                    <div class="flex items-center justify-end space-x-2 text-sm text-gray-700">
+                                        <span class="hidden">
+                                            {{ skip_form.DELETE }}
+                                        </span>
+                                        <button type="button" class="p-1 text-gray-500 hover:text-red-600 focus:outline-none" data-formset-remove="skiptest" title="Remove test">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" class="p-1 text-gray-500 hover:text-green-600 focus:outline-none hidden" data-formset-add="skiptest" title="Add test">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                             </svg>
@@ -194,65 +252,71 @@
 {{ block.super }}
 <script>
 (function() {
-    const template = document.getElementById('plugin-empty-form-template');
-    const container = document.getElementById('plugin-formset-items');
-    const totalFormsInput = document.querySelector('#id_{{ plugin_formset.prefix }}-TOTAL_FORMS');
+    document.querySelectorAll('[data-formset-group]').forEach((wrapper) => {
+        const group = wrapper.getAttribute('data-formset-group');
+        const prefix = wrapper.getAttribute('data-formset-prefix');
+        const itemsContainer = wrapper.querySelector(`[data-formset-items="${group}"]`);
+        const template = wrapper.querySelector(`template[data-formset-template="${group}"]`);
+        const totalFormsInput = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
 
-    if (!template || !container || !totalFormsInput) {
-        return;
-    }
+        if (!group || !prefix || !itemsContainer || !template || !totalFormsInput) {
+            return;
+        }
 
-    const renderNewForm = () => {
-        const currentCount = parseInt(totalFormsInput.value, 10);
-        const templateHtml = template.innerHTML.trim().replace(/__prefix__/g, currentCount);
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = templateHtml;
-        const newForm = wrapper.firstElementChild;
-        container.appendChild(newForm);
-        totalFormsInput.value = currentCount + 1;
-        refreshAddButtons();
-    };
+        const renderNewForm = () => {
+            const currentCount = parseInt(totalFormsInput.value, 10);
+            const templateHtml = template.innerHTML.trim().replace(/__prefix__/g, currentCount);
+            const wrapperEl = document.createElement('div');
+            wrapperEl.innerHTML = templateHtml;
+            const newForm = wrapperEl.firstElementChild;
+            itemsContainer.appendChild(newForm);
+            totalFormsInput.value = currentCount + 1;
+            refreshAddButtons();
+        };
 
-    const refreshAddButtons = () => {
-        const forms = Array.from(container.querySelectorAll('[data-plugin-form]')).filter((form) => !form.classList.contains('hidden'));
-        forms.forEach((form, index) => {
-            const addBtn = form.querySelector('[data-add-plugin]');
-            if (!addBtn) return;
-            if (index === forms.length - 1) {
-                addBtn.classList.remove('hidden');
-            } else {
-                addBtn.classList.add('hidden');
+        const refreshAddButtons = () => {
+            const forms = Array.from(itemsContainer.querySelectorAll(`[data-formset-form="${group}"]`)).filter((form) => !form.classList.contains('hidden'));
+            forms.forEach((form, index) => {
+                const addBtn = form.querySelector(`[data-formset-add="${group}"]`);
+                if (!addBtn) {
+                    return;
+                }
+                if (index === forms.length - 1) {
+                    addBtn.classList.remove('hidden');
+                } else {
+                    addBtn.classList.add('hidden');
+                }
+            });
+            if (forms.length === 0) {
+                renderNewForm();
             }
+        };
+
+        itemsContainer.addEventListener('click', (event) => {
+            const addBtn = event.target.closest(`[data-formset-add="${group}"]`);
+            if (addBtn) {
+                renderNewForm();
+                return;
+            }
+
+            const removeBtn = event.target.closest(`[data-formset-remove="${group}"]`);
+            if (!removeBtn) {
+                return;
+            }
+            const form = removeBtn.closest(`[data-formset-form="${group}"]`);
+            if (!form) {
+                return;
+            }
+            const deleteInput = form.querySelector('input[name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.checked = true;
+            }
+            form.classList.add('hidden');
+            refreshAddButtons();
         });
-        if (forms.length === 0) {
-            renderNewForm();
-        }
-    };
 
-    container.addEventListener('click', function(event) {
-        const addBtn = event.target.closest('[data-add-plugin]');
-        if (addBtn) {
-            renderNewForm();
-            return;
-        }
-
-        const removeBtn = event.target.closest('[data-remove-plugin]');
-        if (!removeBtn) {
-            return;
-        }
-        const pluginForm = removeBtn.closest('[data-plugin-form]');
-        if (!pluginForm) {
-            return;
-        }
-        const deleteInput = pluginForm.querySelector('input[name$="-DELETE"]');
-        if (deleteInput) {
-            deleteInput.checked = true;
-        }
-        pluginForm.classList.add('hidden');
         refreshAddButtons();
     });
-
-    refreshAddButtons();
 })();
 </script>
 {% endblock %}

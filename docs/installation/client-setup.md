@@ -107,6 +107,8 @@ These packages enable additional security checks:
 
 TrikuSec can automatically install additional Lynis plugins during enrollment. Administrators can configure these under **Settings → Enrollment configuration → Lynis plugins** using the inline plugin list. Add one HTTP/HTTPS URL per row (remove rows to delete existing plugins). When the enrollment script runs, it downloads each plugin, places it in the Lynis plugin directory reported by `lynis show plugindir`, and marks it executable following the [CISOfy plugin guidance](https://cisofy.com/documentation/lynis/plugins/). Use this to ship organization-specific tests or vendor plugins without manual intervention on every server.
 
+The adjacent **Skip tests** list follows the same UI pattern: add one Lynis test ID per row (e.g., `CRYP-7902`). The enrollment script converts the list into the `test_skip_always` setting so older releases of Lynis—or noisy checks you intentionally ignore—are handled consistently across every enrolled device.
+
 ## Troubleshooting
 
 ### Connection Issues
